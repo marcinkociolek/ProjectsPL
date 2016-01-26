@@ -58,6 +58,8 @@ public:
     bool fitEllipseToReg;
 
     // display options
+    int displayFlag;
+
     bool showInput;
     bool showThesholded;
     bool show1stMorphology;

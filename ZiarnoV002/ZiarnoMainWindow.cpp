@@ -116,6 +116,10 @@ MainWindow::MainWindow(QWidget *parent) :
     showMask            = ui->ShowMaskCheckBox->checkState();
     showContourOnInput  = ui->ShowContourOnImageCheckBox->checkState();
 
+    if(ui->AllowResizeCheckBox->checkState())
+        displayFlag = WINDOW_NORMAL;
+    else
+        displayFlag = WINDOW_AUTOSIZE;
 
 
 }
@@ -408,42 +412,35 @@ void MainWindow::ProcessImage(void)
 //--------------------------------------------------------------------------------------------------
 void MainWindow::OnOffImageWindow(void)
 {
-    int parametr;
-    if(ui->AllowResizeCheckBox->checkState())
-        parametr = WINDOW_NORMAL;
-    else
-        parametr = WINDOW_AUTOSIZE;
-
-
     destroyAllWindows();
 
     if(showInput)
-        namedWindow("Input image", parametr);
+        namedWindow("Input image", displayFlag);
 //    else
 //        destroyWindow("Input image");
 
     if(showThesholded)
-        namedWindow("Thresholded", parametr);
+        namedWindow("Thresholded", displayFlag);
 //    else
 //        destroyWindow("Thresholded");
 
     if(show1stMorphology)
-        namedWindow("Morphology1", parametr);
+        namedWindow("Morphology1", displayFlag);
  //   else
  //       destroyWindow("Morphology1");
 
     if(showHolesRemoved)
-        namedWindow("WithoutHoles", parametr);
+        namedWindow("WithoutHoles", displayFlag);
 //    else
 //        destroyWindow("WithoutHoles");
 
     if(showMask)
-        namedWindow("Mask", parametr);
+        namedWindow("Mask", displayFlag);
 //    else
 //        destroyWindow("Mask");
 
     if(showContourOnInput)
-        namedWindow("Superimposed", parametr);
+        namedWindow("Superimposed", displayFlag);
 //    else
 //        destroyWindow("Superimposed");
 
@@ -523,30 +520,41 @@ void MainWindow::on_RegionMorfology3ComboBox_currentIndexChanged(int index)
 
 void MainWindow::on_ShowInputImageCheckBox_toggled(bool checked)
 {
-
     showInput = checked;
-    OnOffImageWindow();
+    if(showInput)
+        namedWindow("Input image", displayFlag);
+    else
+        destroyWindow("Input image");
     ProcessImage();
 }
 
 void MainWindow::on_ShowThresholdedImgeCheckBox_toggled(bool checked)
 {
     showThesholded = checked;
-    OnOffImageWindow();
+    if(showThesholded)
+        namedWindow("Thresholded", displayFlag);
+    else
+        destroyWindow("Thresholded");
     ProcessImage();
 }
 
 void MainWindow::on_ShowAfter1MorphologyCheckBox_toggled(bool checked)
 {
     show1stMorphology = checked;
-    OnOffImageWindow();
+    if(show1stMorphology)
+        namedWindow("Morphology1", displayFlag);
+    else
+        destroyWindow("Morphology1");
     ProcessImage();
 }
 
 void MainWindow::on_ShowWithoutHolesCheckBox_toggled(bool checked)
 {
     showHolesRemoved = checked;
-    OnOffImageWindow();
+    if(showHolesRemoved)
+        namedWindow("WithoutHoles", displayFlag);
+    else
+        destroyWindow("WithoutHoles");
     ProcessImage();
 }
 
@@ -569,19 +577,32 @@ void MainWindow::on_pushButtonRegex_clicked()
 void MainWindow::on_ShowMaskCheckBox_toggled(bool checked)
 {
     showMask = checked;
-    OnOffImageWindow();
+    if(showMask)
+        namedWindow("Mask", displayFlag);
+    else
+        destroyWindow("Mask");
+
     ProcessImage();
 }
 
 void MainWindow::on_ShowContourOnImageCheckBox_toggled(bool checked)
 {
     showContourOnInput = checked;
-    OnOffImageWindow();
+
+    if(showContourOnInput)
+        namedWindow("Superimposed", displayFlag);
+    else
+        destroyWindow("Superimposed");
     ProcessImage();
 }
 
 void MainWindow::on_AllowResizeCheckBox_toggled(bool checked)
 {
+    if(checked)
+        displayFlag = WINDOW_NORMAL;
+    else
+        displayFlag = WINDOW_AUTOSIZE;
+
     OnOffImageWindow();
     ProcessImage();
 }
