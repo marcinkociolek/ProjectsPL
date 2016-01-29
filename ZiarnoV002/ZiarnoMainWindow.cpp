@@ -133,7 +133,7 @@ void MainWindow::on_pushButton_clicked()
 {
     QFileDialog dialog(this, "Open Folder");
     dialog.setFileMode(QFileDialog::Directory);
-    //dialog.setDirectory("E:/Ziarno");
+    dialog.setDirectory("E:/Ziarno/3.11.2015_uszkodzone/Oble");
 
     //QStringList FileList= dialog.e
     if(dialog.exec())
@@ -400,6 +400,32 @@ void MainWindow::ProcessImage(void)
 
 
 
+    if(fitEllipseToReg)
+    {
+        Mat ImTemp;
+        ImMask1.convertTo(ImTemp,CV_8U);
+
+        vector<vector<Point> > contours;
+        vector<Vec4i> hierarchy;
+
+        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
+
+        Mat pointsF;
+        Mat(contours[0]).convertTo(pointsF, CV_32F);
+        RotatedRect fittedRect = fitEllipse(pointsF);
+        Point2f vertices[4];
+        fittedRect.points(vertices);
+
+        Mat ImToShow;
+        ImIn1.copyTo(ImToShow);
+        for (int i = 0; i < 4; i++)
+            line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+
+        namedWindow("box");
+        imshow("box", ImToShow);
+
+    }
+
 
 
 
@@ -610,5 +636,11 @@ void MainWindow::on_AllowResizeCheckBox_toggled(bool checked)
 void MainWindow::on_RemoveBorderRegionCheckBox_toggled(bool checked)
 {
     removeBorderRegion = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_FitEllipseCheckBox_toggled(bool checked)
+{
+    fitEllipseToReg = checked;
     ProcessImage();
 }

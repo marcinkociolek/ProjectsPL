@@ -128,6 +128,8 @@ private slots:
 
     void on_RemoveBorderRegionCheckBox_toggled(bool checked);
 
+    void on_FitEllipseCheckBox_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
 };

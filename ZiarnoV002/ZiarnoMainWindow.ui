@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>776</width>
-    <height>449</height>
+    <height>543</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,7 @@
      <number>255</number>
     </property>
     <property name="value">
-     <number>6</number>
+     <number>26</number>
     </property>
     <property name="displayIntegerBase">
      <number>10</number>
@@ -91,6 +91,9 @@
     <property name="text">
      <string>Remove small regions</string>
     </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QSpinBox" name="MinRegionSizeSpinBox">
     <property name="geometry">
@@ -108,7 +111,7 @@
      <number>50</number>
     </property>
     <property name="value">
-     <number>100</number>
+     <number>10000</number>
     </property>
    </widget>
    <widget class="QComboBox" name="RawRegionMorfology1ComboBox">
@@ -183,6 +186,9 @@
     <property name="text">
      <string>Divide regions</string>
     </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QCheckBox" name="ShowInputImageCheckBox">
     <property name="geometry">
@@ -247,6 +253,9 @@
     </property>
     <property name="text">
      <string>FillHoles</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLineEdit" name="DurationLineEdit">
@@ -345,6 +354,9 @@
     </property>
     <property name="text">
      <string>Remove regions touching border</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QCheckBox" name="FitEllipseCheckBox">
