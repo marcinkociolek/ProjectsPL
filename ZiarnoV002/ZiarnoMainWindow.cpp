@@ -106,7 +106,9 @@ MainWindow::MainWindow(QWidget *parent) :
     regMorphDilation2   = ui->RegionMorfology2ComboBox->currentIndex();
     regMorphErosion3    = ui->RegionMorfology3ComboBox->currentIndex();
     removeBorderRegion  = ui->RemoveBorderRegionCheckBox->checkState();
-    fitEllipseToReg     = ui->FitEllipseCheckBox->checkState();;
+    fitEllipseToReg     = ui->FitEllipseCheckBox->checkState();
+    rotateImage         = ui->RotateCheckBox->checkState();
+    croppImage          = ui->CroppCheckBox->checkState();
 
     // display options
     showInput           = ui->ShowInputImageCheckBox->checkState();
@@ -115,6 +117,9 @@ MainWindow::MainWindow(QWidget *parent) :
     showHolesRemoved    = ui->ShowWithoutHolesCheckBox->checkState();
     showMask            = ui->ShowMaskCheckBox->checkState();
     showContourOnInput  = ui->ShowContourOnImageCheckBox->checkState();
+    showFitted          = ui->ShowFitedElipseCheckBox->checkState();
+    showRotated         = ui->ShowRotatedCheckBox->checkState();
+    showCropped         = ui->ShowCroppedCheckBox->checkState();
 
     if(ui->AllowResizeCheckBox->checkState())
         displayFlag = WINDOW_NORMAL;
@@ -398,6 +403,10 @@ void MainWindow::ProcessImage(void)
         imshow("Superimposed", ImToShow);
     }
 
+    RotatedRect fittedRect;
+    fittedRect.angle = 0.0;
+    fittedRect.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
+    fittedRect.size = Size2f(100.0,100.0);
 
 
     if(fitEllipseToReg)
@@ -412,21 +421,81 @@ void MainWindow::ProcessImage(void)
 
         Mat pointsF;
         Mat(contours[0]).convertTo(pointsF, CV_32F);
-        RotatedRect fittedRect = fitEllipse(pointsF);
+        fittedRect = fitEllipse(pointsF);
+    }
+
+    if(showFitted)
+    {
         Point2f vertices[4];
         fittedRect.points(vertices);
-
         Mat ImToShow;
         ImIn1.copyTo(ImToShow);
         for (int i = 0; i < 4; i++)
             line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
 
-        namedWindow("box");
-        imshow("box", ImToShow);
-
+        imshow("Fitted", ImToShow);
     }
 
 
+    Mat ImRotated;
+    if(rotateImage)
+    {
+        Mat RotationMatrix = getRotationMatrix2D(fittedRect.center,fittedRect.angle,1.0);
+        Size smallImageSize;
+        smallImageSize.height = (int)(fittedRect.size.height * 1.2);
+        smallImageSize.width = (int)(fittedRect.size.width * 1.2);
+
+        //Mat ImTemp
+        warpAffine(ImIn1,ImRotated,RotationMatrix,Size(ImIn1.cols,ImIn1.rows));
+
+    }
+    else
+        ImRotated = Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
+
+    RotatedRect alignedRect = fittedRect;
+    alignedRect.angle = 0.0;
+    if(showRotated)
+    {
+        Point2f vertices[4];
+        alignedRect.points(vertices);
+        Mat ImToShow;
+        ImRotated.copyTo(ImToShow);
+        for (int i = 0; i < 4; i++)
+            line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+        imshow("Rotated", ImToShow);
+    }
+
+    Mat ImCropped;
+    if(croppImage)
+    {
+        Size croppedImageSize;
+        int croppWidth = (((int)(alignedRect.size.width * 1.2))/8)*8;
+        int croppHeight = (((int)(alignedRect.size.height * 1.2))/8)*8;
+        int croppX = (int)alignedRect.center.x - croppWidth/2;
+        if(croppX < 0)
+            croppX = 0;
+        int croppY = (int)alignedRect.center.y - croppHeight/2;
+        if(croppY < 0)
+            croppY = 0;
+
+        ImRotated(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped);
+    }
+    else
+        ImCropped = ImIn1;
+
+    if(showCropped)
+    {
+        /*
+        Point2f vertices[4];
+        alignedRect.points(vertices);
+        Mat ImToShow;
+        ImRotated.copyTo(ImToShow);
+        for (int i = 0; i < 4; i++)
+            line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+        */
+
+        imshow("Cropped", ImCropped);
+    }
 
 
     steady_clock::time_point t2 = steady_clock::now();
@@ -442,34 +511,30 @@ void MainWindow::OnOffImageWindow(void)
 
     if(showInput)
         namedWindow("Input image", displayFlag);
-//    else
-//        destroyWindow("Input image");
 
     if(showThesholded)
         namedWindow("Thresholded", displayFlag);
-//    else
-//        destroyWindow("Thresholded");
 
     if(show1stMorphology)
         namedWindow("Morphology1", displayFlag);
- //   else
- //       destroyWindow("Morphology1");
 
     if(showHolesRemoved)
         namedWindow("WithoutHoles", displayFlag);
-//    else
-//        destroyWindow("WithoutHoles");
 
     if(showMask)
         namedWindow("Mask", displayFlag);
-//    else
-//        destroyWindow("Mask");
 
     if(showContourOnInput)
         namedWindow("Superimposed", displayFlag);
-//    else
-//        destroyWindow("Superimposed");
 
+    if(showFitted)
+        namedWindow("Fitted", displayFlag);
+
+    if(showRotated)
+        namedWindow("Rotated", displayFlag);
+
+    if(showCropped)
+        namedWindow("Cropped", displayFlag);
 
     //namedWindow("Histogram", WINDOW_AUTOSIZE);
 }
@@ -642,5 +707,50 @@ void MainWindow::on_RemoveBorderRegionCheckBox_toggled(bool checked)
 void MainWindow::on_FitEllipseCheckBox_toggled(bool checked)
 {
     fitEllipseToReg = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_RotateCheckBox_toggled(bool checked)
+{
+    rotateImage = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_ShowFitedElipseCheckBox_toggled(bool checked)
+{
+    showFitted = checked;
+    if(showFitted)
+        namedWindow("Fitted", displayFlag);
+    else
+        destroyWindow("Fitted");
+
+    ProcessImage();
+}
+
+void MainWindow::on_ShowRotatedCheckBox_toggled(bool checked)
+{
+    showRotated = checked;
+    if(showRotated)
+        namedWindow("Rotated", displayFlag);
+    else
+        destroyWindow("Rotated");
+
+    ProcessImage();
+}
+
+void MainWindow::on_CroppCheckBox_toggled(bool checked)
+{
+    croppImage = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_ShowCroppedCheckBox_toggled(bool checked)
+{
+    showCropped = checked;
+    if(showCropped)
+        namedWindow("Cropped", displayFlag);
+    else
+        destroyWindow("Cropped");
+
     ProcessImage();
 }

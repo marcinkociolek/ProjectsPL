@@ -56,6 +56,8 @@ public:
     int regMorphErosion3;
     bool removeBorderRegion;
     bool fitEllipseToReg;
+    bool rotateImage;
+    bool croppImage;
 
     // display options
     int displayFlag;
@@ -66,6 +68,9 @@ public:
     bool showHolesRemoved;
     bool showMask;
     bool showContourOnInput;
+    bool showFitted;
+    bool showRotated;
+    bool showCropped;
 
 
 
@@ -129,6 +134,16 @@ private slots:
     void on_RemoveBorderRegionCheckBox_toggled(bool checked);
 
     void on_FitEllipseCheckBox_toggled(bool checked);
+
+    void on_RotateCheckBox_toggled(bool checked);
+
+    void on_ShowFitedElipseCheckBox_toggled(bool checked);
+
+    void on_ShowRotatedCheckBox_toggled(bool checked);
+
+    void on_CroppCheckBox_toggled(bool checked);
+
+    void on_ShowCroppedCheckBox_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

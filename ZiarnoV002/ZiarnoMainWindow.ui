@@ -284,8 +284,8 @@
    <widget class="QListWidget" name="RegexListWidget">
     <property name="geometry">
      <rect>
-      <x>550</x>
-      <y>190</y>
+      <x>560</x>
+      <y>220</y>
       <width>211</width>
       <height>192</height>
      </rect>
@@ -370,6 +370,71 @@
     </property>
     <property name="text">
      <string>Fit Ellipse</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="RotateCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>390</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Rotate</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="ShowFitedElipseCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>160</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Fited Rectangle</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="ShowRotatedCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>180</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Rotated</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CroppCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>410</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Cropp</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="ShowCroppedCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>200</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Cropped</string>
     </property>
    </widget>
   </widget>
