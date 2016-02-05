@@ -62,6 +62,8 @@ public:
     // display options
     int displayFlag;
 
+    bool showSecondIm;
+
     bool showInput;
     bool showThesholded;
     bool show1stMorphology;
@@ -144,6 +146,8 @@ private slots:
     void on_CroppCheckBox_toggled(bool checked);
 
     void on_ShowCroppedCheckBox_toggled(bool checked);
+
+    void on_ShowComboBox_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

@@ -56,6 +56,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->SegmentationComboBox->addItem("Gray Threshold Manual");
     ui->SegmentationComboBox->addItem("Gradient Threshold manual");
 
+    if(ui->ShowComboBox->currentIndex())
+        showSecondIm = true;
+    else
+        showSecondIm = false;
+
+    ui->ShowComboBox->addItem("ShowIm1");
+    ui->ShowComboBox->addItem("ShowIm2");
+
     threshVal = ui->spinBox->value();
     MinRegSize = ui->MinRegionSizeSpinBox->value();
 
@@ -220,7 +228,12 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
     ImIn(Rect(0, maxY, maxX, maxY)).copyTo(ImIn2);
 
     if(ui->ShowInputImageCheckBox->checkState())
-        imshow("Input image", ImIn1);
+    {
+        if(!showSecondIm)
+            imshow("Input image", ImIn1);
+        else
+            imshow("Input image", ImIn2);
+    }
 
     threshVal = ui->spinBox->value();
 
@@ -237,41 +250,53 @@ void MainWindow::ProcessImage(void)
 
     if (ImIn.empty())
         return;
-    Mat MaskTresh, MaskMorf1;
+    Mat Mask1, MaskMorf1;
+    Mat Mask2;
     switch (segmentType)
     {
     case 1:
-        MaskTresh = FindMaskFromGradient(ImIn1,threshVal);
+        Mask1 = FindMaskFromGradient(ImIn1,threshVal);
+        Mask2 = FindMaskFromGradient(ImIn2,threshVal);
         break;
     default:
-        MaskTresh = FindMaskFromGray(ImIn1,threshVal);
+        Mask1 = FindMaskFromGray(ImIn1,threshVal);
+        Mask2 = FindMaskFromGray(ImIn2,threshVal);
         break;
     }
 
     if(showThesholded)
     {
-        imshow("Thresholded", ShowRegion(MaskTresh));
+        if(!showSecondIm)
+            imshow("Thresholded", ShowRegion(Mask1));
+        else
+            imshow("Thresholded", ShowRegion(Mask2));
     }
 
     if(removeSmallReg)
-        MaskMorf1 = RemovingTinyReg9(MaskTresh);
+    {
+        //MaskMorf1 = RemovingTinyReg9(MaskTresh);
+        Mask1 = RemovingTinyReg9(Mask1);
+        Mask2 = RemovingTinyReg9(Mask2);
+    }
     else
-        MaskTresh.copyTo(MaskMorf1);
+        Mask1.copyTo(MaskMorf1);
 
 
 
     switch (rawMorphErosion1)
     {
     case 1:
-        RegionErosion5(MaskMorf1);
+        RegionErosion5(Mask1);
+        RegionErosion5(Mask2);
         break;
     case 2:
-        RegionErosion9(MaskMorf1);
+        RegionErosion9(Mask1);
+        RegionErosion9(Mask2);
         break;
     case 3:
-        RegionErosion13(MaskMorf1);
+        RegionErosion13(Mask1);
+        RegionErosion13(Mask2);
         break;
-
     default:
         break;
     }
@@ -279,15 +304,17 @@ void MainWindow::ProcessImage(void)
     switch (rawMorphDilation2)
     {
     case 1:
-        RegionDilation5(MaskMorf1);
+        RegionDilation5(Mask1);
+        RegionDilation5(Mask2);
         break;
     case 2:
-        RegionDilation9(MaskMorf1);
+        RegionDilation9(Mask1);
+        RegionDilation9(Mask2);
         break;
     case 3:
-        RegionDilation13(MaskMorf1);
+        RegionDilation13(Mask1);
+        RegionDilation13(Mask2);
         break;
-
     default:
         break;
     }
@@ -295,52 +322,74 @@ void MainWindow::ProcessImage(void)
     switch (rawMorphErosion3)
     {
     case 1:
-        RegionErosion5(MaskMorf1);
+        RegionErosion5(Mask1);
+        RegionErosion5(Mask2);
         break;
     case 2:
-        RegionErosion9(MaskMorf1);
+        RegionErosion9(Mask1);
+        RegionErosion9(Mask2);
         break;
     case 3:
-        RegionErosion13(MaskMorf1);
+        RegionErosion13(Mask1);
+        RegionErosion13(Mask2);
         break;
-
     default:
         break;
     }
 
     if(show1stMorphology)
-        imshow("Morphology1", ShowRegion(MaskMorf1));
+    {
+        if(!showSecondIm)
+            imshow("Morphology1", ShowRegion(Mask1));
+        else
+            imshow("Morphology1", ShowRegion(Mask2));
+    }
 
-    Mat MaskWHoles;
-    MaskMorf1.copyTo(MaskWHoles);
+    //Mat MaskWHoles;
+    //Mask1.copyTo(MaskWHoles);
 
     if(fillHoles)
     {
-        FillBorderWithValue(MaskWHoles, 0xFFFF);
-        OneRegionFill5Fast1(MaskWHoles,  0xFFFF);
-        FillHoles(MaskWHoles);
-        DeleteRegionFromImage(MaskWHoles, 0xFFFF);
+        FillBorderWithValue(Mask1, 0xFFFF);
+        OneRegionFill5Fast1(Mask1,  0xFFFF);
+        FillHoles(Mask1);
+        DeleteRegionFromImage(Mask1, 0xFFFF);
+
+        FillBorderWithValue(Mask2, 0xFFFF);
+        OneRegionFill5Fast1(Mask2,  0xFFFF);
+        FillHoles(Mask2);
+        DeleteRegionFromImage(Mask2, 0xFFFF);
+
     }
     if(showHolesRemoved)
-        imshow("WithoutHoles", ShowRegion(MaskWHoles));
-
-    MaskWHoles.copyTo(ImMask1);
+    {
+        if(!showSecondIm)
+            imshow("WithoutHoles", ShowRegion(Mask1));
+        else
+            imshow("WithoutHoles", ShowRegion(Mask2));
+    }
+    //Mask1.copyTo(ImMask1);
 
     if(divideSeparateReg)
-        DivideSeparateRegions(ImMask1, MinRegSize);
+    {
+        DivideSeparateRegions(Mask1, MinRegSize);
+        DivideSeparateRegions(Mask2, MinRegSize);
+    }
 
     switch (regMorphErosion1)
     {
     case 1:
-        RegionErosion5(ImMask1);
+        RegionErosion5(Mask1);
+        RegionErosion5(Mask2);
         break;
     case 2:
-        RegionErosion9(ImMask1);
+        RegionErosion9(Mask1);
+        RegionErosion9(Mask2);
         break;
     case 3:
-        RegionErosion13(ImMask1);
+        RegionErosion13(Mask1);
+        RegionErosion13(Mask2);
         break;
-
     default:
         break;
     }
@@ -348,15 +397,17 @@ void MainWindow::ProcessImage(void)
     switch (regMorphDilation2)
     {
     case 1:
-        RegionDilation5(ImMask1);
+        RegionDilation5(Mask1);
+        RegionDilation5(Mask2);
         break;
     case 2:
-        RegionDilation9(ImMask1);
+        RegionDilation9(Mask1);
+        RegionDilation9(Mask2);
         break;
     case 3:
-        RegionDilation13(ImMask1);
+        RegionDilation13(Mask1);
+        RegionDilation13(Mask2);
         break;
-
     default:
         break;
     }
@@ -364,121 +415,201 @@ void MainWindow::ProcessImage(void)
     switch (regMorphErosion3)
     {
     case 1:
-        RegionErosion5(ImMask1);
+        RegionErosion5(Mask1);
+        RegionErosion5(Mask2);
         break;
     case 2:
-        RegionErosion9(ImMask1);
+        RegionErosion9(Mask1);
+        RegionErosion9(Mask2);
         break;
     case 3:
-        RegionErosion13(ImMask1);
+        RegionErosion13(Mask1);
+        RegionErosion13(Mask2);
         break;
-
     default:
         break;
     }
     if(removeBorderRegion)
-        DeleteRegTouchingBorder(ImMask1);
+    {
+        DeleteRegTouchingBorder(Mask1);
+        DeleteRegTouchingBorder(Mask2);
+    }
 
     if(showMask)
-        imshow("Mask", ShowRegion(ImMask1));
+    {
+        if(!showSecondIm)
+            imshow("Mask", ShowRegion(Mask1));
+        else
+            imshow("Mask", ShowRegion(Mask2));
+    }
  //   return;
 
     //ImMask1.copyTo(Contour1);
     if(showContourOnInput)
     {
-        Contour1 = GetContour5(ImMask1);
+        Mat Contour;
+        Mat ImToShow;
 
-
-
-        Mat ImToShow = ShowSolidRegionOnImage(Contour1,ImIn1);
-
-
-
-        //RotatedRect fittedRect = fitEllipse(ImMask1);
-        //Point2f vertices[4];
-        //fittedRect.points(vertices);
-        //for (int i = 0; i < 4; i++)
-        //    line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+        if(!showSecondIm)
+        {
+            Contour = GetContour5(Mask1);
+            ImToShow = ShowSolidRegionOnImage(Contour,ImIn1);
+        }
+        else
+        {
+            Contour = GetContour5(Mask2);
+            ImToShow = ShowSolidRegionOnImage(Contour,ImIn2);
+        }
 
         imshow("Superimposed", ImToShow);
     }
 
-    RotatedRect fittedRect;
-    fittedRect.angle = 0.0;
-    fittedRect.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
-    fittedRect.size = Size2f(100.0,100.0);
+    RotatedRect fittedRect1,fittedRect2 ;
+    fittedRect1.angle = 0.0;
+    fittedRect1.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
+    fittedRect1.size = Size2f(100.0,100.0);
 
+    fittedRect2 = fittedRect1;
 
     if(fitEllipseToReg)
     {
         Mat ImTemp;
-        ImMask1.convertTo(ImTemp,CV_8U);
-
         vector<vector<Point> > contours;
         vector<Vec4i> hierarchy;
-
-        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
-
         Mat pointsF;
+
+        Mask1.convertTo(ImTemp,CV_8U);
+        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
         Mat(contours[0]).convertTo(pointsF, CV_32F);
-        fittedRect = fitEllipse(pointsF);
+        fittedRect1 = fitEllipse(pointsF);
+
+        contours.clear();
+        hierarchy.clear();
+
+        Mask2.convertTo(ImTemp,CV_8U);
+        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
+        Mat(contours[0]).convertTo(pointsF, CV_32F);
+        fittedRect2 = fitEllipse(pointsF);
     }
 
     if(showFitted)
     {
         Point2f vertices[4];
-        fittedRect.points(vertices);
         Mat ImToShow;
-        ImIn1.copyTo(ImToShow);
+        if(!showSecondIm)
+        {
+            fittedRect1.points(vertices);
+            ImIn1.copyTo(ImToShow);
+        }
+        else
+        {
+            fittedRect2.points(vertices);
+            ImIn2.copyTo(ImToShow);
+        }
+
         for (int i = 0; i < 4; i++)
             line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
 
         imshow("Fitted", ImToShow);
     }
 
+    Mat ImRotated1, ImRotated2;
 
-    Mat ImRotated;
+    Size smallImageSize;
     if(rotateImage)
     {
-        Mat RotationMatrix = getRotationMatrix2D(fittedRect.center,fittedRect.angle,1.0);
-        Size smallImageSize;
-        smallImageSize.height = (int)(fittedRect.size.height * 1.2);
-        smallImageSize.width = (int)(fittedRect.size.width * 1.2);
+        Mat RotationMatrix;
 
+
+        RotationMatrix = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+        smallImageSize.height = (int)(fittedRect1.size.height);
+        smallImageSize.width = (int)(fittedRect1.size.width);
         //Mat ImTemp
-        warpAffine(ImIn1,ImRotated,RotationMatrix,Size(ImIn1.cols,ImIn1.rows));
+        warpAffine(ImIn1,ImRotated1,RotationMatrix,Size(ImIn1.cols,ImIn1.rows));
+
+        RotationMatrix = getRotationMatrix2D(fittedRect2.center,fittedRect2.angle,1.0);
+        if(smallImageSize.height < (int)(fittedRect2.size.height))
+            smallImageSize.height = (int)(fittedRect2.size.height);
+
+        if(smallImageSize.width < (int)(fittedRect2.size.width))
+            smallImageSize.width = (int)(fittedRect2.size.width);
+
+        smallImageSize.width = smallImageSize.width * 1.2;
+        smallImageSize.height = smallImageSize.height * 1.2;
+        //Mat ImTemp
+        warpAffine(ImIn2,ImRotated2,RotationMatrix,Size(ImIn2.cols,ImIn2.rows));
 
     }
     else
-        ImRotated = Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
+    {
+        ImRotated1 = Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
+        ImRotated2 = Mat::zeros(ImIn2.rows,ImIn2.cols,CV_8UC3);
+    }
 
-    RotatedRect alignedRect = fittedRect;
-    alignedRect.angle = 0.0;
+    RotatedRect alignedRect1 = fittedRect1;
+    alignedRect1.angle = 0.0;
+    RotatedRect alignedRect2 = fittedRect2;
+    alignedRect2.angle = 0.0;
+
+
+
     if(showRotated)
     {
         Point2f vertices[4];
-        alignedRect.points(vertices);
         Mat ImToShow;
-        ImRotated.copyTo(ImToShow);
+
+
+        if(!showSecondIm)
+        {
+            alignedRect1.points(vertices);
+            ImRotated1.copyTo(ImToShow);
+        }
+        else
+        {
+            alignedRect2.points(vertices);
+            ImRotated2.copyTo(ImToShow);
+        }
         for (int i = 0; i < 4; i++)
             line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+
         imshow("Rotated", ImToShow);
     }
 
-    Mat ImCropped;
+    Mat ImCropped, ImCropped1, ImCropped2 ;
     if(croppImage)
     {
-        Size croppedImageSize;
-        int croppWidth = (((int)(alignedRect.size.width * 1.2))/8)*8;
-        int croppHeight = (((int)(alignedRect.size.height * 1.2))/8)*8;
-        int croppX = (int)alignedRect.center.x - croppWidth/2;
+        //Size croppedImageSize;
+        int croppWidth,croppHeight,croppX,croppY;
+
+        croppWidth = (((int)(smallImageSize.width * 1.2))/8)*8;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
+        croppHeight = (((int)(smallImageSize.height * 1.2))/8)*8;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
+        croppX = (int)alignedRect1.center.x - croppWidth/2;
         if(croppX < 0)
             croppX = 0;
-        int croppY = (int)alignedRect.center.y - croppHeight/2;
+        croppY = (int)alignedRect1.center.y - croppHeight/2;
         if(croppY < 0)
             croppY = 0;
 
-        ImRotated(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped);
+        ImRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped1);
+
+
+        croppWidth = (((int)(smallImageSize.width * 1.2))/8)*8;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
+        croppHeight = (((int)(smallImageSize.height * 1.2))/8)*8;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
+        croppX = (int)alignedRect2.center.x - croppWidth/2;
+        if(croppX < 0)
+            croppX = 0;
+        croppY = (int)alignedRect2.center.y - croppHeight/2;
+        if(croppY < 0)
+            croppY = 0;
+
+        ImRotated2(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped2);
+
+        ImCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),ImCropped1.type());
+
+        ImCropped1.copyTo(ImCropped(Rect(0, 0, croppWidth, croppHeight)));
+        ImCropped2.copyTo(ImCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
+
+
     }
     else
         ImCropped = ImIn1;
@@ -751,6 +882,16 @@ void MainWindow::on_ShowCroppedCheckBox_toggled(bool checked)
         namedWindow("Cropped", displayFlag);
     else
         destroyWindow("Cropped");
+
+    ProcessImage();
+}
+
+void MainWindow::on_ShowComboBox_currentIndexChanged(int index)
+{
+    if(index)
+        showSecondIm = true;
+    else
+        showSecondIm = false;
 
     ProcessImage();
 }
