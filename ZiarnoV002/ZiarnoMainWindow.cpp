@@ -480,16 +480,22 @@ void MainWindow::ProcessImage(void)
 
         Mask1.convertTo(ImTemp,CV_8U);
         findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
-        Mat(contours[0]).convertTo(pointsF, CV_32F);
-        fittedRect1 = fitEllipse(pointsF);
+        if(contours.size())
+        {
+            Mat(contours[0]).convertTo(pointsF, CV_32F);
+            fittedRect1 = fitEllipse(pointsF);
+        }
 
         contours.clear();
         hierarchy.clear();
 
         Mask2.convertTo(ImTemp,CV_8U);
         findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
-        Mat(contours[0]).convertTo(pointsF, CV_32F);
-        fittedRect2 = fitEllipse(pointsF);
+        if(contours.size())
+        {
+            Mat(contours[0]).convertTo(pointsF, CV_32F);
+            fittedRect2 = fitEllipse(pointsF);
+        }
     }
 
     if(showFitted)
@@ -515,28 +521,14 @@ void MainWindow::ProcessImage(void)
 
     Mat ImRotated1, ImRotated2;
 
-    Size smallImageSize;
     if(rotateImage)
     {
         Mat RotationMatrix;
 
-
         RotationMatrix = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
-        smallImageSize.height = (int)(fittedRect1.size.height);
-        smallImageSize.width = (int)(fittedRect1.size.width);
-        //Mat ImTemp
         warpAffine(ImIn1,ImRotated1,RotationMatrix,Size(ImIn1.cols,ImIn1.rows));
 
         RotationMatrix = getRotationMatrix2D(fittedRect2.center,fittedRect2.angle,1.0);
-        if(smallImageSize.height < (int)(fittedRect2.size.height))
-            smallImageSize.height = (int)(fittedRect2.size.height);
-
-        if(smallImageSize.width < (int)(fittedRect2.size.width))
-            smallImageSize.width = (int)(fittedRect2.size.width);
-
-        smallImageSize.width = smallImageSize.width * 1.2;
-        smallImageSize.height = smallImageSize.height * 1.2;
-        //Mat ImTemp
         warpAffine(ImIn2,ImRotated2,RotationMatrix,Size(ImIn2.cols,ImIn2.rows));
 
     }
@@ -545,6 +537,22 @@ void MainWindow::ProcessImage(void)
         ImRotated1 = Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
         ImRotated2 = Mat::zeros(ImIn2.rows,ImIn2.cols,CV_8UC3);
     }
+
+    //crop size calculation
+    Size smallImageSize;
+
+    smallImageSize.height = (int)(fittedRect1.size.height);
+    smallImageSize.width = (int)(fittedRect1.size.width);
+
+    if(smallImageSize.height < (int)(fittedRect2.size.height))
+        smallImageSize.height = (int)(fittedRect2.size.height);
+
+    if(smallImageSize.width < (int)(fittedRect2.size.width))
+        smallImageSize.width = (int)(fittedRect2.size.width);
+
+    smallImageSize.width = smallImageSize.width * 1.2;
+    smallImageSize.height = smallImageSize.height * 1.2;
+    //Mat ImTemp
 
     RotatedRect alignedRect1 = fittedRect1;
     alignedRect1.angle = 0.0;
