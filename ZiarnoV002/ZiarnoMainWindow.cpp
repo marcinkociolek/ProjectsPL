@@ -519,16 +519,61 @@ void MainWindow::ProcessImage(void)
         imshow("Fitted", ImToShow);
     }
 
-    Mat ImRotated1, ImRotated2;
+    Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
+
+
+    //crop size calculation
+    Size smallImageSize;
+
+    smallImageSize.height = (int)(fittedRect1.size.height * 1.2);
+    smallImageSize.width = (int)(fittedRect1.size.width * 1.2);
+
+    if(smallImageSize.height < (int)(fittedRect2.size.height * 1.2))
+        smallImageSize.height = (int)(fittedRect2.size.height * 1.2);
+
+    if(smallImageSize.width < (int)(fittedRect2.size.width * 1.2))
+        smallImageSize.width = (int)(fittedRect2.size.width * 1.2);
+
+    smallImageSize.width = (smallImageSize.width / 8) * 8;
+    smallImageSize.height = (smallImageSize.height / 8) * 8;
+
+
+    RotatedRect alignedRect1 = fittedRect1;
+    alignedRect1.angle = 0.0;
+    RotatedRect alignedRect2 = fittedRect2;
+    alignedRect2.angle = 0.0;
+
+
 
     if(rotateImage)
     {
         Mat RotationMatrix;
 
+        Mat RegTemp;
+
         RotationMatrix = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+        warpAffine(Mask1,MaskRotated1,RotationMatrix,Size(ImIn1.cols,ImIn1.rows));
+
+        // find proper direction
+        int croppWidth,croppHeight,croppX,croppY;
+
+        croppWidth = alignedRect1.size.width;
+        croppHeight = alignedRect1.size.height;
+        croppX = (int)alignedRect1.center.x - croppWidth/2;
+        if(croppX < 0)
+            croppX = 0;
+        croppY = (int)alignedRect1.center.y - croppHeight/2;
+        if(croppY < 0)
+            croppY = 0;
+
+        MaskRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(RegTemp);
+
+
+
         warpAffine(ImIn1,ImRotated1,RotationMatrix,Size(ImIn1.cols,ImIn1.rows));
 
         RotationMatrix = getRotationMatrix2D(fittedRect2.center,fittedRect2.angle,1.0);
+        warpAffine(Mask2,MaskRotated2,RotationMatrix,Size(ImIn2.cols,ImIn2.rows));
         warpAffine(ImIn2,ImRotated2,RotationMatrix,Size(ImIn2.cols,ImIn2.rows));
 
     }
@@ -537,29 +582,6 @@ void MainWindow::ProcessImage(void)
         ImRotated1 = Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
         ImRotated2 = Mat::zeros(ImIn2.rows,ImIn2.cols,CV_8UC3);
     }
-
-    //crop size calculation
-    Size smallImageSize;
-
-    smallImageSize.height = (int)(fittedRect1.size.height);
-    smallImageSize.width = (int)(fittedRect1.size.width);
-
-    if(smallImageSize.height < (int)(fittedRect2.size.height))
-        smallImageSize.height = (int)(fittedRect2.size.height);
-
-    if(smallImageSize.width < (int)(fittedRect2.size.width))
-        smallImageSize.width = (int)(fittedRect2.size.width);
-
-    smallImageSize.width = smallImageSize.width * 1.2;
-    smallImageSize.height = smallImageSize.height * 1.2;
-    //Mat ImTemp
-
-    RotatedRect alignedRect1 = fittedRect1;
-    alignedRect1.angle = 0.0;
-    RotatedRect alignedRect2 = fittedRect2;
-    alignedRect2.angle = 0.0;
-
-
 
     if(showRotated)
     {
@@ -583,14 +605,16 @@ void MainWindow::ProcessImage(void)
         imshow("Rotated", ImToShow);
     }
 
+
+
     Mat ImCropped, ImCropped1, ImCropped2 ;
     if(croppImage)
     {
         //Size croppedImageSize;
         int croppWidth,croppHeight,croppX,croppY;
 
-        croppWidth = (((int)(smallImageSize.width * 1.2))/8)*8;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
-        croppHeight = (((int)(smallImageSize.height * 1.2))/8)*8;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
+        croppWidth = smallImageSize.width;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
+        croppHeight = smallImageSize.height;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
         croppX = (int)alignedRect1.center.x - croppWidth/2;
         if(croppX < 0)
             croppX = 0;
@@ -601,8 +625,8 @@ void MainWindow::ProcessImage(void)
         ImRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped1);
 
 
-        croppWidth = (((int)(smallImageSize.width * 1.2))/8)*8;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
-        croppHeight = (((int)(smallImageSize.height * 1.2))/8)*8;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
+        croppWidth = smallImageSize.width;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
+        croppHeight = smallImageSize.height;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
         croppX = (int)alignedRect2.center.x - croppWidth/2;
         if(croppX < 0)
             croppX = 0;
