@@ -543,16 +543,14 @@ void MainWindow::ProcessImage(void)
     RotatedRect alignedRect2 = fittedRect2;
     alignedRect2.angle = 0.0;
 
-
-
     if(rotateImage)
     {
-        Mat RotationMatrix;
+        Mat RotationMatrix1,RotationMatrix2;
 
         Mat RegTemp;
 
-        RotationMatrix = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
-        warpAffine(Mask1,MaskRotated1,RotationMatrix,Size(ImIn1.cols,ImIn1.rows));
+        RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+        warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
 
         // find proper direction
         int croppWidth,croppHeight,croppX,croppY;
@@ -568,13 +566,58 @@ void MainWindow::ProcessImage(void)
 
         MaskRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(RegTemp);
 
+        int lineCount = 20;
+        int pixelCount = RegTemp.cols * lineCount;
+        int startLine = RegTemp.rows /4 - lineCount;
+
+        unsigned short *wRegTemp;
+        wRegTemp = (unsigned short*)RegTemp.data + RegTemp.cols * startLine;
+
+        int uRegPixelCount = 0;
+        for(int i = 0; i< pixelCount; i++)
+        {
+            if(*wRegTemp)
+                uRegPixelCount++;
+
+            wRegTemp++;
+        }
+
+        startLine = RegTemp.rows /4 * 3;
+
+        wRegTemp = (unsigned short*)RegTemp.data + RegTemp.cols * startLine;
+
+        int lRegPixelCount = 0;
+        for(int i = 0; i< pixelCount; i++)
+        {
+            if(*wRegTemp)
+                lRegPixelCount++;
+
+            wRegTemp++;
+        }
+
+        string OutText = "";
+        OutText += " uper pix count" +  to_string(uRegPixelCount) + "\n";
+        OutText += " lower pix count" + to_string(lRegPixelCount) + "\n";
+        ui->MesageTextEdit->setText(OutText.c_str());
+
+        if(uRegPixelCount >= lRegPixelCount)
+        {
+            RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+            RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
+        }
+        else
+        {
+            RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle + 180,1.0);
+            RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle + 180,1.0);
+        }
 
 
-        warpAffine(ImIn1,ImRotated1,RotationMatrix,Size(ImIn1.cols,ImIn1.rows));
 
-        RotationMatrix = getRotationMatrix2D(fittedRect2.center,fittedRect2.angle,1.0);
-        warpAffine(Mask2,MaskRotated2,RotationMatrix,Size(ImIn2.cols,ImIn2.rows));
-        warpAffine(ImIn2,ImRotated2,RotationMatrix,Size(ImIn2.cols,ImIn2.rows));
+        warpAffine(ImIn1,ImRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
+
+
+        warpAffine(Mask2,MaskRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
+        warpAffine(ImIn2,ImRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
 
     }
     else
