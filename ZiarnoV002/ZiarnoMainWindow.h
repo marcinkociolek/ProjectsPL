@@ -73,6 +73,7 @@ public:
     bool showFitted;
     bool showRotated;
     bool showCropped;
+    bool showSmallGradient;
 
 
 

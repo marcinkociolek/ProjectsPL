@@ -614,11 +614,10 @@ void MainWindow::ProcessImage(void)
 
 
         warpAffine(ImIn1,ImRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
+        warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
 
-
-        warpAffine(Mask2,MaskRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
         warpAffine(ImIn2,ImRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
-
+        warpAffine(Mask2,MaskRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
     }
     else
     {
@@ -650,14 +649,20 @@ void MainWindow::ProcessImage(void)
 
 
 
-    Mat ImCropped, ImCropped1, ImCropped2 ;
+    Mat ImCropped, ImCropped1, ImCropped2, MaskCropped, MaskCropped1, MaskCropped2;
+
+    int croppWidth = 100;
+    int croppHeight = 100;
+    int croppX = 50;
+    int croppY = 50;
     if(croppImage)
     {
         //Size croppedImageSize;
-        int croppWidth,croppHeight,croppX,croppY;
+
 
         croppWidth = smallImageSize.width;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
         croppHeight = smallImageSize.height;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
+
         croppX = (int)alignedRect1.center.x - croppWidth/2;
         if(croppX < 0)
             croppX = 0;
@@ -666,10 +671,9 @@ void MainWindow::ProcessImage(void)
             croppY = 0;
 
         ImRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped1);
+        MaskRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(MaskCropped1);
 
 
-        croppWidth = smallImageSize.width;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
-        croppHeight = smallImageSize.height;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
         croppX = (int)alignedRect2.center.x - croppWidth/2;
         if(croppX < 0)
             croppX = 0;
@@ -678,16 +682,25 @@ void MainWindow::ProcessImage(void)
             croppY = 0;
 
         ImRotated2(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped2);
+        MaskRotated2(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(MaskCropped2);
+
 
         ImCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),ImCropped1.type());
-
         ImCropped1.copyTo(ImCropped(Rect(0, 0, croppWidth, croppHeight)));
         ImCropped2.copyTo(ImCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
 
 
     }
     else
+    {
         ImCropped = ImIn1;
+        ImCropped1 = ImIn1;
+        ImCropped2 = ImIn2;
+
+        MaskCropped = Mask1;
+        MaskCropped1 = Mask1;
+        MaskCropped2 = Mask2;
+    }
 
     if(showCropped)
     {
@@ -703,6 +716,41 @@ void MainWindow::ProcessImage(void)
         imshow("Cropped", ImCropped);
     }
 
+    // find valey(bruzde)
+    Mat ImGraySmall1, ImGraySmall2;
+    Mat TempMask;
+
+    cvtColor(ImCropped1,ImGraySmall1,CV_BGR2GRAY);
+    cvtColor(ImCropped1,ImGraySmall2,CV_BGR2GRAY);
+
+    Mat ImGradientSmall1 = HorizontalGradientDown(ImGraySmall1);
+    Mat ImGradientSmall2 = HorizontalGradientDown(ImGraySmall2);
+
+    MaskCropped1.copyTo(TempMask);
+    RegionErosion13(TempMask);
+    float sum1 = AverageMaskedPixelsF(ImGradientSmall1, TempMask);
+
+    MaskCropped2.copyTo(TempMask);
+    RegionErosion13(TempMask);
+    float sum2 = AverageMaskedPixelsF(ImGradientSmall2, TempMask);
+
+
+    if(sum1 < sum2)
+        MaskCropped1 = MaskCropped1 * 2;
+    else
+        MaskCropped2 = MaskCropped2 * 2;
+
+    MaskCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),MaskCropped1.type());
+    MaskCropped1.copyTo(MaskCropped(Rect(0, 0, croppWidth, croppHeight)));
+    MaskCropped2.copyTo(MaskCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
+
+    Mat ContourCropped = GetContour5(MaskCropped);
+
+
+    //imshow("SmallGradient",ShowImageF32PseudoColor(ImGradientSmall, 0.0, 100.0));
+
+
+    imshow("Cropped", ShowSolidRegionOnImage(ContourCropped,ImCropped));
 
     steady_clock::time_point t2 = steady_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
@@ -741,6 +789,9 @@ void MainWindow::OnOffImageWindow(void)
 
     if(showCropped)
         namedWindow("Cropped", displayFlag);
+
+    if(showSmallGradient)
+        namedWindow("SmallGradient", displayFlag);
 
     //namedWindow("Histogram", WINDOW_AUTOSIZE);
 }

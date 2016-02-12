@@ -285,7 +285,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>250</y>
+      <y>290</y>
       <width>211</width>
       <height>192</height>
      </rect>
@@ -484,6 +484,19 @@
       <width>371</width>
       <height>71</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="ShowCroppedGradientCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>250</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Cropped Gradient</string>
     </property>
    </widget>
   </widget>

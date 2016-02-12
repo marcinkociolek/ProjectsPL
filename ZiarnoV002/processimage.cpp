@@ -133,3 +133,30 @@ int processFile(path FileToOpen,float threshVal)
 
     return 0;
 }
+//---------------------------------------------------------------------------
+float AverageMaskedPixelsF(Mat Reg, Mat ImF)
+{
+    int maxX = ImF.cols;
+    int maxY = ImF.rows;
+    int maxXY = maxX * maxY;
+
+    unsigned short * wReg = (unsigned short *)Reg.data;
+    float * wImF = (float *)ImF.data;
+
+    float sumIm = 0;
+    float sumReg = 0;
+    for (int i = 0; i < maxXY; i++)
+    {
+            if(*wReg)
+            {
+                sumIm = *wImF;
+                sumReg += 1.0;
+            }
+            wReg++;
+            wImF++;
+    }
+    if(!sumReg)
+        sumReg = 1;
+
+    return sumIm/sumReg;
+}
