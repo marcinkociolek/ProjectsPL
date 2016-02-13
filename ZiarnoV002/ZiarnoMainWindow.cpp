@@ -146,7 +146,7 @@ void MainWindow::on_pushButton_clicked()
 {
     QFileDialog dialog(this, "Open Folder");
     dialog.setFileMode(QFileDialog::Directory);
-    dialog.setDirectory("E:/Ziarno/3.11.2015_uszkodzone/Oble");
+    dialog.setDirectory("E:/Ziarno/10.11.2015 (odmiany)/Jary/ATICO");
 
     //QStringList FileList= dialog.e
     if(dialog.exec())
@@ -621,8 +621,10 @@ void MainWindow::ProcessImage(void)
     }
     else
     {
-        ImRotated1 = Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
-        ImRotated2 = Mat::zeros(ImIn2.rows,ImIn2.cols,CV_8UC3);
+        ImRotated1 = ImIn1;//Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
+        ImRotated2 = ImIn2;//Mat::zeros(ImIn2.rows,ImIn2.cols,CV_8UC3);
+        MaskRotated1 = Mask1;
+        MaskRotated2 = Mask2;
     }
 
     if(showRotated)
@@ -651,8 +653,8 @@ void MainWindow::ProcessImage(void)
 
     Mat ImCropped, ImCropped1, ImCropped2, MaskCropped, MaskCropped1, MaskCropped2;
 
-    int croppWidth = 100;
-    int croppHeight = 100;
+    int croppWidth = ImIn1.cols;
+    int croppHeight = ImIn1.rows;
     int croppX = 50;
     int croppY = 50;
     if(croppImage)
@@ -693,46 +695,41 @@ void MainWindow::ProcessImage(void)
     }
     else
     {
-        ImCropped = ImIn1;
-        ImCropped1 = ImIn1;
-        ImCropped2 = ImIn2;
+        ImCropped1 = ImRotated1;
+        ImCropped2 = ImRotated2;
 
-        MaskCropped = Mask1;
-        MaskCropped1 = Mask1;
-        MaskCropped2 = Mask2;
+        ImCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),ImCropped1.type());
+        ImCropped1.copyTo(ImCropped(Rect(0, 0, croppWidth, croppHeight)));
+        ImCropped2.copyTo(ImCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
+
+
+        //MaskCropped = Mask1;
+        MaskCropped1 = MaskRotated1;
+        MaskCropped2 = MaskRotated2;
     }
 
-    if(showCropped)
-    {
-        /*
-        Point2f vertices[4];
-        alignedRect.points(vertices);
-        Mat ImToShow;
-        ImRotated.copyTo(ImToShow);
-        for (int i = 0; i < 4; i++)
-            line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
-        */
-
-        imshow("Cropped", ImCropped);
-    }
-
-    // find valey(bruzde)
+    // find valey(bruzdke)
     Mat ImGraySmall1, ImGraySmall2;
-    Mat TempMask;
-
     cvtColor(ImCropped1,ImGraySmall1,CV_BGR2GRAY);
-    cvtColor(ImCropped1,ImGraySmall2,CV_BGR2GRAY);
+    cvtColor(ImCropped2,ImGraySmall2,CV_BGR2GRAY);
 
-    Mat ImGradientSmall1 = HorizontalGradientDown(ImGraySmall1);
-    Mat ImGradientSmall2 = HorizontalGradientDown(ImGraySmall2);
+    Mat ImCroppedGradient1 = HorizontalGradientDown(ImGraySmall1);
+    Mat ImCroppedGradient2 = HorizontalGradientDown(ImGraySmall2);
 
-    MaskCropped1.copyTo(TempMask);
-    RegionErosion13(TempMask);
-    float sum1 = AverageMaskedPixelsF(ImGradientSmall1, TempMask);
+    Mat TempMask1,TempMask2;
 
-    MaskCropped2.copyTo(TempMask);
-    RegionErosion13(TempMask);
-    float sum2 = AverageMaskedPixelsF(ImGradientSmall2, TempMask);
+    MaskCropped1.copyTo(TempMask1);
+    MaskCropped2.copyTo(TempMask2);
+
+    RegionErosion13(TempMask1);
+    RegionErosion13(TempMask1);
+    RegionErosion13(TempMask1);
+    RegionErosion13(TempMask2);
+    RegionErosion13(TempMask2);
+    RegionErosion13(TempMask2);
+
+    float sum1 = AverageMaskedPixelsF(TempMask1, ImCroppedGradient1);
+    float sum2 = AverageMaskedPixelsF(TempMask2, ImCroppedGradient2);
 
 
     if(sum1 < sum2)
@@ -740,17 +737,23 @@ void MainWindow::ProcessImage(void)
     else
         MaskCropped2 = MaskCropped2 * 2;
 
-    MaskCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),MaskCropped1.type());
-    MaskCropped1.copyTo(MaskCropped(Rect(0, 0, croppWidth, croppHeight)));
-    MaskCropped2.copyTo(MaskCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
+    if(showCropped)
+    {
+        Mat ImCroppedGradient;
+        ImCroppedGradient = Mat::zeros(Size(croppWidth * 2, croppHeight),ImCroppedGradient1.type());
+        ImCroppedGradient1.copyTo(ImCroppedGradient(Rect(0, 0, croppWidth, croppHeight)));
+        ImCroppedGradient2.copyTo(ImCroppedGradient(Rect(croppWidth, 0, croppWidth, croppHeight)));
 
-    Mat ContourCropped = GetContour5(MaskCropped);
+        imshow("ImCroppedGradient",ShowImageF32PseudoColor(ImCroppedGradient, 0.0, 100.0));
 
+        MaskCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),MaskCropped1.type());
+        MaskCropped1.copyTo(MaskCropped(Rect(0, 0, croppWidth, croppHeight)));
+        MaskCropped2.copyTo(MaskCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
 
-    //imshow("SmallGradient",ShowImageF32PseudoColor(ImGradientSmall, 0.0, 100.0));
+        Mat ContourCropped = GetContour5(MaskCropped);
 
-
-    imshow("Cropped", ShowSolidRegionOnImage(ContourCropped,ImCropped));
+        imshow("Cropped", ShowSolidRegionOnImage(ContourCropped,ImCropped));
+    }
 
     steady_clock::time_point t2 = steady_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);

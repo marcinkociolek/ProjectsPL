@@ -139,9 +139,14 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
     int maxX = ImF.cols;
     int maxY = ImF.rows;
     int maxXY = maxX * maxY;
+    if(!ImF.isContinuous())
+        return -1;
 
-    unsigned short * wReg = (unsigned short *)Reg.data;
-    float * wImF = (float *)ImF.data;
+    unsigned short *wReg = (unsigned short *)Reg.data;
+    float *wImF = (float *)ImF.data;
+
+    //deph
+
 
     float sumIm = 0;
     float sumReg = 0;
@@ -149,7 +154,7 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
     {
             if(*wReg)
             {
-                sumIm = *wImF;
+                sumIm  += *wImF;
                 sumReg += 1.0;
             }
             wReg++;
