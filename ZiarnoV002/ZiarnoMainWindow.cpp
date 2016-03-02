@@ -227,14 +227,6 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
     ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
     ImIn(Rect(0, maxY, maxX, maxY)).copyTo(ImIn2);
 
-    if(ui->ShowInputImageCheckBox->checkState())
-    {
-        if(!showSecondIm)
-            imshow("Input image", ImIn1);
-        else
-            imshow("Input image", ImIn2);
-    }
-
     threshVal = ui->spinBox->value();
 
     ProcessImage();
@@ -250,6 +242,15 @@ void MainWindow::ProcessImage(void)
 
     if (ImIn.empty())
         return;
+
+    if(showInput)
+    {
+        if(!showSecondIm)
+            imshow("Input image", ImIn1);
+        else
+            imshow("Input image", ImIn2);
+    }
+
     Mat Mask1, MaskMorf1;
     Mat Mask2;
     switch (segmentType)
