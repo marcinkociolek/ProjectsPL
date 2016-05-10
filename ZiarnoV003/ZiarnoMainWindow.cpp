@@ -114,6 +114,9 @@ MainWindow::MainWindow(QWidget *parent) :
     regMorphDilation2   = ui->RegionMorfology2ComboBox->currentIndex();
     regMorphErosion3    = ui->RegionMorfology3ComboBox->currentIndex();
     removeBorderRegion  = ui->RemoveBorderRegionCheckBox->checkState();
+    alignGrains         = ui->AlignCheckBox->checkState();
+    findValey           = ui->FindValeyCheckBox->checkState();
+
     fitEllipseToReg     = ui->FitEllipseCheckBox->checkState();
     rotateImage         = ui->RotateCheckBox->checkState();
     croppImage          = ui->CroppCheckBox->checkState();
@@ -124,11 +127,23 @@ MainWindow::MainWindow(QWidget *parent) :
     show1stMorphology   = ui->ShowAfter1MorphologyCheckBox->checkState();
     showHolesRemoved    = ui->ShowWithoutHolesCheckBox->checkState();
     showMask            = ui->ShowMaskCheckBox->checkState();
+    showAreaForAlign    = ui->ShowAreaForAlignCheckBox->checkState();
+    showAligned         = ui->ShowAlignedCheckBox->checkState();
+    showGradient        = ui->ShowGradientCheckBox->checkState();
+    showOutput          = ui->ShowOutputCheckBox->checkState();
+
+
+
+
     showContourOnInput  = ui->ShowContourOnImageCheckBox->checkState();
+
+
+
+
     showFitted          = ui->ShowFitedElipseCheckBox->checkState();
     showRotated         = ui->ShowRotatedCheckBox->checkState();
-    showCropped         = ui->ShowCroppedCheckBox->checkState();
-
+    showAreaForAlign    = ui->ShowAreaForAlignCheckBox->checkState();
+    showAligned         = ui->ShowAlignedCheckBox->checkState();
     if(ui->AllowResizeCheckBox->checkState())
         displayFlag = WINDOW_NORMAL;
     else
@@ -413,7 +428,7 @@ void MainWindow::ProcessImage(void)
 
     ShowImageRegionCombination(showMask, showContour, "Mask", ImShow, Mask1, Mask2);
 
-
+/*
     RotatedRect fittedRect1,fittedRect2 ;
     fittedRect1.angle = 0.0;
     fittedRect1.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
@@ -425,69 +440,163 @@ void MainWindow::ProcessImage(void)
     Mat Mask1a, Mask2a;
     Mask1a = Mat::zeros(maxY,maxX,Mask1.type());
     Mask2a = Mat::zeros(maxY,maxX,Mask1.type());
+*/
 
-    int rectHeight = 200;
+    int linesToCount = 200;
+    int pixelCount = linesToCount * maxX;
+
+    //ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, imCenterY - linesToCount - offsetToCount, imCenterY - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+
+    int maxPosY = 0;
+    int minPosY = maxY;
+    int maxPosX = 0;
+    int minPosX = maxX;
+    unsigned short *wMask1;
+
+    int maxXY = maxX*maxY;
+    if(alignGrains)
+    {
+        wMask1 = (unsigned short*)Mask1.data;
+        for(int i = 0; i < maxXY; i++)
+        {
+            int y = i/maxX;
+            int x = i%maxX;
+
+            if(*wMask1)
+            {
+                if(maxPosY < y)
+                    maxPosY = y;
+                if(minPosY > y)
+                    minPosY = y;
+                if(maxPosX < x)
+                    maxPosX = x;
+                if(minPosX > x)
+                    minPosX = x;
+            }
+
+            wMask1++;
+        }
+
+    }
+    ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, minPosY, minPosY + linesToCount, maxPosY - linesToCount, maxPosY);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    string OutText = "";
+    if(alignGrains)
+    {
+        wMask1 = (unsigned short*)Mask1.data + maxX * minPosY;//(imCenterY - linesToCount - offsetToCount);
+        int uRegPixelCount = 0;
+        for(int i = 0; i < pixelCount; i++)
+        {
+            if(*wMask1)
+                uRegPixelCount++;
+
+            wMask1++;
+        }
+
+        wMask1 = (unsigned short*)Mask1.data + maxX * (maxPosY - linesToCount);//(imCenterY + offsetToCount);
+        int lRegPixelCount = 0;
+        for(int i = 0; i< pixelCount; i++)
+        {
+            if(*wMask1)
+                lRegPixelCount++;
+
+            wMask1++;
+        }
+
+        OutText += " uper pix count" +  to_string(uRegPixelCount) + "\n";
+        OutText += " lower pix count" + to_string(lRegPixelCount) + "\n";
+
+        if(uRegPixelCount >= lRegPixelCount)
+        {
+            flip(ImIn1,ImIn1, -1);
+            flip(ImIn2,ImIn2, -1);
+            flip(Mask1,Mask1, -1);
+            flip(Mask2,Mask2, -1);
+            ImShow = Combine2Images(ImIn1, ImIn2);
+            OutText += " Flipped\n";
+        }
+        ui->MesageTextEdit->setText(OutText.c_str());
+    }
+    ShowImageRegionCombination(showAligned, showContour, "Aligned", ImShow, Mask1, Mask2);
+
+
+    int rectHeight = 300;
     int rectWidth = 100;
     int rectLCX = ImIn1.cols/2 - rectWidth/2;
     int rectLCY = ImIn1.rows/2 - rectHeight/2;
 
-    rectangle(Mask1a,Rect(rectLCX,rectLCY,rectWidth,rectHeight),1,-1);
-    rectangle(Mask2a,Rect(rectLCX,rectLCY,rectWidth,rectHeight),1,-1);
+    Mat Mask1a = Mat::zeros(maxY,maxX,Mask1.type());
+    Mat Mask2a = Mat::zeros(maxY,maxX,Mask1.type());
+    //rectangle(Mask1a,Rect(rectLCX,rectLCY,rectWidth,rectHeight),1,-1);
+    //rectangle(Mask2a,Rect(rectLCX,rectLCY,rectWidth,rectHeight),1,-1);
 
+    ellipse(Mask1a, Point(maxX/2,maxY/2),Size((maxPosX-minPosX)/4,(maxPosY-minPosY)/4),0,0,360,1,-1);
+    ellipse(Mask2a, Point(maxX/2,maxY/2),Size((maxPosX-minPosX)/4,(maxPosY-minPosY)/4),0,0,360,1,-1);
+    //ShowImageRegionCombination(showFitted, showContour, "Fitted", ImShow, Mask1a, Mask2a);
+
+
+
+
+    // find valey(bruzdke)
+    Mat ImGray1, ImGray2;
+    cvtColor(ImIn1,ImGray1,CV_BGR2GRAY);
+    cvtColor(ImIn2,ImGray2,CV_BGR2GRAY);
+
+    blur(ImGray2,ImGray2,Size(5,5));
+
+    Mat ImGradient1 = HorizontalGradientDown(ImGray1);
+    Mat ImGradient2 = HorizontalGradientDown(ImGray2);
+
+    //blur(ImGradient2,ImGradient2,Size(5,5));
+    Mat ImShowGradient = Combine2Images(ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0), ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0));
+
+    Mat Mask1b,Mask2b;
+
+    Mask1.copyTo(Mask1b);
+    Mask2.copyTo(Mask2b);
 /*
-    if(fitEllipseToReg)
-    {
-        Mat ImTemp;
-        vector<vector<Point> > contours;
-        vector<Vec4i> hierarchy;
-        Mat pointsF;
-
-        Mask1.convertTo(ImTemp,CV_8U);
-        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
-        if(contours.size())
-        {
-            Mat(contours[0]).convertTo(pointsF, CV_32F);
-            fittedRect1 = fitEllipse(pointsF);
-        }
-
-        contours.clear();
-        hierarchy.clear();
-
-        Mask2.convertTo(ImTemp,CV_8U);
-        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
-        if(contours.size())
-        {
-            Mat(contours[0]).convertTo(pointsF, CV_32F);
-            fittedRect2 = fitEllipse(pointsF);
-        }
-    }
+    RegionErosion13(Mask1b);
+    RegionErosion13(Mask1b);
+    RegionErosion13(Mask1b);
+    RegionErosion13(Mask2b);
+    RegionErosion13(Mask2b);
+    RegionErosion13(Mask2b);
 */
-    ShowImageRegionCombination(showFitted, showContour, "Fitted", ImShow, Mask1a, Mask2a);
-/*
-    if(showFitted)
+    //int kernelSizeX = 41;
+    //int kernelSizeY = 41;
+    //Mat Kernel = Mat::zeros(kernelSizeY,kernelSizeX,CV_8U);
+
+    //ellipse(Kernel, Point(kernelSizeX/2,kernelSizeY/2),Size(kernelSizeX/2,kernelSizeY/2),0,0,360,1,-1);
+    //imshow("Temp",Kernel*250);
+
+    //erode(Mask1b,Mask1b,Kernel);
+    //erode(Mask2b,Mask2b,Kernel);
+
+
+    ShowImageRegionCombination(showGradient, showContour, "Gradient", ImShowGradient, Mask1a, Mask2a);
+
+
+    if(findValey)
     {
-        Point2f vertices[4];
-        Mat ImToShow;
-        if(!showContour)
-        {
-            fittedRect1.points(vertices);
-            ImIn1.copyTo(ImToShow);
-        }
+
+        float sum1 = AverageMaskedPixelsF(Mask1a, ImGradient1);
+        float sum2 = AverageMaskedPixelsF(Mask2a, ImGradient2);
+
+        OutText += "\n";
+        OutText += " Left sum" +  to_string(sum1) + "\n";
+        OutText += " Rigth Sum" + to_string(sum2) + "\n";
+        ui->MesageTextEdit->setText(OutText.c_str());
+
+        if(sum1 < sum2)
+            Mask1 = Mask1 * 2;
         else
-        {
-            fittedRect2.points(vertices);
-            ImIn2.copyTo(ImToShow);
-        }
-
-        for (int i = 0; i < 4; i++)
-            line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
-
-        imshow("Fitted", ImToShow);
+            Mask2 = Mask2 * 2;
     }
-*/
-    Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
 
+    ShowImageRegionCombination(showOutput, showContour, "Output", ImShow, Mask1, Mask2);
 
+    //Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
+
+/*
     //crop size calculation
     Size smallImageSize;
 
@@ -509,6 +618,8 @@ void MainWindow::ProcessImage(void)
     RotatedRect alignedRect2 = fittedRect2;
     alignedRect2.angle = 0.0;
 
+ */
+/*
     if(rotateImage)
     {
         Mat RotationMatrix1,RotationMatrix2;
@@ -703,6 +814,9 @@ void MainWindow::ProcessImage(void)
     else
         MaskCropped2 = MaskCropped2 * 2;
 
+*/
+
+/*
     if(showCropped)
     {
         Mat ImCroppedGradient;
@@ -720,7 +834,7 @@ void MainWindow::ProcessImage(void)
 
         imshow("Cropped", ShowSolidRegionOnImage(ContourCropped,ImCropped));
     }
-
+*/
     steady_clock::time_point t2 = steady_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     ui->DurationLineEdit->setText(  QString::number(time_span.count()));
@@ -785,6 +899,24 @@ void MainWindow::ShowImageRegionCombination(bool show, bool showContour, string 
 
 }
 //--------------------------------------------------------------------------------------------------
+void MainWindow::ShowHLinesOnImage(bool show, string WinName, Mat Im, int lineU, int lineCU, int lineCL, int lineL)
+{
+    if(!show)
+        return;
+
+
+    Mat ImShow;
+    Im.copyTo(ImShow);
+    line(ImShow,Point(0,lineU),Point(ImShow.cols,lineU),CV_RGB(255,0,0),1);
+    line(ImShow,Point(0,lineCU),Point(ImShow.cols,lineCU),CV_RGB(255,0,0),1);
+    line(ImShow,Point(0,lineCL),Point(ImShow.cols,lineCL),CV_RGB(0,255,0),1);
+    line(ImShow,Point(0,lineL),Point(ImShow.cols,lineL),CV_RGB(0,255,0),1);
+
+
+    imshow(WinName.c_str(), ImShow);
+
+}
+//--------------------------------------------------------------------------------------------------
 Mat MainWindow::Combine2Images( Mat Im1, Mat Im2)
 {
     int imMaxX, imMaxY;
@@ -825,11 +957,11 @@ void MainWindow::OnOffImageWindow(void)
     if(showRotated)
         namedWindow("Rotated", displayFlag);
 
-    if(showCropped)
-        namedWindow("Cropped", displayFlag);
+    if(showAreaForAlign)
+        namedWindow("AreaForAlign", displayFlag);
 
-    if(showSmallGradient)
-        namedWindow("SmallGradient", displayFlag);
+    if(showGradient)
+        namedWindow("Gradient", displayFlag);
 
     //namedWindow("Histogram", WINDOW_AUTOSIZE);
 }
@@ -1039,16 +1171,6 @@ void MainWindow::on_CroppCheckBox_toggled(bool checked)
     ProcessImage();
 }
 
-void MainWindow::on_ShowCroppedCheckBox_toggled(bool checked)
-{
-    showCropped = checked;
-    if(showCropped)
-        namedWindow("Cropped", displayFlag);
-    else
-        destroyWindow("Cropped");
-
-    ProcessImage();
-}
 
 void MainWindow::on_ShowComboBox_currentIndexChanged(int index)
 {
@@ -1056,6 +1178,63 @@ void MainWindow::on_ShowComboBox_currentIndexChanged(int index)
         showContour = true;
     else
         showContour = false;
+
+    ProcessImage();
+}
+
+void MainWindow::on_AlignCheckBox_toggled(bool checked)
+{
+    alignGrains = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_ShowAreaForAlignCheckBox_toggled(bool checked)
+{
+    showAreaForAlign = checked;
+    if(showAreaForAlign)
+        namedWindow("AreaForAlign", displayFlag);
+    else
+        destroyWindow("AreaForAlign");
+
+    ProcessImage();
+}
+
+void MainWindow::on_ShowAlignedCheckBox_toggled(bool checked)
+{
+    showAligned = checked;
+    if(showAligned)
+        namedWindow("Aligned", displayFlag);
+    else
+        destroyWindow("Aligned");
+
+    ProcessImage();
+}
+
+
+void MainWindow::on_FindValeyCheckBox_toggled(bool checked)
+{
+    findValey = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_ShowGradientCheckBox_toggled(bool checked)
+{
+    showGradient = checked;
+    if(showGradient)
+        namedWindow("Gradient", displayFlag);
+    else
+        destroyWindow("Gradient");
+
+    ProcessImage();
+}
+
+void MainWindow::on_ShowOutputCheckBox_toggled(bool checked)
+{
+    showOutput = checked;
+    if(showOutput)
+        namedWindow("Output", displayFlag);
+    else
+        destroyWindow("Output");
 
     ProcessImage();
 }

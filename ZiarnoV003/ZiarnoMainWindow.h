@@ -57,6 +57,9 @@ public:
     int regMorphDilation2;
     int regMorphErosion3;
     bool removeBorderRegion;
+    bool alignGrains;
+    bool findValey;
+
     bool fitEllipseToReg;
     bool rotateImage;
     bool croppImage;
@@ -74,16 +77,19 @@ public:
     bool showContourOnInput;
     bool showFitted;
     bool showRotated;
-    bool showCropped;
-    bool showSmallGradient;
+    bool showAreaForAlign;
+    bool showAligned;
+    bool showGradient;
+    bool showOutput;
 
 
 
     void ProcessImage(void);
-    void MainWindow::ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im2);
-    Mat MainWindow::Combine2Images(Mat Im1, Mat Im2);
-    void MainWindow::ShowImageRegionCombination(bool show, bool contour, string WinName, Mat Im1, Mat Im2, Mat Mask1, Mat Mask2);
-    void MainWindow::ShowImageRegionCombination(bool show, bool showContour, string WinName, Mat Im, Mat Mask1, Mat Mask2);
+    void ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im2);
+    Mat  Combine2Images(Mat Im1, Mat Im2);
+    void ShowImageRegionCombination(bool show, bool contour, string WinName, Mat Im1, Mat Im2, Mat Mask1, Mat Mask2);
+    void ShowImageRegionCombination(bool show, bool showContour, string WinName, Mat Im, Mat Mask1, Mat Mask2);
+    void ShowHLinesOnImage(bool show, string WinName, Mat Im, int lineU, int lineCU, int lineCL, int lineL);
     void OnOffImageWindow(void);
 
 private slots:
@@ -152,9 +158,19 @@ private slots:
 
     void on_CroppCheckBox_toggled(bool checked);
 
-    void on_ShowCroppedCheckBox_toggled(bool checked);
-
     void on_ShowComboBox_currentIndexChanged(int index);
+
+    void on_AlignCheckBox_toggled(bool checked);
+
+    void on_ShowAreaForAlignCheckBox_toggled(bool checked);
+
+    void on_ShowAlignedCheckBox_toggled(bool checked);
+
+    void on_FindValeyCheckBox_toggled(bool checked);
+
+    void on_ShowGradientCheckBox_toggled(bool checked);
+
+    void on_ShowOutputCheckBox_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
