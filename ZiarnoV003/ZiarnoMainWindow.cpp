@@ -442,8 +442,7 @@ void MainWindow::ProcessImage(void)
     Mask2a = Mat::zeros(maxY,maxX,Mask1.type());
 */
 
-    int linesToCount = 200;
-    int pixelCount = linesToCount * maxX;
+
 
     //ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, imCenterY - linesToCount - offsetToCount, imCenterY - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
 
@@ -478,8 +477,17 @@ void MainWindow::ProcessImage(void)
         }
 
     }
-    ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, minPosY, minPosY + linesToCount, maxPosY - linesToCount, maxPosY);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    int linesToCount = 200;
+    int pixelCount = linesToCount * maxX;
+
+    int uStartLine = minPosY;
+    int uStopLine =  minPosY + linesToCount;
+    int lStartLine = maxPosY - linesToCount;
+    int lStopLine  =  maxPosY;
+    ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
     string OutText = "";
+
+
     if(alignGrains)
     {
         wMask1 = (unsigned short*)Mask1.data + maxX * minPosY;//(imCenterY - linesToCount - offsetToCount);
