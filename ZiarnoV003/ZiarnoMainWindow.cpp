@@ -447,9 +447,9 @@ void MainWindow::ProcessImage(void)
     //ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, imCenterY - linesToCount - offsetToCount, imCenterY - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
 
     int maxPosY = 0;
-    int minPosY = maxY;
+    int minPosY = maxY-1;
     int maxPosX = 0;
-    int minPosX = maxX;
+    int minPosX = maxX-1;
     unsigned short *wMask1;
 
     int maxXY = maxX*maxY;
@@ -481,16 +481,31 @@ void MainWindow::ProcessImage(void)
     int pixelCount = linesToCount * maxX;
 
     int uStartLine = minPosY;
-    int uStopLine =  minPosY + linesToCount;
-    int lStartLine = maxPosY - linesToCount;
+    if(uStartLine <0)
+        uStartLine = 0;
+    int uStopLine =  uStartLine + linesToCount;
+    if(uStopLine >= maxY)
+    {
+        uStopLine = maxY - 1;
+        uStartLine = uStopLine - linesToCount;
+    }
     int lStopLine  =  maxPosY;
+    if(lStopLine >= maxY)
+        lStopLine = maxY - 1;
+    int lStartLine = lStopLine - linesToCount;
+    if(lStartLine < 0)
+    {
+        lStartLine = 0;
+        lStopLine = lStartLine + linesToCount;
+    }
+
     ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
     string OutText = "";
 
 
     if(alignGrains)
     {
-        wMask1 = (unsigned short*)Mask1.data + maxX * minPosY;//(imCenterY - linesToCount - offsetToCount);
+        wMask1 = (unsigned short*)Mask1.data + maxX * uStartLine;//(imCenterY - linesToCount - offsetToCount);
         int uRegPixelCount = 0;
         for(int i = 0; i < pixelCount; i++)
         {
@@ -500,7 +515,7 @@ void MainWindow::ProcessImage(void)
             wMask1++;
         }
 
-        wMask1 = (unsigned short*)Mask1.data + maxX * (maxPosY - linesToCount);//(imCenterY + offsetToCount);
+        wMask1 = (unsigned short*)Mask1.data + maxX * lStartLine;//(imCenterY + offsetToCount);
         int lRegPixelCount = 0;
         for(int i = 0; i< pixelCount; i++)
         {
@@ -537,8 +552,17 @@ void MainWindow::ProcessImage(void)
     //rectangle(Mask1a,Rect(rectLCX,rectLCY,rectWidth,rectHeight),1,-1);
     //rectangle(Mask2a,Rect(rectLCX,rectLCY,rectWidth,rectHeight),1,-1);
 
-    ellipse(Mask1a, Point(maxX/2,maxY/2),Size((maxPosX-minPosX)/4,(maxPosY-minPosY)/4),0,0,360,1,-1);
-    ellipse(Mask2a, Point(maxX/2,maxY/2),Size((maxPosX-minPosX)/4,(maxPosY-minPosY)/4),0,0,360,1,-1);
+    int ellipseSizeX = (maxPosX-minPosX)/4;
+    int ellipseSizeY = (maxPosY-minPosY)/4;
+
+    if(ellipseSizeX < 0)
+        ellipseSizeX = 0;
+    if(ellipseSizeY < 0)
+        ellipseSizeY = 0;
+
+
+    ellipse(Mask1a, Point(maxX/2,maxY/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
+    ellipse(Mask2a, Point(maxX/2,maxY/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
     //ShowImageRegionCombination(showFitted, showContour, "Fitted", ImShow, Mask1a, Mask2a);
 
 
