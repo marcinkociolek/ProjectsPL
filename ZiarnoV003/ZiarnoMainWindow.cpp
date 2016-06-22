@@ -266,8 +266,10 @@ void MainWindow::ProcessImage(void)
     //ShowImageCombination(showInput, , ImIn1, ImIn2);
 
 
-    Mat Mask1;// MaskMorf1;
+    Mat Mask1;
     Mat Mask2;
+
+    // thresholding
     switch (segmentType)
     {
     case 1:
@@ -282,13 +284,15 @@ void MainWindow::ProcessImage(void)
 
     ShowImageRegionCombination(showThesholded, showContour, "Thresholded", ImShow, Mask1, Mask2);
 
+    // remove regions of size 1 pix
+
     if(removeSmallReg)
     {
-        //MaskMorf1 = RemovingTinyReg9(MaskTresh);
         Mask1 = RemovingTinyReg9(Mask1);
         Mask2 = RemovingTinyReg9(Mask2);
     }
 
+    // morphology on thresholded image
     switch (rawMorphErosion1)
     {
     case 1:
@@ -345,6 +349,7 @@ void MainWindow::ProcessImage(void)
 
     ShowImageRegionCombination(show1stMorphology, showContour, "Morphology1", ImShow, Mask1, Mask2);
 
+    // procedure for removing choles inside object, obligatory for gradient thesholded image, usefull in other case
     if(fillHoles)
     {
         FillBorderWithValue(Mask1, 0xFFFF);
@@ -361,12 +366,15 @@ void MainWindow::ProcessImage(void)
 
     ShowImageRegionCombination(showHolesRemoved, showContour, "WithoutHoles", ImShow, Mask1, Mask2);
 
+    // labelling
     if(divideSeparateReg)
     {
         DivideSeparateRegions(Mask1, MinRegSize);
         DivideSeparateRegions(Mask2, MinRegSize);
     }
 
+
+    //morphology after labelling
     switch (regMorphErosion1)
     {
     case 1:
@@ -420,6 +428,8 @@ void MainWindow::ProcessImage(void)
     default:
         break;
     }
+
+    // removal of regions touchig image border
     if(removeBorderRegion)
     {
         DeleteRegTouchingBorder(Mask1);
