@@ -47,6 +47,7 @@ win32:  LIBS += -lboost_regex-vc120-mt-gd-1_62
 #win32:  LIBS += -lboost_signals-vc120-mt-gd-1_60
 
 
-win32: LIBS += -LC:\LibTiff\Bin\libtiff.lib
+win32: LIBS += -LC:\LibTiff\Bin
+win32: LIBS += -llibtiff_i
 
 #QMAKE_CXXFLAGS += -std=c++11

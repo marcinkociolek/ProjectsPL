@@ -20,6 +20,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "tiffio.h"
+
 #include "processimage.h"
 #include "gradient.h"
 #include "DispLib.h"
@@ -27,6 +29,7 @@
 #include "mazdaroi.h"
 #include "mazdaroiio.h"
 
+typedef MazdaRoi<unsigned int, 2> MR2DType;
 
 //QFileSystemModel *model;
 QAbstractItemModel *model;
@@ -153,7 +156,7 @@ MainWindow::MainWindow(QWidget *parent) :
         displayFlag = WINDOW_AUTOSIZE;
 
 
-    InputDirectory = "c:\\";
+    InputDirectory = "C:\\Data\\Ziarno\\14.04.2016 Rozne klasy\\Dobre\\";
     OutputDirectory = "c:\\";
 }
 
@@ -647,6 +650,41 @@ void MainWindow::ProcessImage(void)
     }
 
     ShowImageRegionCombination(showOutput, showContour, "Output", ImShow, Mask1, Mask2);
+
+
+// save output ROI
+    vector <MR2DType*> rois;
+    int begin[MR2DType::Dimensions];
+    int end[MR2DType::Dimensions];
+    begin[0] = 0;
+    begin[1] = 0;
+    end[0] = maxX-1;
+    end[1] = maxY-1;
+    MR2DType* roi1 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator1(roi1);
+    unsigned short *wMask = (unsigned short*)Mask1.data;
+    while(! iterator1.IsBehind())
+    {
+        if (*wMask)
+            iterator1.SetPixel();
+        ++iterator1;
+       wMask++;
+    }
+    roi1->SetName("KlasaCzerwony");
+    roi1->SetColor(0xff0000);
+    rois.push_back(roi1);
+    path FileToSave = OutputDirectory;
+    //FileToSave.append(FileToOpen.stem().string()+"ROI.tiff");
+    MazdaRoiIO<MR2DType>::Write("C:\\Data\\ROI.tif", &rois, NULL);
+    //TIFF* tif = TIFFOpen("C:\\Data\\RRR.tif", "r");
+    //TIFFClose(tif);
+
+    while(rois.size() > 0)
+    {
+        delete rois.back();
+        rois.pop_back();
+    }
+//end save output ROI
 
     //Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
 
@@ -1299,7 +1337,7 @@ void MainWindow::on_SelOutFolderPushButton_clicked()
 {
     QFileDialog dialog(this, "Open Folder");
     dialog.setFileMode(QFileDialog::Directory);
-    dialog.setDirectory(OutputDirectory.string().c_str());
+    dialog.setDirectory(InputDirectory.string().c_str());
 
     //QStringList FileList= dialog.e
     if(dialog.exec())
