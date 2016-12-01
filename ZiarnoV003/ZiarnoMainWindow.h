@@ -42,6 +42,8 @@ public:
     int maxY;
 
     path InputDirectory;
+    path OutputDirectory;
+
 
     // analisis options
     int segmentType;
@@ -171,6 +173,8 @@ private slots:
     void on_ShowGradientCheckBox_toggled(bool checked);
 
     void on_ShowOutputCheckBox_toggled(bool checked);
+
+    void on_SelOutFolderPushButton_clicked();
 
 private:
     Ui::MainWindow *ui;

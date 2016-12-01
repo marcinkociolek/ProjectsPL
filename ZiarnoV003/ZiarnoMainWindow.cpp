@@ -24,6 +24,9 @@
 #include "gradient.h"
 #include "DispLib.h"
 
+#include "mazdaroi.h"
+#include "mazdaroiio.h"
+
 
 //QFileSystemModel *model;
 QAbstractItemModel *model;
@@ -150,6 +153,8 @@ MainWindow::MainWindow(QWidget *parent) :
         displayFlag = WINDOW_AUTOSIZE;
 
 
+    InputDirectory = "c:\\";
+    OutputDirectory = "c:\\";
 }
 
 MainWindow::~MainWindow()
@@ -161,7 +166,7 @@ void MainWindow::on_pushButton_clicked()
 {
     QFileDialog dialog(this, "Open Folder");
     dialog.setFileMode(QFileDialog::Directory);
-    dialog.setDirectory("E:/Ziarno/14.04.2016 Rozne klasy/Dobre");
+    dialog.setDirectory(InputDirectory.string().c_str());
 
     //QStringList FileList= dialog.e
     if(dialog.exec())
@@ -177,14 +182,14 @@ void MainWindow::on_pushButton_clicked()
         QMessageBox msgBox;
         msgBox.setText((InputDirectory.string()+ " not exists ").c_str());
         msgBox.exec();
-        InputDirectory = "d:\\";
+        InputDirectory = "c:\\";
     }
     if (!is_directory(InputDirectory))
     {
         QMessageBox msgBox;
         msgBox.setText((InputDirectory.string()+ " This is not a directory path ").c_str());
         msgBox.exec();
-        InputDirectory = "d:\\";
+        InputDirectory = "c:\\";
     }
     //Files.clear();
     ui->DirectoryLineEdit->setText(QString::fromWCharArray(InputDirectory.wstring().c_str()));
@@ -578,7 +583,7 @@ void MainWindow::ProcessImage(void)
 
 
 
-    // find valey(bruzdke)
+    // find valey(znajdź bruzdke)
     Mat ImGray1, ImGray2;
     cvtColor(ImIn1,ImGray1,CV_BGR2GRAY);
     cvtColor(ImIn2,ImGray2,CV_BGR2GRAY);
@@ -616,6 +621,7 @@ void MainWindow::ProcessImage(void)
 
     ShowImageRegionCombination(showGradient, showContour, "Gradient", ImShowGradient, Mask1a, Mask2a);
 
+    bool switchImages;
 
     if(findValey)
     {
@@ -629,9 +635,15 @@ void MainWindow::ProcessImage(void)
         ui->MesageTextEdit->setText(OutText.c_str());
 
         if(sum1 < sum2)
+        {
             Mask1 = Mask1 * 2;
+            switchImages = 1;
+        }
         else
+        {
             Mask2 = Mask2 * 2;
+            switchImages = 0;
+        }
     }
 
     ShowImageRegionCombination(showOutput, showContour, "Output", ImShow, Mask1, Mask2);
@@ -877,6 +889,8 @@ void MainWindow::ProcessImage(void)
         imshow("Cropped", ShowSolidRegionOnImage(ContourCropped,ImCropped));
     }
 */
+
+
     steady_clock::time_point t2 = steady_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     ui->DurationLineEdit->setText(  QString::number(time_span.count()));
@@ -1279,4 +1293,37 @@ void MainWindow::on_ShowOutputCheckBox_toggled(bool checked)
         destroyWindow("Output");
 
     ProcessImage();
+}
+
+void MainWindow::on_SelOutFolderPushButton_clicked()
+{
+    QFileDialog dialog(this, "Open Folder");
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setDirectory(OutputDirectory.string().c_str());
+
+    //QStringList FileList= dialog.e
+    if(dialog.exec())
+    {
+        OutputDirectory = dialog.directory().path().toStdWString();
+    }
+    else
+         return;
+
+    //InputDirectory = dialog.getExistingDirectory().toStdWString();//  toStdString());
+    if (!exists(OutputDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((OutputDirectory.string()+ " not exists ").c_str());
+        msgBox.exec();
+        OutputDirectory = "c:\\";
+    }
+    if (!is_directory(OutputDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((OutputDirectory.string()+ " This is not a directory path ").c_str());
+        msgBox.exec();
+        OutputDirectory = "c:\\";
+    }
+    //Files.clear();
+    ui->OutDirectoryLineEdit->setText(QString::fromWCharArray(OutputDirectory.wstring().c_str()));
 }
