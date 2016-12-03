@@ -648,7 +648,20 @@ void MainWindow::ProcessImage(void)
             switchImages = 0;
         }
     }
+    if(switchImages)
+    {
+        Mat TempMat;
+        TempMat = Mask1;
+        Mask1 = Mask2;
+        Mask2 = TempMat;
 
+        TempMat = ImIn1;
+        ImIn1 = ImIn2;
+        ImIn2 = TempMat;
+        ImShow = Combine2Images(ImIn1, ImIn2);
+
+
+    }
     ShowImageRegionCombination(showOutput, showContour, "Output", ImShow, Mask1, Mask2);
 
 
@@ -660,9 +673,16 @@ void MainWindow::ProcessImage(void)
     begin[1] = 0;
     end[0] = maxX-1;
     end[1] = maxY-1;
-    MR2DType* roi1 = new MR2DType(begin, end);
+    unsigned short *wMask;
+    path FileToSave = OutputDirectory;
+    FileToSave.append(FileToOpen.stem().string());
+
+
+    //Bruzdka
+    MR2DType* roi1;
+    roi1 = new MR2DType(begin, end);
     MazdaRoiIterator<MR2DType> iterator1(roi1);
-    unsigned short *wMask = (unsigned short*)Mask1.data;
+    wMask = (unsigned short*)Mask1.data;
     while(! iterator1.IsBehind())
     {
         if (*wMask)
@@ -670,20 +690,40 @@ void MainWindow::ProcessImage(void)
         ++iterator1;
        wMask++;
     }
-    roi1->SetName("KlasaCzerwony");
+    roi1->SetName("Bruzdka");
     roi1->SetColor(0xff0000);
     rois.push_back(roi1);
-    path FileToSave = OutputDirectory;
-    //FileToSave.append(FileToOpen.stem().string()+"ROI.tiff");
-    MazdaRoiIO<MR2DType>::Write("C:\\Data\\ROI.tif", &rois, NULL);
-    //TIFF* tif = TIFFOpen("C:\\Data\\RRR.tif", "r");
-    //TIFFClose(tif);
-
+    MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"BruzdkaROI.tif").c_str(), &rois, NULL);
+    imwrite((FileToSave.string() + "Bruzdka.png").c_str(),ImIn1);
     while(rois.size() > 0)
     {
         delete rois.back();
         rois.pop_back();
     }
+
+    //Grzbiet
+    MR2DType* roi2;
+    roi2 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator2(roi2);
+    wMask = (unsigned short*)Mask2.data;
+    while(! iterator2.IsBehind())
+    {
+        if (*wMask)
+            iterator2.SetPixel();
+        ++iterator2;
+       wMask++;
+    }
+    roi2->SetName("Grzbiet");
+    roi2->SetColor(0x00ff00);
+    rois.push_back(roi2);
+    MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"Grzbiet.tif").c_str(), &rois, NULL);
+    imwrite((FileToSave.string() + "Grzbiet.png").c_str(),ImIn2);
+    while(rois.size() > 0)
+    {
+        delete rois.back();
+        rois.pop_back();
+    }
+
 //end save output ROI
 
     //Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
