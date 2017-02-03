@@ -176,6 +176,8 @@ private slots:
 
     void on_SelOutFolderPushButton_clicked();
 
+    void on_pushButtonConvertAll_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

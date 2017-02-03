@@ -716,7 +716,7 @@ void MainWindow::ProcessImage(void)
     roi2->SetName("Grzbiet");
     roi2->SetColor(0x00ff00);
     rois.push_back(roi2);
-    MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"Grzbiet.tif").c_str(), &rois, NULL);
+    MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"GrzbietROI.tif").c_str(), &rois, NULL);
     imwrite((FileToSave.string() + "Grzbiet.png").c_str(),ImIn2);
     while(rois.size() > 0)
     {
@@ -1404,4 +1404,41 @@ void MainWindow::on_SelOutFolderPushButton_clicked()
     }
     //Files.clear();
     ui->OutDirectoryLineEdit->setText(QString::fromWCharArray(OutputDirectory.wstring().c_str()));
+}
+
+void MainWindow::on_pushButtonConvertAll_clicked()
+{
+    for (directory_entry& FileToProcess : directory_iterator(InputDirectory))
+    {
+        //path InPath = FileToProcess.path();
+
+        // check if the filename follows the input regular expression
+//		if (!regex_match(InPath.filename().string().c_str(), FilePattern))
+//			continue;
+
+
+
+        //Mat ImIn = imread(InPath.string(), CV_LOAD_IMAGE_ANYDEPTH);
+        //ImIn.release();
+        //ImIn = imread(InPath.string(), CV_LOAD_IMAGE_ANYDEPTH);
+        // check if it is an image file
+
+
+
+        FileToOpen = FileToProcess.path();
+
+        if (!exists(FileToOpen))
+            continue;
+        ImIn = imread(FileToOpen.string().c_str());
+        if (ImIn.empty())
+            continue;
+        maxX = ImIn.cols/2;
+        maxY = ImIn.rows;
+        ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+        ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+
+        threshVal = ui->spinBox->value();
+
+        ProcessImage();
+    }
 }

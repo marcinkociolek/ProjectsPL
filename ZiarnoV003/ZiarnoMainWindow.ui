@@ -605,6 +605,19 @@
      <string>Select folder Out</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButtonConvertAll">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>0</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ConvertAll</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
