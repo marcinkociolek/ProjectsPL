@@ -245,10 +245,10 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
     ImIn = imread(FileToOpen.string().c_str());
     if (ImIn.empty())
         return;
-    maxX = ImIn.cols/2;
-    maxY = ImIn.rows;
-    ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
-    ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+//    maxX = ImIn.cols/2;
+//    maxY = ImIn.rows;
+//    ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+//    ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
 
     threshVal = ui->spinBox->value();
 
@@ -263,6 +263,12 @@ void MainWindow::ProcessImage(void)
 {
     if (ImIn.empty())
         return;
+    maxX = ImIn.cols/2;
+    maxY = ImIn.rows;
+    ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+    ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+
+
 
     ImShow = Combine2Images(ImIn1, ImIn2);
 

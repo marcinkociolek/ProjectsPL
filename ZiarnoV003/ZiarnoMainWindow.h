@@ -29,6 +29,7 @@ public:
 
     Mat ImShow;
     Mat ImIn;
+    //IplImage ImIn;
     Mat ImIn1;
     Mat ImIn2;
 
