@@ -9,10 +9,11 @@ typedef MazdaRoi<unsigned int, 2> MR2DType;
 
 using namespace cv;
 
+Mat Combine2Images( Mat Im1, Mat Im2);
 Mat FindMaskFromGray(Mat ImIn,int thesholdVal);
 Mat FindMaskFromGradient(Mat ImIn,int thesholdVal);
 float AverageMaskedPixelsF(Mat Reg, Mat ImF);
 //vector <MR2DType*> SegmentGrainImg(IplImage ImIpl);
-vector <MR2DType*> SegmentGrainImg(Mat ImIpl);
+vector <MR2DType*> SegmentGrainImg(Mat *ImIpl);
 
 #endif 

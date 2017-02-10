@@ -11,19 +11,20 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
     SegmentGrainImage.cpp \
-    ../../ProjectsLib/LibMarcin/gradient.cpp \
-    ../../ProjectsLib/LibMarcin/DispLib.cpp
+    #../../ProjectsLib/LibMarcin/DispLib.cpp \
+    gradient.cpp
+
 
 HEADERS  += SegmentGrainImage.h \
-    ../../ProjectsLib/LibMarcin/gradient.h \
-    ../../ProjectsLib/LibMarcin/DispLib.h \
+    gradient.h \
+    #../../ProjectsLib/LibMarcin/DispLib.h \
     ../../ProjectsLibForein/LibPMS/mazdadummy.h \
     ../../ProjectsLibForein/LibPMS/mazdaroi.h \
     ../../ProjectsLibForein/LibPMS/mazdaroiio.h
 
 
 win32: INCLUDEPATH += C:\opencv\build\include\
-win32: INCLUDEPATH += C:\Boost\include\boost-1_62\
+#win32: INCLUDEPATH += C:\Boost\include\boost-1_62\
 win32: INCLUDEPATH += C:\LibTiff\Include\
 win32: INCLUDEPATH += ../../ProjectsLib\LibMarcin\
 win32: INCLUDEPATH += ../../ProjectsLibForein/LibPMS/

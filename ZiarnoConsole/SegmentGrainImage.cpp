@@ -29,6 +29,18 @@ using namespace cv;
 
 //---------------------------------------------------------------------------------------------
 //              funtions
+//--------------------------------------------------------------------------------------------------
+Mat Combine2Images( Mat Im1, Mat Im2)
+{
+    int imMaxX, imMaxY;
+    imMaxX = Im1.cols;
+    imMaxY = Im1.rows;
+    Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
+    Im1.copyTo(Im(Rect(0, 0, imMaxX, imMaxY)));
+    Im2.copyTo(Im(Rect(imMaxX, 0, imMaxX, imMaxY)));
+
+    return Im;
+}
 //---------------------------------------------------------------------------------------------
 Mat FindMaskFromGray(Mat ImIn,int thesholdVal)
 {
@@ -86,7 +98,7 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
     return sumIm/sumReg;
 }
 //---------------------------------------------------------------------------------------------
-vector <MR2DType*> SegmentGrainImg(Mat ImIpl)
+vector <MR2DType*> SegmentGrainImg(Mat *ImIn)
 {
     // patrameters could be made input or external
     int threshVal = 26;
@@ -106,16 +118,16 @@ vector <MR2DType*> SegmentGrainImg(Mat ImIpl)
 	
     vector <MR2DType*> rois;
 	
-    Mat ImIn;
-    ImIn = ImIpl;
-	if (ImIn.empty())
+ //   Mat ImIn;
+ //   ImIn = ImIpl;
+    if (ImIn->empty())
         return rois;
-    int maxX = ImIn.cols/2;
-    int maxY = ImIn.rows;
+    int maxX = ImIn->cols/2;
+    int maxY = ImIn->rows;
     Mat ImIn1, ImIn2;
 
-    ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
-    ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+    (*ImIn)(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+    (*ImIn)(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
 
     Mat Mask1;
     Mat Mask2;
@@ -360,8 +372,8 @@ vector <MR2DType*> SegmentGrainImg(Mat ImIpl)
 
     int rectHeight = 300;
     int rectWidth = 100;
-    int rectLCX = ImIn1.cols/2 - rectWidth/2;
-    int rectLCY = ImIn1.rows/2 - rectHeight/2;
+//    int rectLCX = ImIn1.cols/2 - rectWidth/2;
+//    int rectLCY = ImIn1.rows/2 - rectHeight/2;
 
     Mat Mask1a = Mat::zeros(maxY,maxX,Mask1.type());
     Mat Mask2a = Mat::zeros(maxY,maxX,Mask1.type());
@@ -390,11 +402,6 @@ vector <MR2DType*> SegmentGrainImg(Mat ImIpl)
     Mat ImGradient2 = HorizontalGradientDown(ImGray2);
 
     //Mat ImShowGradient = Combine2Images(ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0), ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0));
-
-    Mat Mask1b,Mask2b;
-
-    Mask1.copyTo(Mask1b);
-    Mask2.copyTo(Mask2b);
 
     bool switchImages;
 
@@ -428,6 +435,51 @@ vector <MR2DType*> SegmentGrainImg(Mat ImIpl)
         ImIn2 = TempMat;
     }
 
+// output ROI
+    //vector <MR2DType*> rois;
+    int begin[MR2DType::Dimensions];
+    int end[MR2DType::Dimensions];
+    begin[0] = 0;
+    begin[1] = 0;
+    end[0] = maxX*2 -1;
+    end[1] = maxY-1;
+    unsigned short *wMask;
+
+    Mat Mask = Combine2Images(Mask1, Mask2);
+
+    //Bruzdka
+    MR2DType* roi1;
+    roi1 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator1(roi1);
+    wMask = (unsigned short*)Mask.data;
+    while(! iterator1.IsBehind())
+    {
+        if (*wMask == 1)
+            iterator1.SetPixel();
+        ++iterator1;
+       wMask++;
+    }
+    roi1->SetName("Bruzdka");
+    roi1->SetColor(0xff0000);
+    rois.push_back(roi1);
+
+    //Grzbiet
+    MR2DType* roi2;
+    roi2 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator2(roi2);
+    wMask = (unsigned short*)Mask.data;
+    while(! iterator2.IsBehind())
+    {
+        if (*wMask ==2)
+            iterator2.SetPixel();
+        ++iterator2;
+       wMask++;
+    }
+    roi2->SetName("Grzbiet");
+    roi2->SetColor(0x00ff00);
+    rois.push_back(roi2);
+
+/*
 // output ROI
     //vector <MR2DType*> rois;
     int begin[MR2DType::Dimensions];
@@ -469,6 +521,24 @@ vector <MR2DType*> SegmentGrainImg(Mat ImIpl)
     roi2->SetName("Grzbiet");
     roi2->SetColor(0x00ff00);
     rois.push_back(roi2);
+*/
+
+
+    ImIn->release();
+    *ImIn = Combine2Images(ImIn1, ImIn2);
+
+
+    Mask1.release();
+    Mask2.release();
+    Mask1a.release();
+    Mask2a.release();
+
+    ImIn1.release();
+    ImIn2.release();
+    ImGradient1.release();
+    ImGradient2.release();
+    ImGray1.release();
+    ImGray1.release();
 
     return rois;
 
