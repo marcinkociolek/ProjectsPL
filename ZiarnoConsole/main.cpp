@@ -26,21 +26,42 @@ int main(int argc, char *argv[])
 {
     IplImage *wImIpl = cvLoadImage("E:\\TestFigs\\Ziarno\\OK_00029.png");
 
-    vector <MR2DType*> rois;
+    vector <MR2DType*> RoiVect;
 
     Mat ImIn = cvarrToMat(wImIpl);
-    rois = SegmentGrainImg(&ImIn);
+
+    if (ImIn.empty())
+        return 0;
+    int maxX = ImIn.cols/2;
+    int maxY = ImIn.rows;
+    Mat ImIn1, ImIn2;
+
+    (ImIn)(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+    (ImIn)(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+
+
+    vector<Mat*> ImInVect;
+    ImInVect.push_back(&ImIn1);
+    ImInVect.push_back(&ImIn2);
+
+    vector<Mat*> ImOutVect;
+
+    std::vector<TransformacjaZiarna> *TransfVect;
+
+    SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect,TransfVect);
+
+    //rois = SegmentGrainImg(&ImIn);
 
     imshow("ImageOut", ImIn);
     waitKey();
 
     // save output ROI
-    MazdaRoiIO<MR2DType>::Write("E:\\TestFigs\\Ziarno\\OK_00029Roi.tif", &rois, NULL);
+    MazdaRoiIO<MR2DType>::Write("E:\\TestFigs\\Ziarno\\OK_00029Roi.tif", &RoiVect, NULL);
 
-    while(rois.size() > 0)
+    while(RoiVect.size() > 0)
     {
-         delete rois.back();
-         rois.pop_back();
+         delete RoiVect.back();
+         RoiVect.pop_back();
     }
     return 0;
 
