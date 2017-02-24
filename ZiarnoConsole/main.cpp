@@ -22,6 +22,9 @@ typedef MazdaRoi<unsigned int, 2> MR2DType;
 using namespace std;
 using namespace cv;
 
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
     IplImage *wImIpl = cvLoadImage("E:\\TestFigs\\Ziarno\\OK_00029.png");
@@ -46,13 +49,14 @@ int main(int argc, char *argv[])
 
     vector<Mat*> ImOutVect;
 
-    std::vector<TransformacjaZiarna> *TransfVect;
+    std::vector<TransformacjaZiarna*> TransfVect;
 
-    SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect,TransfVect);
+    SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect,&TransfVect);
 
     //rois = SegmentGrainImg(&ImIn);
 
-    imshow("ImageOut", ImIn);
+    imshow("ImageIn", Combine2Images(*ImInVect[0],*ImInVect[1]));
+    imshow("ImageOut", Combine2Images(*ImOutVect[0],*ImOutVect[1]));
     waitKey();
 
     // save output ROI
