@@ -47,6 +47,7 @@ public:
 
 
     // analisis options
+    bool verticalInputImages;
     int segmentType;
     float threshVal;
     bool removeSmallReg;

@@ -107,6 +107,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     // analisis options
+    verticalInputImages = ui->VerticalDivisionCheckBox->checkState();
     segmentType         = ui->SegmentationComboBox->currentIndex();
     threshVal           = ui->spinBox->value();
     removeSmallReg      = ui->RemoveSmalRegionscheckBox->checkState();
@@ -263,11 +264,23 @@ void MainWindow::ProcessImage(void)
 {
     if (ImIn.empty())
         return;
-    maxX = ImIn.cols/2;
-    maxY = ImIn.rows;
-    ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
-    ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+    if(verticalInputImages)
+    {
+        maxX = ImIn.cols;
+        maxY = ImIn.rows/2;
 
+        ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+        ImIn(Rect(0, maxY, maxX, maxY)).copyTo(ImIn2);
+    }
+
+    else
+    {
+        maxX = ImIn.cols/2;
+        maxY = ImIn.rows;
+
+        ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+        ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+    }
 
 
     ImShow = Combine2Images(ImIn1, ImIn2);
@@ -451,6 +464,210 @@ void MainWindow::ProcessImage(void)
     }
 
     ShowImageRegionCombination(showMask, showContour, "Mask", ImShow, Mask1, Mask2);
+
+    RotatedRect fittedRect1,fittedRect2 ;
+    fittedRect1.angle = 0.0;
+    fittedRect1.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
+    fittedRect1.size = Size2f(100.0,100.0);
+
+    fittedRect2 = fittedRect1;
+
+    if(fitEllipseToReg)
+    {
+        Mat ImTemp;
+        vector<vector<Point> > contours;
+        vector<Vec4i> hierarchy;
+        Mat pointsF;
+
+        Mask1.convertTo(ImTemp,CV_8U);
+        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
+        if(contours.size())
+        {
+            Mat(contours[0]).convertTo(pointsF, CV_32F);
+            fittedRect1 = fitEllipse(pointsF);
+        }
+
+        contours.clear();
+        hierarchy.clear();
+
+        Mask2.convertTo(ImTemp,CV_8U);
+        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
+        if(contours.size())
+        {
+            Mat(contours[0]).convertTo(pointsF, CV_32F);
+            fittedRect2 = fitEllipse(pointsF);
+        }
+    }
+    Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
+
+    //crop size calculation
+    Size smallImageSize;
+
+    smallImageSize.height = (int)(fittedRect1.size.height * 1.2);
+    smallImageSize.width = (int)(fittedRect1.size.width * 1.2);
+
+    if(smallImageSize.height < (int)(fittedRect2.size.height * 1.2))
+        smallImageSize.height = (int)(fittedRect2.size.height * 1.2);
+
+    if(smallImageSize.width < (int)(fittedRect2.size.width * 1.2))
+        smallImageSize.width = (int)(fittedRect2.size.width * 1.2);
+
+    smallImageSize.width = (smallImageSize.width / 8) * 8;
+    smallImageSize.height = (smallImageSize.height / 8) * 8;
+
+
+    RotatedRect alignedRect1 = fittedRect1;
+    alignedRect1.angle = 0.0;
+    RotatedRect alignedRect2 = fittedRect2;
+    alignedRect2.angle = 0.0;
+
+
+    if(rotateImage)
+    {
+        Mat RotationMatrix1,RotationMatrix2;
+
+        Mat RegTemp;
+
+        RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+        warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
+
+        // find proper direction
+        int croppWidth,croppHeight,croppX,croppY;
+
+        croppWidth = alignedRect1.size.width;
+        croppHeight = alignedRect1.size.height;
+        croppX = (int)alignedRect1.center.x - croppWidth/2;
+        if(croppX < 0)
+            croppX = 0;
+        croppY = (int)alignedRect1.center.y - croppHeight/2;
+        if(croppY < 0)
+            croppY = 0;
+
+        MaskRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(RegTemp);
+
+        //allign after rotation
+        int maxPosY = 0;
+        int minPosY = RegTemp.rows - 1;
+        int maxPosX = 0;
+        int minPosX = RegTemp.cols - 1;
+        unsigned short *wMask1;
+
+        int maxXY = RegTemp.cols*RegTemp.rows;
+        wMask1 = (unsigned short*)RegTemp.data;
+        for(int i = 0; i < maxXY; i++)
+        {
+            int y = i/RegTemp.cols;
+            int x = i%RegTemp.cols;
+
+            if(*wMask1)
+            {
+                if(maxPosY < y)
+                    maxPosY = y;
+                if(minPosY > y)
+                    minPosY = y;
+                if(maxPosX < x)
+                    maxPosX = x;
+                if(minPosX > x)
+                    minPosX = x;
+            }
+
+            wMask1++;
+        }
+
+
+        int linesToCount = 200;
+        //int pixelCount = linesToCount *RegTemp.cols;
+
+        int uStartLine = minPosY;
+        if(uStartLine <0)
+            uStartLine = 0;
+        int uStopLine =  uStartLine + linesToCount;
+        if(uStopLine >= RegTemp.rows)
+        {
+            uStopLine = RegTemp.rows - 1;
+            uStartLine = uStopLine - linesToCount;
+        }
+        int lStopLine  =  maxPosY;
+        if(lStopLine >= maxY)
+            lStopLine = maxY - 1;
+        int lStartLine = lStopLine - linesToCount;
+        if(lStartLine < 0)
+        {
+            lStartLine = 0;
+            lStopLine = lStartLine + linesToCount;
+        }
+
+
+
+
+
+
+
+
+
+
+
+        int lineCount = 20;
+        int pixelCount = RegTemp.cols * lineCount;
+        int startLine = RegTemp.rows /4 - lineCount;
+
+        unsigned short *wRegTemp;
+        wRegTemp = (unsigned short*)RegTemp.data + RegTemp.cols * startLine;
+
+        int uRegPixelCount = 0;
+        for(int i = 0; i< pixelCount; i++)
+        {
+            if(*wRegTemp)
+                uRegPixelCount++;
+
+            wRegTemp++;
+        }
+
+        startLine = RegTemp.rows /4 * 3;
+
+        wRegTemp = (unsigned short*)RegTemp.data + RegTemp.cols * startLine;
+
+        int lRegPixelCount = 0;
+        for(int i = 0; i< pixelCount; i++)
+        {
+            if(*wRegTemp)
+                lRegPixelCount++;
+
+            wRegTemp++;
+        }
+
+        string OutText = "";
+        OutText += " uper pix count" +  to_string(uRegPixelCount) + "\n";
+        OutText += " lower pix count" + to_string(lRegPixelCount) + "\n";
+        ui->MesageTextEdit->setText(OutText.c_str());
+
+        if(uRegPixelCount >= lRegPixelCount)
+        {
+            RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+            RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
+        }
+        else
+        {
+            RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle + 180,1.0);
+            RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle + 180,1.0);
+        }
+
+
+
+        warpAffine(ImIn1,ImRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
+        warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
+
+        warpAffine(ImIn2,ImRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
+        warpAffine(Mask2,MaskRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
+    }
+    else
+    {
+        ImRotated1 = ImIn1;//Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
+        ImRotated2 = ImIn2;//Mat::zeros(ImIn2.rows,ImIn2.cols,CV_8UC3);
+        MaskRotated1 = Mask1;
+        MaskRotated2 = Mask2;
+    }
+
 
 /*
     RotatedRect fittedRect1,fittedRect2 ;

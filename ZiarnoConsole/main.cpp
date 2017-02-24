@@ -27,7 +27,7 @@ using namespace cv;
 //--------------------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-    IplImage *wImIpl = cvLoadImage("E:\\TestFigs\\Ziarno\\OK_00029.png");
+    IplImage *wImIpl = cvLoadImage("C:\\Data\\Ziarno\\TestFigs\\21.bmp");
 
     vector <MR2DType*> RoiVect;
 
@@ -35,13 +35,17 @@ int main(int argc, char *argv[])
 
     if (ImIn.empty())
         return 0;
-    int maxX = ImIn.cols/2;
-    int maxY = ImIn.rows;
+    //int maxX = ImIn.cols/2;
+    //int maxY = ImIn.rows;
+    int maxX = ImIn.cols;
+    int maxY = ImIn.rows/2;
+
     Mat ImIn1, ImIn2;
 
+    //(ImIn)(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+    //(ImIn)(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
     (ImIn)(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
-    (ImIn)(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
-
+    (ImIn)(Rect(0, maxY, maxX, maxY)).copyTo(ImIn2);
 
     vector<Mat*> ImInVect;
     ImInVect.push_back(&ImIn1);

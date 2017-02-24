@@ -107,9 +107,9 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi,std::vector<TransformacjaZiarna*> *transf)
 {
     // patrameters could be made input or external
-    int threshVal = 26;
+    int threshVal = 16;
     bool removeSmallReg = true;
-    int rawMorphErosion1 = 0;
+    int rawMorphErosion1 = 3;
     int rawMorphDilation2 = 0;
     int rawMorphErosion3 = 0;
     bool fillHoles = true;
@@ -301,6 +301,10 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         DeleteRegTouchingBorder(Mask1);
         DeleteRegTouchingBorder(Mask2);
     }
+
+
+
+
 
     // allign Grains
     int maxPosY = 0;
