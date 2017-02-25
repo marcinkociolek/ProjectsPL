@@ -576,7 +576,7 @@ void MainWindow::ProcessImage(void)
 
 
         int linesToCount = 200;
-        //int pixelCount = linesToCount *RegTemp.cols;
+        int pixelCount = linesToCount *RegTemp.cols;
 
         int uStartLine = minPosY;
         if(uStartLine <0)
@@ -598,42 +598,24 @@ void MainWindow::ProcessImage(void)
         }
 
 
-
-
-
-
-
-
-
-
-
-        int lineCount = 20;
-        int pixelCount = RegTemp.cols * lineCount;
-        int startLine = RegTemp.rows /4 - lineCount;
-
-        unsigned short *wRegTemp;
-        wRegTemp = (unsigned short*)RegTemp.data + RegTemp.cols * startLine;
-
+        wMask1 = (unsigned short*)RegTemp.data + RegTemp.cols * uStartLine;//(imCenterY - linesToCount - offsetToCount);
         int uRegPixelCount = 0;
-        for(int i = 0; i< pixelCount; i++)
+        for(int i = 0; i < pixelCount; i++)
         {
-            if(*wRegTemp)
+            if(*wMask1)
                 uRegPixelCount++;
 
-            wRegTemp++;
+            wMask1++;
         }
 
-        startLine = RegTemp.rows /4 * 3;
-
-        wRegTemp = (unsigned short*)RegTemp.data + RegTemp.cols * startLine;
-
+        wMask1 = (unsigned short*)RegTemp.data + RegTemp.cols * lStartLine;//(imCenterY + offsetToCount);
         int lRegPixelCount = 0;
         for(int i = 0; i< pixelCount; i++)
         {
-            if(*wRegTemp)
+            if(*wMask1)
                 lRegPixelCount++;
 
-            wRegTemp++;
+            wMask1++;
         }
 
         string OutText = "";
@@ -652,23 +634,23 @@ void MainWindow::ProcessImage(void)
             RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle + 180,1.0);
         }
 
-
-
         warpAffine(ImIn1,ImRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
         warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
 
         warpAffine(ImIn2,ImRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
         warpAffine(Mask2,MaskRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
-    }
-    else
-    {
-        ImRotated1 = ImIn1;//Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
-        ImRotated2 = ImIn2;//Mat::zeros(ImIn2.rows,ImIn2.cols,CV_8UC3);
-        MaskRotated1 = Mask1;
-        MaskRotated2 = Mask2;
-    }
 
-
+        ImIn1.release();
+        ImIn2.release();
+        Mask1.release();
+        Mask2.release();
+        ImIn1 = ImRotated1;
+        ImIn2 = ImRotated2;
+        Mask1 = MaskRotated1;
+        Mask2 = MaskRotated2;
+        maxX = Mask1.cols;
+        maxY = Mask1.rows;
+    }
 /*
     RotatedRect fittedRect1,fittedRect2 ;
     fittedRect1.angle = 0.0;
