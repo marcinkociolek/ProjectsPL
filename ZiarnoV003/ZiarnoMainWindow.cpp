@@ -69,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->ShowComboBox->addItem("Region");
     ui->ShowComboBox->addItem("Contour");
+    ui->ShowComboBox->setCurrentIndex(1);
 
     threshVal = ui->spinBox->value();
     MinRegSize = ui->MinRegionSizeSpinBox->value();
@@ -157,7 +158,7 @@ MainWindow::MainWindow(QWidget *parent) :
         displayFlag = WINDOW_AUTOSIZE;
 
 
-    InputDirectory = "C:\\Data\\Ziarno\\14.04.2016 Rozne klasy\\Dobre\\";
+    InputDirectory = "C:\\Data\\Ziarno\\3.11.2015_uszkodzone\\Zielone, zadeszczone, zanieczyszczenia organiczne\\";
     OutputDirectory = "c:\\";
 }
 
@@ -262,6 +263,7 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
 //--------------------------------------------------------------------------------------------------
 void MainWindow::ProcessImage(void)
 {
+    string OutText = "";
     if (ImIn.empty())
         return;
     if(verticalInputImages)
@@ -462,9 +464,72 @@ void MainWindow::ProcessImage(void)
         DeleteRegTouchingBorder(Mask1);
         DeleteRegTouchingBorder(Mask2);
     }
-
     ShowImageRegionCombination(showMask, showContour, "Mask", ImShow, Mask1, Mask2);
 
+    // find centroids
+    int centerX1 = maxX;
+    int centerY1 = maxY;
+    int centerX2 = maxX;
+    int centerY2 = maxY;
+    unsigned short *wMask1;
+    unsigned short *wMask;
+
+    maxX = Mask1.cols;
+    maxY = Mask1.rows;
+
+    int sumX = 0;
+    int sumY = 0;
+    int sumPix = 0;
+
+    wMask = (unsigned short *)Mask1.data;
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMask)
+            {
+                sumX += x;
+                sumY += y;
+                sumPix ++;
+            }
+            wMask++;
+        }
+    }
+    centerX1 = sumX/sumPix;
+    centerY1 = sumY/sumPix;
+
+
+    maxX = Mask2.cols;
+    maxY = Mask2.rows;
+    sumX = 0;
+    sumY = 0;
+    sumPix = 0;
+
+    wMask = (unsigned short *)Mask2.data;
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMask)
+            {
+                sumX += x;
+                sumY += y;
+                sumPix ++;
+            }
+            wMask++;
+        }
+    }
+    centerX2 = sumX/sumPix;
+    centerY2 = sumY/sumPix;
+
+    OutText += "center X1 = " + to_string(centerX1) + "\n";
+    OutText += "center Y1 = " + to_string(centerY1) + "\n";
+    OutText += "center X2 = " + to_string(centerX2) + "\n";
+    OutText += "center Y2 = " + to_string(centerY2) + "\n";
+    OutText += "\n";
+
+
+    //fit ellipse
     RotatedRect fittedRect1,fittedRect2 ;
     fittedRect1.angle = 0.0;
     fittedRect1.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
@@ -498,9 +563,30 @@ void MainWindow::ProcessImage(void)
             fittedRect2 = fitEllipse(pointsF);
         }
     }
+    if(showFitted)
+    {
+        Point2f vertices[4];
+        Mat ImToShow1,ImToShow2;
+        fittedRect1.points(vertices);
+        ImIn1.copyTo(ImToShow1);
+        for (int i = 0; i < 4; i++)
+            line(ImToShow1, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+
+        fittedRect2.points(vertices);
+        ImIn2.copyTo(ImToShow2);
+        for (int i = 0; i < 4; i++)
+            line(ImToShow2, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+
+        Mat ImShow = Mat::zeros(Size(maxX *2,maxY) ,ImIn1.type());
+        ImToShow1.copyTo(ImShow(Rect(0, 0, maxX, maxY)));
+        ImToShow2.copyTo(ImShow(Rect(maxX, 0, maxX, maxY)));
+        imshow("Fitted", ImShow);
+    }
+
     Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
 
     //crop size calculation
+/*
     Size smallImageSize;
 
     smallImageSize.height = (int)(fittedRect1.size.height * 1.2);
@@ -514,7 +600,7 @@ void MainWindow::ProcessImage(void)
 
     smallImageSize.width = (smallImageSize.width / 8) * 8;
     smallImageSize.height = (smallImageSize.height / 8) * 8;
-
+*/
 
     RotatedRect alignedRect1 = fittedRect1;
     alignedRect1.angle = 0.0;
@@ -529,9 +615,11 @@ void MainWindow::ProcessImage(void)
         Mat RegTemp;
 
         RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
-        warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
+
+//       warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
 
         // find proper direction
+/*
         int croppWidth,croppHeight,croppX,croppY;
 
         croppWidth = alignedRect1.size.width;
@@ -542,7 +630,8 @@ void MainWindow::ProcessImage(void)
         croppY = (int)alignedRect1.center.y - croppHeight/2;
         if(croppY < 0)
             croppY = 0;
-
+*/
+/*
         MaskRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(RegTemp);
 
         //allign after rotation
@@ -633,6 +722,9 @@ void MainWindow::ProcessImage(void)
             RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle + 180,1.0);
             RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle + 180,1.0);
         }
+*/
+        RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+        RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
 
         warpAffine(ImIn1,ImRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
         warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
@@ -651,6 +743,122 @@ void MainWindow::ProcessImage(void)
         maxX = Mask1.cols;
         maxY = Mask1.rows;
     }
+    ShowImageRegionCombination(showRotated, showContour, "Rotated" , ImIn1, ImIn2, Mask1, Mask2);
+
+    if(croppImage)
+    {
+        int croppX1Min = Mask1.cols;
+        int croppX1Max = 0;
+
+        int croppY1Min = Mask1.rows;
+        int croppY1Max = 0;
+
+
+        maxX = Mask1.cols;
+        maxY = Mask1.rows;
+
+        wMask = (unsigned short *)Mask1.data;
+        for(int y = 0; y < maxY; y++)
+        {
+            for(int x = 0; x < maxX; x++)
+            {
+                if(*wMask)
+                {
+                    if(croppX1Min > x)
+                        croppX1Min = x;
+                    if(croppX1Max < x)
+                        croppX1Max = x;
+
+                    if(croppY1Min > y)
+                        croppY1Min = y;
+                    if(croppY1Max < y)
+                        croppY1Max = y;
+                }
+                wMask++;
+            }
+        }
+
+        int croppX2Min = Mask2.cols;
+        int croppX2Max = 0;
+
+        int croppY2Min = Mask2.rows;
+        int croppY2Max = 0;
+
+
+        maxX = Mask2.cols;
+        maxY = Mask2.rows;
+
+        wMask = (unsigned short *)Mask2.data;
+        for(int y = 0; y < maxY; y++)
+        {
+            for(int x = 0; x < maxX; x++)
+            {
+                if(*wMask)
+                {
+                    if(croppX2Min > x)
+                        croppX2Min = x;
+                    if(croppX2Max < x)
+                        croppX2Max = x;
+
+                    if(croppY2Min > y)
+                        croppY2Min = y;
+                    if(croppY2Max < y)
+                        croppY2Max = y;
+                }
+                wMask++;
+            }
+        }
+
+        //Size croppedImageSize;
+        int croppWidth1 = croppX1Max - croppX1Min + 1;
+        int croppHeight1 = croppY1Max - croppY1Min + 1;
+        int croppX1 = croppX1Min;
+        int croppY1 = croppY1Min;
+
+        Mat ImCropped1, ImCropped2, MaskCropped1, MaskCropped2;
+/*
+        croppWidth = smallImageSize.width;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
+        croppHeight = smallImageSize.height;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
+
+        croppX = (int)alignedRect1.center.x - croppWidth/2;
+        if(croppX < 0)
+            croppX = 0;
+        croppY = (int)alignedRect1.center.y - croppHeight/2;
+        if(croppY < 0)
+            croppY = 0;
+*/
+        ImIn1(Rect(croppX1,croppY1,croppWidth1,croppHeight1)).copyTo(ImCropped1);
+        Mask1(Rect(croppX1,croppY1,croppWidth1,croppHeight1)).copyTo(MaskCropped1);
+
+/*
+        croppX = (int)alignedRect2.center.x - croppWidth/2;
+        if(croppX < 0)
+            croppX = 0;
+        croppY = (int)alignedRect2.center.y - croppHeight/2;
+        if(croppY < 0)
+            croppY = 0;
+*/
+        int croppWidth2 = croppX2Max - croppX2Min + 1;
+        int croppHeight2 = croppY2Max - croppY2Min + 1;
+        int croppX2 = croppX2Min;
+        int croppY2 = croppY2Min;
+
+        ImIn2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(ImCropped2);
+        Mask2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(MaskCropped2);
+
+        ImIn1.release();
+        ImIn2.release();
+        Mask1.release();
+        Mask2.release();
+        ImIn1 = ImCropped1;
+        ImIn2 = ImCropped2;
+        Mask1 = MaskCropped1;
+        Mask2 = MaskCropped2;
+        maxX = Mask1.cols;
+        maxY = Mask1.rows;
+
+    }
+    ShowImageRegionCombination(showCropped, showContour, "Cropped" , ImIn1, ImIn2, Mask1, Mask2);
 /*
     RotatedRect fittedRect1,fittedRect2 ;
     fittedRect1.angle = 0.0;
@@ -666,16 +874,19 @@ void MainWindow::ProcessImage(void)
 */
 
 
-
-    //ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, imCenterY - linesToCount - offsetToCount, imCenterY - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    //ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImIn1, ImIn2, imCenterY - linesToCount - offsetToCount, imCenterY - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    //ShowHLinesOnImage(showAreaForAlign, , ImShow, imCenterY - linesToCount - offsetToCount, imCenterY - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
 
     int maxPosY = 0;
-    int minPosY = maxY-1;
+    int minPosY = Mask1.rows-1;
     int maxPosX = 0;
-    int minPosX = maxX-1;
-    unsigned short *wMask1;
+    int minPosX = Mask1.cols-1;
 
-    int maxXY = maxX*maxY;
+    maxX = Mask1.cols;
+    maxY = Mask1.rows;
+
+
+    int maxXY = Mask1.rows*Mask1.cols;
     if(alignGrains)
     {
         wMask1 = (unsigned short*)Mask1.data;
@@ -701,7 +912,7 @@ void MainWindow::ProcessImage(void)
 
     }
     int linesToCount = 200;
-    int pixelCount = linesToCount * maxX;
+    int pixelCount = linesToCount * Mask1.cols;
 
     int uStartLine = minPosY;
     if(uStartLine <0)
@@ -721,14 +932,14 @@ void MainWindow::ProcessImage(void)
         lStartLine = 0;
         lStopLine = lStartLine + linesToCount;
     }
+    ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    //ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
 
-    ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImShow, uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
-    string OutText = "";
 
 
     if(alignGrains)
     {
-        wMask1 = (unsigned short*)Mask1.data + maxX * uStartLine;//(imCenterY - linesToCount - offsetToCount);
+        wMask1 = (unsigned short*)Mask1.data + Mask1.cols * uStartLine;//(imCenterY - linesToCount - offsetToCount);
         int uRegPixelCount = 0;
         for(int i = 0; i < pixelCount; i++)
         {
@@ -738,7 +949,7 @@ void MainWindow::ProcessImage(void)
             wMask1++;
         }
 
-        wMask1 = (unsigned short*)Mask1.data + maxX * lStartLine;//(imCenterY + offsetToCount);
+        wMask1 = (unsigned short*)Mask1.data + Mask1.cols * lStartLine;//(imCenterY + offsetToCount);
         int lRegPixelCount = 0;
         for(int i = 0; i< pixelCount; i++)
         {
@@ -762,7 +973,7 @@ void MainWindow::ProcessImage(void)
         }
         ui->MesageTextEdit->setText(OutText.c_str());
     }
-    ShowImageRegionCombination(showAligned, showContour, "Aligned", ImShow, Mask1, Mask2);
+    ShowImageRegionCombination(showAligned, showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
 
 
     int rectHeight = 300;
@@ -770,8 +981,8 @@ void MainWindow::ProcessImage(void)
     int rectLCX = ImIn1.cols/2 - rectWidth/2;
     int rectLCY = ImIn1.rows/2 - rectHeight/2;
 
-    Mat Mask1a = Mat::zeros(maxY,maxX,Mask1.type());
-    Mat Mask2a = Mat::zeros(maxY,maxX,Mask1.type());
+    Mat Mask1a = Mat::zeros(Mask1.rows,Mask1.cols,Mask1.type());
+    Mat Mask2a = Mat::zeros(Mask2.rows,Mask2.cols,Mask1.type());
     //rectangle(Mask1a,Rect(rectLCX,rectLCY,rectWidth,rectHeight),1,-1);
     //rectangle(Mask2a,Rect(rectLCX,rectLCY,rectWidth,rectHeight),1,-1);
 
@@ -784,8 +995,8 @@ void MainWindow::ProcessImage(void)
         ellipseSizeY = 0;
 
 
-    ellipse(Mask1a, Point(maxX/2,maxY/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
-    ellipse(Mask2a, Point(maxX/2,maxY/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
+    ellipse(Mask1a, Point(Mask1.cols/2,Mask1.rows/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
+    ellipse(Mask2a, Point(Mask2.cols/2,Mask2.rows/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
     //ShowImageRegionCombination(showFitted, showContour, "Fitted", ImShow, Mask1a, Mask2a);
 
 
@@ -796,7 +1007,7 @@ void MainWindow::ProcessImage(void)
     cvtColor(ImIn1,ImGray1,CV_BGR2GRAY);
     cvtColor(ImIn2,ImGray2,CV_BGR2GRAY);
 
-    blur(ImGray2,ImGray2,Size(5,5));
+    //blur(ImGray2,ImGray2,Size(5,5));
 
     Mat ImGradient1 = HorizontalGradientDown(ImGray1);
     Mat ImGradient2 = HorizontalGradientDown(ImGray2);
@@ -827,7 +1038,7 @@ void MainWindow::ProcessImage(void)
     //erode(Mask2b,Mask2b,Kernel);
 
 
-    ShowImageRegionCombination(showGradient, showContour, "Gradient", ImShowGradient, Mask1a, Mask2a);
+    ShowImageRegionCombination(showGradient, showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
 
     bool switchImages;
 
@@ -867,23 +1078,24 @@ void MainWindow::ProcessImage(void)
 
 
     }
-    ShowImageRegionCombination(showOutput, showContour, "Output", ImShow, Mask1, Mask2);
+    ShowImageRegionCombination(showOutput, showContour, "Output", ImIn1, ImIn2, Mask1, Mask2);
 
 
 // save output ROI
     vector <MR2DType*> rois;
     int begin[MR2DType::Dimensions];
     int end[MR2DType::Dimensions];
-    begin[0] = 0;
-    begin[1] = 0;
-    end[0] = maxX-1;
-    end[1] = maxY-1;
-    unsigned short *wMask;
+
+
     path FileToSave = OutputDirectory;
     FileToSave.append(FileToOpen.stem().string());
 
 
     //Bruzdka
+    begin[0] = 0;
+    begin[1] = 0;
+    end[0] = Mask1.cols-1;
+    end[1] = Mask1.rows-1;
     MR2DType* roi1;
     roi1 = new MR2DType(begin, end);
     MazdaRoiIterator<MR2DType> iterator1(roi1);
@@ -907,6 +1119,10 @@ void MainWindow::ProcessImage(void)
     }
 
     //Grzbiet
+    begin[0] = 0;
+    begin[1] = 0;
+    end[0] = Mask2.cols-1;
+    end[1] = Mask2.rows-1;
     MR2DType* roi2;
     roi2 = new MR2DType(begin, end);
     MazdaRoiIterator<MR2DType> iterator2(roi2);
@@ -1201,14 +1417,18 @@ void MainWindow::ShowImageRegionCombination(bool show, bool showContour, string 
         return;
     int imMaxX, imMaxY;
     imMaxX = Im1.cols;
+    if (imMaxX < Im2.cols)
+        imMaxX = Im2.cols;
     imMaxY = Im1.rows;
+    if (imMaxY < Im2.rows)
+        imMaxY = Im2.rows;
     Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, imMaxX, imMaxY)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, imMaxX, imMaxY)));
+    Im1.copyTo(Im(Rect(0, 0, Im1.cols , Im1.rows)));
+    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
 
     Mat Mask = Mat::zeros(Size(imMaxX *2,imMaxY) ,Mask1.type());
-    Mask1.copyTo(Mask(Rect(0, 0, imMaxX, imMaxY)));
-    Mask2.copyTo(Mask(Rect(imMaxX, 0, imMaxX, imMaxY)));
+    Mask1.copyTo(Mask(Rect(0, 0, Im1.cols , Im1.rows)));
+    Mask2.copyTo(Mask(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
 
     if(showContour)
     {
@@ -1256,14 +1476,45 @@ void MainWindow::ShowHLinesOnImage(bool show, string WinName, Mat Im, int lineU,
 
 }
 //--------------------------------------------------------------------------------------------------
+void MainWindow::ShowHLinesOnImage(bool show, string WinName, Mat Im1, Mat Im2, int lineU, int lineCU, int lineCL, int lineL)
+{
+    if(!show)
+        return;
+    int imMaxX = Im1.cols;
+    if(imMaxX < Im2.cols)
+        imMaxX = Im2.cols;
+    int imMaxY = Im1.rows;
+    if(imMaxY < Im2.rows)
+        imMaxY = Im2.rows;
+
+    Mat ImShow = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
+    Im1.copyTo(ImShow(Rect(0, 0, Im1.cols, Im1.rows)));
+    Im2.copyTo(ImShow(Rect(imMaxX, 0, Im2.cols, Im2.rows)));
+
+    //Mat ImShow;
+    //Im.copyTo(ImShow);
+    line(ImShow,Point(0,lineU),Point(ImShow.cols,lineU),CV_RGB(255,0,0),1);
+    line(ImShow,Point(0,lineCU),Point(ImShow.cols,lineCU),CV_RGB(255,0,0),1);
+    line(ImShow,Point(0,lineCL),Point(ImShow.cols,lineCL),CV_RGB(0,255,0),1);
+    line(ImShow,Point(0,lineL),Point(ImShow.cols,lineL),CV_RGB(0,255,0),1);
+
+
+    imshow(WinName.c_str(), ImShow);
+
+}
+//--------------------------------------------------------------------------------------------------
 Mat MainWindow::Combine2Images( Mat Im1, Mat Im2)
 {
     int imMaxX, imMaxY;
     imMaxX = Im1.cols;
+    if (imMaxX < Im2.cols)
+        imMaxX = Im2.cols;
     imMaxY = Im1.rows;
+    if(imMaxY < Im2.rows)
+        imMaxY = Im2.rows;
     Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, imMaxX, imMaxY)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, imMaxX, imMaxY)));
+    Im1.copyTo(Im(Rect(0, 0, Im1.cols, Im1.rows)));
+    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols, Im2.rows)));
 
     return Im;
 }
@@ -1646,4 +1897,15 @@ void MainWindow::on_pushButtonConvertAll_clicked()
 
         ProcessImage();
     }
+}
+
+void MainWindow::on_ShowCroppedCheckBox_2_toggled(bool checked)
+{
+    showCropped = checked;
+    if(showCropped)
+        namedWindow("Cropped", displayFlag);
+    else
+        destroyWindow("Cropped");
+
+    ProcessImage();
 }

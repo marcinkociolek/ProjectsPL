@@ -81,6 +81,7 @@ public:
     bool showContourOnInput;
     bool showFitted;
     bool showRotated;
+    bool showCropped;
     bool showAreaForAlign;
     bool showAligned;
     bool showGradient;
@@ -90,10 +91,12 @@ public:
 
     void ProcessImage(void);
     void ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im2);
+
     Mat  Combine2Images(Mat Im1, Mat Im2);
     void ShowImageRegionCombination(bool show, bool contour, string WinName, Mat Im1, Mat Im2, Mat Mask1, Mat Mask2);
     void ShowImageRegionCombination(bool show, bool showContour, string WinName, Mat Im, Mat Mask1, Mat Mask2);
     void ShowHLinesOnImage(bool show, string WinName, Mat Im, int lineU, int lineCU, int lineCL, int lineL);
+    void ShowHLinesOnImage(bool show, string WinName, Mat Im1, Mat Im2, int lineU, int lineCU, int lineCL, int lineL);
     void OnOffImageWindow(void);
 
 private slots:
@@ -179,6 +182,8 @@ private slots:
     void on_SelOutFolderPushButton_clicked();
 
     void on_pushButtonConvertAll_clicked();
+
+    void on_ShowCroppedCheckBox_2_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

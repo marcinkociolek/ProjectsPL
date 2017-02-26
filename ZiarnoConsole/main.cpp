@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     waitKey();
 
     // save output ROI
-    MazdaRoiIO<MR2DType>::Write("E:\\TestFigs\\Ziarno\\OK_00029Roi.tif", &RoiVect, NULL);
+    MazdaRoiIO<MR2DType>::Write("C:\\Data\\Ziarno\\TestFigs\\OK_000219Roi.tif", &RoiVect, NULL);
 
     while(RoiVect.size() > 0)
     {

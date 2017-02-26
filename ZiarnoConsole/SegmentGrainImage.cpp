@@ -36,10 +36,14 @@ Mat Combine2Images( Mat Im1, Mat Im2)
 {
     int imMaxX, imMaxY;
     imMaxX = Im1.cols;
+    if (imMaxX < Im2.cols)
+        imMaxX = Im2.cols;
     imMaxY = Im1.rows;
+    if(imMaxY < Im2.rows)
+        imMaxY = Im2.rows;
     Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, imMaxX, imMaxY)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, imMaxX, imMaxY)));
+    Im1.copyTo(Im(Rect(0, 0, Im1.cols, Im1.rows)));
+    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols, Im2.rows)));
 
     return Im;
 }
@@ -107,7 +111,7 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi,std::vector<TransformacjaZiarna*> *transf)
 {
     // patrameters could be made input or external
-    int threshVal = 16;
+    int threshVal = 26;
     bool removeSmallReg = true;
     int rawMorphErosion1 = 3;
     int rawMorphDilation2 = 0;
@@ -118,8 +122,15 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     int regMorphErosion1 = 0;
     int regMorphDilation2 = 0;
     int regMorphErosion3 = 0;
-    bool removeBorderRegion = false;
+    bool removeBorderRegion = true;
+
+    bool fitEllipseToReg = true;
+    bool rotateImage = true;
+    bool croppImage = true;
+
     bool alignGrains = true;
+
+    bool addBlurToSecondImage = false;
     bool findValey = true;
 
     //vector <MR2DType*> rois;
@@ -302,8 +313,248 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         DeleteRegTouchingBorder(Mask2);
     }
 
+    // find centroids
+    int centerX1 = maxX;
+    int centerY1 = maxY;
+    int centerX2 = maxX;
+    int centerY2 = maxY;
+    unsigned short *wMask1;
+    unsigned short *wMask;
+
+    maxX = Mask1.cols;
+    maxY = Mask1.rows;
+
+    int sumX = 0;
+    int sumY = 0;
+    int sumPix = 0;
+
+    wMask = (unsigned short *)Mask1.data;
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMask)
+            {
+                sumX += x;
+                sumY += y;
+                sumPix ++;
+            }
+            wMask++;
+        }
+    }
+    centerX1 = sumX/sumPix;
+    centerY1 = sumY/sumPix;
+
+    if (sumPix < MinRegSize)
+        return 0;
+
+    maxX = Mask2.cols;
+    maxY = Mask2.rows;
+    sumX = 0;
+    sumY = 0;
+    sumPix = 0;
+
+    wMask = (unsigned short *)Mask2.data;
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMask)
+            {
+                sumX += x;
+                sumY += y;
+                sumPix ++;
+            }
+            wMask++;
+        }
+    }
+    centerX2 = sumX/sumPix;
+    centerY2 = sumY/sumPix;
+
+    if (sumPix < MinRegSize)
+        return 0;
 
 
+    //fit ellipse
+    RotatedRect fittedRect1,fittedRect2 ;
+    fittedRect1.angle = 0.0;
+    fittedRect1.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
+    fittedRect1.size = Size2f(100.0,100.0);
+
+    fittedRect2 = fittedRect1;
+
+    if(fitEllipseToReg)
+    {
+        Mat ImTemp;
+        vector<vector<Point> > contours;
+        vector<Vec4i> hierarchy;
+        Mat pointsF;
+
+        Mask1.convertTo(ImTemp,CV_8U);
+        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
+        if(contours.size())
+        {
+            Mat(contours[0]).convertTo(pointsF, CV_32F);
+            fittedRect1 = fitEllipse(pointsF);
+        }
+
+        contours.clear();
+        hierarchy.clear();
+
+        Mask2.convertTo(ImTemp,CV_8U);
+        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
+        if(contours.size())
+        {
+            Mat(contours[0]).convertTo(pointsF, CV_32F);
+            fittedRect2 = fitEllipse(pointsF);
+        }
+    }
+    // rotate images
+    RotatedRect alignedRect1 = fittedRect1;
+    alignedRect1.angle = 0.0;
+    RotatedRect alignedRect2 = fittedRect2;
+    alignedRect2.angle = 0.0;
+
+
+    if(rotateImage)
+    {
+        Mat RotationMatrix1,RotationMatrix2;
+
+        //Mat RegTemp;
+
+        RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+
+
+        RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
+        RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
+
+        Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
+
+        warpAffine(ImIn1,ImRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
+        warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
+
+        warpAffine(ImIn2,ImRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
+        warpAffine(Mask2,MaskRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
+
+        ImIn1.release();
+        ImIn2.release();
+        Mask1.release();
+        Mask2.release();
+        ImIn1 = ImRotated1;
+        ImIn2 = ImRotated2;
+        Mask1 = MaskRotated1;
+        Mask2 = MaskRotated2;
+        maxX = Mask1.cols;
+        maxY = Mask1.rows;
+    }
+
+    if(croppImage)
+    {
+        int croppX1Min = Mask1.cols;
+        int croppX1Max = 0;
+
+        int croppY1Min = Mask1.rows;
+        int croppY1Max = 0;
+
+
+        maxX = Mask1.cols;
+        maxY = Mask1.rows;
+
+        wMask = (unsigned short *)Mask1.data;
+        for(int y = 0; y < maxY; y++)
+        {
+            for(int x = 0; x < maxX; x++)
+            {
+                if(*wMask)
+                {
+                    if(croppX1Min > x)
+                        croppX1Min = x;
+                    if(croppX1Max < x)
+                        croppX1Max = x;
+
+                    if(croppY1Min > y)
+                        croppY1Min = y;
+                    if(croppY1Max < y)
+                        croppY1Max = y;
+                }
+                wMask++;
+            }
+        }
+
+        int croppX2Min = Mask2.cols;
+        int croppX2Max = 0;
+
+        int croppY2Min = Mask2.rows;
+        int croppY2Max = 0;
+
+
+        maxX = Mask2.cols;
+        maxY = Mask2.rows;
+
+        wMask = (unsigned short *)Mask2.data;
+        for(int y = 0; y < maxY; y++)
+        {
+            for(int x = 0; x < maxX; x++)
+            {
+                if(*wMask)
+                {
+                    if(croppX2Min > x)
+                        croppX2Min = x;
+                    if(croppX2Max < x)
+                        croppX2Max = x;
+
+                    if(croppY2Min > y)
+                        croppY2Min = y;
+                    if(croppY2Max < y)
+                        croppY2Max = y;
+                }
+                wMask++;
+            }
+        }
+
+        //Size croppedImageSize;
+        int croppWidth1 = croppX1Max - croppX1Min + 1;
+        int croppHeight1 = croppY1Max - croppY1Min + 1;
+        int croppX1 = croppX1Min;
+        int croppY1 = croppY1Min;
+
+        if (croppHeight1 <= 200)
+            return 0;
+        if (croppWidth1 <= 50)
+            return 0;
+
+
+        Mat ImCropped1, ImCropped2, MaskCropped1, MaskCropped2;
+
+        ImIn1(Rect(croppX1,croppY1,croppWidth1,croppHeight1)).copyTo(ImCropped1);
+        Mask1(Rect(croppX1,croppY1,croppWidth1,croppHeight1)).copyTo(MaskCropped1);
+
+        int croppWidth2 = croppX2Max - croppX2Min + 1;
+        int croppHeight2 = croppY2Max - croppY2Min + 1;
+        int croppX2 = croppX2Min;
+        int croppY2 = croppY2Min;
+
+        if (croppHeight2 <= 200)
+            return 0;
+        if (croppWidth2 <= 50)
+            return 0;
+
+
+        ImIn2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(ImCropped2);
+        Mask2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(MaskCropped2);
+
+        ImIn1.release();
+        ImIn2.release();
+        Mask1.release();
+        Mask2.release();
+        ImIn1 = ImCropped1;
+        ImIn2 = ImCropped2;
+        Mask1 = MaskCropped1;
+        Mask2 = MaskCropped2;
+        maxX = Mask1.cols;
+        maxY = Mask1.rows;
+
+    }
 
 
     // allign Grains
@@ -311,7 +562,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     int minPosY = maxY-1;
     int maxPosX = 0;
     int minPosX = maxX-1;
-    unsigned short *wMask1;
+
 
     int maxXY = maxX*maxY;
     if(alignGrains)
@@ -361,6 +612,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         lStopLine = lStartLine + linesToCount;
     }
 
+    bool flipped = false;
     if(alignGrains)
     {
         wMask1 = (unsigned short*)Mask1.data + maxX * uStartLine;//(imCenterY - linesToCount - offsetToCount);
@@ -390,6 +642,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             flip(ImIn2,ImIn2, -1);
             flip(Mask1,Mask1, -1);
             flip(Mask2,Mask2, -1);
+            flipped = true;
         }
     }
 
@@ -420,7 +673,8 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     cvtColor(ImIn1,ImGray1,CV_BGR2GRAY);
     cvtColor(ImIn2,ImGray2,CV_BGR2GRAY);
 
-    blur(ImGray2,ImGray2,Size(5,5));
+    if(addBlurToSecondImage)
+        blur(ImGray2,ImGray2,Size(5,5));
 
     Mat ImGradient1 = HorizontalGradientDown(ImGray1);
     Mat ImGradient2 = HorizontalGradientDown(ImGray2);
@@ -448,6 +702,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             switchImages = 0;
         }
     }
+/*
     if(switchImages)
     {
         Mat TempMat;
@@ -468,16 +723,22 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         *ImOut1 = ImIn1;
         *ImOut2 = ImIn2;
     }
-
+*/
+    *ImOut1 = ImIn1;
+    *ImOut2 = ImIn2;
 // output ROI
     //vector <MR2DType*> rois;
     int begin[MR2DType::Dimensions];
     int end[MR2DType::Dimensions];
 
-    unsigned short *wMask;
+
     int beginX, beginY , endX, endY;
-    //Bruzdka
-    //find mask bounding box
+
+
+/*
+//Bruzdka
+//find mask bounding box
+
     wMask = (unsigned short*)Mask1.data;
     beginX = maxX;
     beginY = maxY;
@@ -524,12 +785,39 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
            wMask++;
         }
     }
-    roi1->SetName("Bruzdka");
-    roi1->SetColor(0xff0000);
+*/
+    //Mask 1
+    begin[0] = 0;
+    begin[1] = 0;
+    end[0] = Mask1.cols-1;
+    end[1] = Mask1.rows-1;
+    MR2DType* roi1;
+    roi1 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator1(roi1);
+    wMask = (unsigned short*)Mask1.data;
+    while(! iterator1.IsBehind())
+    {
+        if (*wMask)
+            iterator1.SetPixel();
+        ++iterator1;
+       wMask++;
+    }
+
+    if(switchImages)
+    {
+        roi1->SetName("Grzbiet");
+        roi1->SetColor(0x00ff00);
+    }
+    else
+    {
+        roi1->SetName("Bruzdka");
+        roi1->SetColor(0xff0000);
+    }
+
     outRoi->push_back(roi1);
 
 
-
+/*
     //Grzbiet
     //find mask bounding box
     wMask = (unsigned short*)Mask2.data;
@@ -575,9 +863,35 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
            wMask++;
         }
     }
+    */
 
-    roi2->SetName("Grzbiet");
-    roi2->SetColor(0x00ff00);
+    // Mask 2
+    begin[0] = 0;
+    begin[1] = 0;
+    end[0] = Mask2.cols-1;
+    end[1] = Mask2.rows-1;
+    MR2DType* roi2;
+    roi2 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator2(roi2);
+    wMask = (unsigned short*)Mask2.data;
+    while(! iterator2.IsBehind())
+    {
+        if (*wMask)
+            iterator2.SetPixel();
+        ++iterator2;
+       wMask++;
+    }
+    if(switchImages)
+    {
+        roi2->SetName("Bruzdka");
+        roi2->SetColor(0xff0000);
+    }
+    else
+    {
+        roi2->SetName("Grzbiet");
+        roi2->SetColor(0x00ff00);
+    }
+
     //rois.push_back(roi2);
     outRoi->push_back(roi2);
 
@@ -585,12 +899,22 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     ImOutVect->push_back(ImOut2);
 
     TransformacjaZiarna *transformacja = new TransformacjaZiarna;
-    transformacja->x = maxX/2;
-    transformacja->y = maxY/2;
-    transformacja->angle = 0;
-
+    transformacja->x = centerX1;
+    transformacja->y = centerY1;
+    if(flipped)
+        transformacja->angle = fittedRect1.angle + 180.0;
+    else
+        transformacja->angle = fittedRect1.angle;
 
     transf->push_back(transformacja);
+
+    transformacja->x = centerX2;
+    transformacja->y = centerY2;
+    if(flipped)
+        transformacja->angle = -fittedRect1.angle + 180;
+    else
+        transformacja->angle = -fittedRect1.angle;
+
     transf->push_back(transformacja);
 
     Mask1.release();
