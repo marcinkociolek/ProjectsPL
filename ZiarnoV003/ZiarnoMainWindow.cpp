@@ -1909,3 +1909,8 @@ void MainWindow::on_ShowCroppedCheckBox_2_toggled(bool checked)
 
     ProcessImage();
 }
+
+void MainWindow::on_VerticalDivisionCheckBox_toggled(bool checked)
+{
+    verticalInputImages = checked;
+}

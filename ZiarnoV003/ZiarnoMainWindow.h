@@ -185,6 +185,8 @@ private slots:
 
     void on_ShowCroppedCheckBox_2_toggled(bool checked);
 
+    void on_VerticalDivisionCheckBox_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
 };
