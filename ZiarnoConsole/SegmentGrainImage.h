@@ -2,8 +2,8 @@
 #define SegmentImageH
 
 #include <opencv2/core/core.hpp>
-#include "mazdaroi.h"
-#include "mazdaroiio.h"
+#include "../../qmazda/SharedImage/mazdaroi.h"
+#include "../../qmazda/SharedImage/mazdaroiio.h"
 
 typedef MazdaRoi<unsigned int, 2> MR2DType;
 
@@ -21,8 +21,8 @@ Mat FindMaskFromGray(Mat ImIn,int thesholdVal);
 Mat FindMaskFromGradient(Mat ImIn,int thesholdVal);
 float AverageMaskedPixelsF(Mat Reg, Mat ImF);
 //vector <MR2DType*> SegmentGrainImg(IplImage ImIpl);
-vector <MR2DType*> SegmentGrainImg(Mat *ImIpl);
+//vector <MR2DType*> SegmentGrainImg(Mat *ImIpl);
 
-bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi,std::vector<TransformacjaZiarna*> *transf);
+bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf);
 
 #endif 

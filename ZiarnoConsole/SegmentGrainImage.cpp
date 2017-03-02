@@ -13,8 +13,8 @@
 #include "gradient.h"
 //#include "DispLib.h"
 
-#include "mazdaroi.h"
-#include "mazdaroiio.h"
+#include "../../qmazda/SharedImage/mazdaroi.h"
+#include "../../qmazda/SharedImage/mazdaroiio.h"
 
 #include "SegmentGrainImage.h"
 
@@ -51,9 +51,14 @@ Mat Combine2Images( Mat Im1, Mat Im2)
 Mat FindMaskFromGray(Mat ImIn,int thesholdVal)
 {
     Mat ImGray;
+    Mat ImMask;
+
+//pms
+//    if(ImIn.empty())
+//        return ImMask;
+
     cvtColor(ImIn,ImGray,CV_BGR2GRAY);
 
-    Mat ImMask;
     threshold(ImGray, ImMask, thesholdVal ,1,THRESH_BINARY);
     ImMask.convertTo(ImMask, CV_16U);
     return ImMask;
@@ -108,7 +113,7 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 //--------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------
-bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi,std::vector<TransformacjaZiarna*> *transf)
+bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
 {
     // patrameters could be made input or external
     int threshVal = 26;
@@ -152,6 +157,15 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     //ImIn2 = *ImInVect->at(1);
 
     //ImIn1T.copyTo(ImIn1);
+
+
+//    if((*ImInVect)[0]->empty())
+//        return false;
+//    if((*ImInVect)[1]->empty())
+//        return false;
+
+
+//pms zbedne kopiowanie
     (*ImInVect->at(0)).copyTo(ImIn1);
     (*ImInVect->at(1)).copyTo(ImIn2);
 
@@ -342,11 +356,14 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             wMask++;
         }
     }
-    centerX1 = sumX/sumPix;
-    centerY1 = sumY/sumPix;
 
+//pms nie przetestowano dla pustych obrazow.
+// Dzielenie przez sumPix bylo przed sprawdzeniem
     if (sumPix < MinRegSize)
         return 0;
+
+    centerX1 = sumX/sumPix;
+    centerY1 = sumY/sumPix;
 
     maxX = Mask2.cols;
     maxY = Mask2.rows;
@@ -732,7 +749,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     int end[MR2DType::Dimensions];
 
 
-    int beginX, beginY , endX, endY;
+//    int beginX, beginY , endX, endY;
 
 
 /*
@@ -805,12 +822,12 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
     if(switchImages)
     {
-        roi1->SetName("Grzbiet");
+        roi1->SetName("D");
         roi1->SetColor(0x00ff00);
     }
     else
     {
-        roi1->SetName("Bruzdka");
+        roi1->SetName("V");
         roi1->SetColor(0xff0000);
     }
 
@@ -883,12 +900,12 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
     if(switchImages)
     {
-        roi2->SetName("Bruzdka");
+        roi2->SetName("V");
         roi2->SetColor(0xff0000);
     }
     else
     {
-        roi2->SetName("Grzbiet");
+        roi2->SetName("D");
         roi2->SetColor(0x00ff00);
     }
 
@@ -898,22 +915,22 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     ImOutVect->push_back(ImOut1);
     ImOutVect->push_back(ImOut2);
 
-    TransformacjaZiarna *transformacja = new TransformacjaZiarna;
-    transformacja->x = centerX1;
-    transformacja->y = centerY1;
+    TransformacjaZiarna transformacja;// = new TransformacjaZiarna;
+    transformacja.x = centerX1;
+    transformacja.y = centerY1;
     if(flipped)
-        transformacja->angle = fittedRect1.angle + 180.0;
+        transformacja.angle = fittedRect1.angle + 180.0;
     else
-        transformacja->angle = fittedRect1.angle;
+        transformacja.angle = fittedRect1.angle;
 
     transf->push_back(transformacja);
 
-    transformacja->x = centerX2;
-    transformacja->y = centerY2;
+    transformacja.x = centerX2;
+    transformacja.y = centerY2;
     if(flipped)
-        transformacja->angle = -fittedRect1.angle + 180;
+        transformacja.angle = -fittedRect1.angle + 180;
     else
-        transformacja->angle = -fittedRect1.angle;
+        transformacja.angle = -fittedRect1.angle;
 
     transf->push_back(transformacja);
 
