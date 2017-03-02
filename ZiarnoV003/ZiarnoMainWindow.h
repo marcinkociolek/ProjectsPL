@@ -67,6 +67,7 @@ public:
     bool fitEllipseToReg;
     bool rotateImage;
     bool croppImage;
+    bool saveResult;
 
     // display options
     int displayFlag;
@@ -186,6 +187,8 @@ private slots:
     void on_ShowCroppedCheckBox_2_toggled(bool checked);
 
     void on_VerticalDivisionCheckBox_toggled(bool checked);
+
+    void on_SaveResultCheckBox_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

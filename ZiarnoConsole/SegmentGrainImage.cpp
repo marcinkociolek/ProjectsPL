@@ -13,8 +13,11 @@
 #include "gradient.h"
 //#include "DispLib.h"
 
-#include "../../qmazda/SharedImage/mazdaroi.h"
-#include "../../qmazda/SharedImage/mazdaroiio.h"
+
+#include "mazdaroi.h"
+#include "mazdaroiio.h"
+//#include "../../qmazda/SharedImage/mazdaroi.h"
+//#include "../../qmazda/SharedImage/mazdaroiio.h"
 
 #include "SegmentGrainImage.h"
 
@@ -116,7 +119,9 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
 {
     // patrameters could be made input or external
-    int threshVal = 26;
+    //int threshVal = 26;
+    int threshVal = 16;
+
     bool removeSmallReg = true;
     int rawMorphErosion1 = 3;
     int rawMorphDilation2 = 0;
@@ -127,10 +132,17 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     int regMorphErosion1 = 0;
     int regMorphDilation2 = 0;
     int regMorphErosion3 = 0;
-    bool removeBorderRegion = true;
 
-    bool fitEllipseToReg = true;
-    bool rotateImage = true;
+    //bool removeBorderRegion = true;
+    bool removeBorderRegion = false;
+
+    //bool fitEllipseToReg = true;
+    //bool rotateImage = true;
+    bool fitEllipseToReg = false;
+    bool rotateImage = false;
+
+
+
     bool croppImage = true;
 
     bool alignGrains = true;
@@ -166,6 +178,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
 
 //pms zbedne kopiowanie
+// mk bez tego kopiowaniarozmywam obydwa obrawy wejściowe obracam i przycinam
     (*ImInVect->at(0)).copyTo(ImIn1);
     (*ImInVect->at(1)).copyTo(ImIn2);
 
@@ -385,11 +398,11 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             wMask++;
         }
     }
-    centerX2 = sumX/sumPix;
-    centerY2 = sumY/sumPix;
-
     if (sumPix < MinRegSize)
         return 0;
+
+    centerX2 = sumX/sumPix;
+    centerY2 = sumY/sumPix;
 
 
     //fit ellipse

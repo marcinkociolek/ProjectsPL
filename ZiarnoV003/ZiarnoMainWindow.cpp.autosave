@@ -522,6 +522,8 @@ void MainWindow::ProcessImage(void)
             wMask++;
         }
     }
+    if (sumPix < 10000)
+        return;
     centerX2 = sumX/sumPix;
     centerY2 = sumY/sumPix;
 

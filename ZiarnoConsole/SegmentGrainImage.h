@@ -2,8 +2,11 @@
 #define SegmentImageH
 
 #include <opencv2/core/core.hpp>
-#include "../../qmazda/SharedImage/mazdaroi.h"
-#include "../../qmazda/SharedImage/mazdaroiio.h"
+
+#include "mazdaroi.h"
+#include "mazdaroiio.h"
+//#include "../../qmazda/SharedImage/mazdaroi.h"
+//#include "../../qmazda/SharedImage/mazdaroiio.h"
 
 typedef MazdaRoi<unsigned int, 2> MR2DType;
 
