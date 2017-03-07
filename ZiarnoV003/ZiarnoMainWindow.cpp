@@ -45,7 +45,7 @@ using namespace std::chrono;
 // global variables
 QStringList Files;
 
-
+#define TERAZ_DEBUG
 
 //---------------------------------------------------------------------------------------------------
 // main program
@@ -312,7 +312,9 @@ void MainWindow::ProcessImage(void)
         break;
     }
 
+#ifdef TERAZ_DEBUG
     ShowImageRegionCombination(showThesholded, showContour, "Thresholded", ImShow, Mask1, Mask2);
+#endif
 
     // remove regions of size 1 pix
 
@@ -522,6 +524,8 @@ void MainWindow::ProcessImage(void)
             wMask++;
         }
     }
+    if (sumPix < 10000)
+        return;
     centerX2 = sumX/sumPix;
     centerY2 = sumY/sumPix;
 
