@@ -5,6 +5,8 @@
 
 #include "gradient.h"
 
+#include "SegmentGrainImage.h"
+
 #include <iostream>
 #include <string>
 #include <vector>

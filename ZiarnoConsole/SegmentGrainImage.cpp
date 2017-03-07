@@ -116,7 +116,8 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 //--------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------
-bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
+
+bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf,AnalysisParams * Params)
 {
     // patrameters could be made input or external
     //int threshVal = 26;

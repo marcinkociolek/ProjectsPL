@@ -16,7 +16,9 @@ SOURCES += main.cpp\
         ZiarnoMainWindow.cpp \
     processimage.cpp \
     ../../ProjectsLib/LibMarcin/gradient.cpp \
-    ../../ProjectsLib/LibMarcin/DispLib.cpp
+    ../../ProjectsLib/LibMarcin/DispLib.cpp \
+    ../ZiarnoConsole/gradient.cpp \
+    ../ZiarnoConsole/SegmentGrainImage.cpp
 
 HEADERS  += ZiarnoMainWindow.h \
     processimage.h \
@@ -24,7 +26,9 @@ HEADERS  += ZiarnoMainWindow.h \
     ../../ProjectsLib/LibMarcin/DispLib.h \
     ../../ProjectsLibForein/LibPMS/mazdadummy.h \
     ../../ProjectsLibForein/LibPMS/mazdaroi.h \
-    ../../ProjectsLibForein/LibPMS/mazdaroiio.h
+    ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
+    ../ZiarnoConsole/gradient.h \
+    ../ZiarnoConsole/SegmentGrainImage.h
 
 FORMS    += ZiarnoMainWindow.ui
 
@@ -34,6 +38,7 @@ win32: INCLUDEPATH += C:\Boost\include\boost-1_62\
 win32: INCLUDEPATH += C:\LibTiff\Include\
 win32: INCLUDEPATH += ../../ProjectsLib\LibMarcin\
 win32: INCLUDEPATH += ../../ProjectsLibForein/LibPMS/
+win32: INCLUDEPATH += ../ZiarnoConsole/
 
 win32: LIBS += -LC:/opencv/build/x64/vc12/lib
 win32: LIBS += -lopencv_contrib2413d

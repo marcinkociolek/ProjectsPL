@@ -285,7 +285,7 @@ void MainWindow::ProcessImage(void)
         ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
     }
 
-
+/*
     ImShow = Combine2Images(ImIn1, ImIn2);
 
     steady_clock::time_point t1 = steady_clock::now();
@@ -593,22 +593,6 @@ void MainWindow::ProcessImage(void)
     Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
 
     //crop size calculation
-/*
-    Size smallImageSize;
-
-    smallImageSize.height = (int)(fittedRect1.size.height * 1.2);
-    smallImageSize.width = (int)(fittedRect1.size.width * 1.2);
-
-    if(smallImageSize.height < (int)(fittedRect2.size.height * 1.2))
-        smallImageSize.height = (int)(fittedRect2.size.height * 1.2);
-
-    if(smallImageSize.width < (int)(fittedRect2.size.width * 1.2))
-        smallImageSize.width = (int)(fittedRect2.size.width * 1.2);
-
-    smallImageSize.width = (smallImageSize.width / 8) * 8;
-    smallImageSize.height = (smallImageSize.height / 8) * 8;
-*/
-
     RotatedRect alignedRect1 = fittedRect1;
     alignedRect1.angle = 0.0;
     RotatedRect alignedRect2 = fittedRect2;
@@ -623,113 +607,6 @@ void MainWindow::ProcessImage(void)
 
         RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
 
-//       warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
-
-        // find proper direction
-/*
-        int croppWidth,croppHeight,croppX,croppY;
-
-        croppWidth = alignedRect1.size.width;
-        croppHeight = alignedRect1.size.height;
-        croppX = (int)alignedRect1.center.x - croppWidth/2;
-        if(croppX < 0)
-            croppX = 0;
-        croppY = (int)alignedRect1.center.y - croppHeight/2;
-        if(croppY < 0)
-            croppY = 0;
-*/
-/*
-        MaskRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(RegTemp);
-
-        //allign after rotation
-        int maxPosY = 0;
-        int minPosY = RegTemp.rows - 1;
-        int maxPosX = 0;
-        int minPosX = RegTemp.cols - 1;
-        unsigned short *wMask1;
-
-        int maxXY = RegTemp.cols*RegTemp.rows;
-        wMask1 = (unsigned short*)RegTemp.data;
-        for(int i = 0; i < maxXY; i++)
-        {
-            int y = i/RegTemp.cols;
-            int x = i%RegTemp.cols;
-
-            if(*wMask1)
-            {
-                if(maxPosY < y)
-                    maxPosY = y;
-                if(minPosY > y)
-                    minPosY = y;
-                if(maxPosX < x)
-                    maxPosX = x;
-                if(minPosX > x)
-                    minPosX = x;
-            }
-
-            wMask1++;
-        }
-
-
-        int linesToCount = 200;
-        int pixelCount = linesToCount *RegTemp.cols;
-
-        int uStartLine = minPosY;
-        if(uStartLine <0)
-            uStartLine = 0;
-        int uStopLine =  uStartLine + linesToCount;
-        if(uStopLine >= RegTemp.rows)
-        {
-            uStopLine = RegTemp.rows - 1;
-            uStartLine = uStopLine - linesToCount;
-        }
-        int lStopLine  =  maxPosY;
-        if(lStopLine >= maxY)
-            lStopLine = maxY - 1;
-        int lStartLine = lStopLine - linesToCount;
-        if(lStartLine < 0)
-        {
-            lStartLine = 0;
-            lStopLine = lStartLine + linesToCount;
-        }
-
-
-        wMask1 = (unsigned short*)RegTemp.data + RegTemp.cols * uStartLine;//(imCenterY - linesToCount - offsetToCount);
-        int uRegPixelCount = 0;
-        for(int i = 0; i < pixelCount; i++)
-        {
-            if(*wMask1)
-                uRegPixelCount++;
-
-            wMask1++;
-        }
-
-        wMask1 = (unsigned short*)RegTemp.data + RegTemp.cols * lStartLine;//(imCenterY + offsetToCount);
-        int lRegPixelCount = 0;
-        for(int i = 0; i< pixelCount; i++)
-        {
-            if(*wMask1)
-                lRegPixelCount++;
-
-            wMask1++;
-        }
-
-        string OutText = "";
-        OutText += " uper pix count" +  to_string(uRegPixelCount) + "\n";
-        OutText += " lower pix count" + to_string(lRegPixelCount) + "\n";
-        ui->MesageTextEdit->setText(OutText.c_str());
-
-        if(uRegPixelCount >= lRegPixelCount)
-        {
-            RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
-            RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
-        }
-        else
-        {
-            RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle + 180,1.0);
-            RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle + 180,1.0);
-        }
-*/
         RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
         RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
 
@@ -823,28 +700,10 @@ void MainWindow::ProcessImage(void)
         int croppY1 = croppY1Min;
 
         Mat ImCropped1, ImCropped2, MaskCropped1, MaskCropped2;
-/*
-        croppWidth = smallImageSize.width;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
-        croppHeight = smallImageSize.height;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
 
-        croppX = (int)alignedRect1.center.x - croppWidth/2;
-        if(croppX < 0)
-            croppX = 0;
-        croppY = (int)alignedRect1.center.y - croppHeight/2;
-        if(croppY < 0)
-            croppY = 0;
-*/
         ImIn1(Rect(croppX1,croppY1,croppWidth1,croppHeight1)).copyTo(ImCropped1);
         Mask1(Rect(croppX1,croppY1,croppWidth1,croppHeight1)).copyTo(MaskCropped1);
 
-/*
-        croppX = (int)alignedRect2.center.x - croppWidth/2;
-        if(croppX < 0)
-            croppX = 0;
-        croppY = (int)alignedRect2.center.y - croppHeight/2;
-        if(croppY < 0)
-            croppY = 0;
-*/
         int croppWidth2 = croppX2Max - croppX2Min + 1;
         int croppHeight2 = croppY2Max - croppY2Min + 1;
         int croppX2 = croppX2Min;
@@ -866,19 +725,6 @@ void MainWindow::ProcessImage(void)
 
     }
     ShowImageRegionCombination(showCropped, showContour, "Cropped" , ImIn1, ImIn2, Mask1, Mask2);
-/*
-    RotatedRect fittedRect1,fittedRect2 ;
-    fittedRect1.angle = 0.0;
-    fittedRect1.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
-    fittedRect1.size = Size2f(100.0,100.0);
-
-    fittedRect2 = fittedRect1;
-
-
-    Mat Mask1a, Mask2a;
-    Mask1a = Mat::zeros(maxY,maxX,Mask1.type());
-    Mask2a = Mat::zeros(maxY,maxX,Mask1.type());
-*/
 
 
     //ShowHLinesOnImage(showAreaForAlign, "AreaForAlign", ImIn1, ImIn2, imCenterY - linesToCount - offsetToCount, imCenterY - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
@@ -1026,23 +872,7 @@ void MainWindow::ProcessImage(void)
 
     Mask1.copyTo(Mask1b);
     Mask2.copyTo(Mask2b);
-/*
-    RegionErosion13(Mask1b);
-    RegionErosion13(Mask1b);
-    RegionErosion13(Mask1b);
-    RegionErosion13(Mask2b);
-    RegionErosion13(Mask2b);
-    RegionErosion13(Mask2b);
-*/
-    //int kernelSizeX = 41;
-    //int kernelSizeY = 41;
-    //Mat Kernel = Mat::zeros(kernelSizeY,kernelSizeX,CV_8U);
 
-    //ellipse(Kernel, Point(kernelSizeX/2,kernelSizeY/2),Size(kernelSizeX/2,kernelSizeY/2),0,0,360,1,-1);
-    //imshow("Temp",Kernel*250);
-
-    //erode(Mask1b,Mask1b,Kernel);
-    //erode(Mask2b,Mask2b,Kernel);
 
 
     ShowImageRegionCombination(showGradient, showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
@@ -1148,7 +978,7 @@ void MainWindow::ProcessImage(void)
     roi2->SetColor(0x00ff00);
     rois.push_back(roi2);
 
-
+*/
     if (saveResult)
     {
         MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"GrzbietROI.tif").c_str(), &rois, NULL);
@@ -1161,250 +991,6 @@ void MainWindow::ProcessImage(void)
     }
 
 
-
-//end save output ROI
-
-    //Mat ImRotated1, ImRotated2, MaskRotated1, MaskRotated2;
-
-/*
-    //crop size calculation
-    Size smallImageSize;
-
-    smallImageSize.height = (int)(fittedRect1.size.height * 1.2);
-    smallImageSize.width = (int)(fittedRect1.size.width * 1.2);
-
-    if(smallImageSize.height < (int)(fittedRect2.size.height * 1.2))
-        smallImageSize.height = (int)(fittedRect2.size.height * 1.2);
-
-    if(smallImageSize.width < (int)(fittedRect2.size.width * 1.2))
-        smallImageSize.width = (int)(fittedRect2.size.width * 1.2);
-
-    smallImageSize.width = (smallImageSize.width / 8) * 8;
-    smallImageSize.height = (smallImageSize.height / 8) * 8;
-
-
-    RotatedRect alignedRect1 = fittedRect1;
-    alignedRect1.angle = 0.0;
-    RotatedRect alignedRect2 = fittedRect2;
-    alignedRect2.angle = 0.0;
-
- */
-/*
-    if(rotateImage)
-    {
-        Mat RotationMatrix1,RotationMatrix2;
-
-        Mat RegTemp;
-
-        RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
-        warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
-
-        // find proper direction
-        int croppWidth,croppHeight,croppX,croppY;
-
-        croppWidth = alignedRect1.size.width;
-        croppHeight = alignedRect1.size.height;
-        croppX = (int)alignedRect1.center.x - croppWidth/2;
-        if(croppX < 0)
-            croppX = 0;
-        croppY = (int)alignedRect1.center.y - croppHeight/2;
-        if(croppY < 0)
-            croppY = 0;
-
-        MaskRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(RegTemp);
-
-        int lineCount = 20;
-        int pixelCount = RegTemp.cols * lineCount;
-        int startLine = RegTemp.rows /4 - lineCount;
-
-        unsigned short *wRegTemp;
-        wRegTemp = (unsigned short*)RegTemp.data + RegTemp.cols * startLine;
-
-        int uRegPixelCount = 0;
-        for(int i = 0; i< pixelCount; i++)
-        {
-            if(*wRegTemp)
-                uRegPixelCount++;
-
-            wRegTemp++;
-        }
-
-        startLine = RegTemp.rows /4 * 3;
-
-        wRegTemp = (unsigned short*)RegTemp.data + RegTemp.cols * startLine;
-
-        int lRegPixelCount = 0;
-        for(int i = 0; i< pixelCount; i++)
-        {
-            if(*wRegTemp)
-                lRegPixelCount++;
-
-            wRegTemp++;
-        }
-
-        string OutText = "";
-        OutText += " uper pix count" +  to_string(uRegPixelCount) + "\n";
-        OutText += " lower pix count" + to_string(lRegPixelCount) + "\n";
-        ui->MesageTextEdit->setText(OutText.c_str());
-
-        if(uRegPixelCount >= lRegPixelCount)
-        {
-            RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
-            RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
-        }
-        else
-        {
-            RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle + 180,1.0);
-            RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle + 180,1.0);
-        }
-
-
-
-        warpAffine(ImIn1,ImRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
-        warpAffine(Mask1,MaskRotated1,RotationMatrix1,Size(ImIn1.cols,ImIn1.rows));
-
-        warpAffine(ImIn2,ImRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
-        warpAffine(Mask2,MaskRotated2,RotationMatrix2,Size(ImIn2.cols,ImIn2.rows));
-    }
-    else
-    {
-        ImRotated1 = ImIn1;//Mat::zeros(ImIn1.rows,ImIn1.cols,CV_8UC3);
-        ImRotated2 = ImIn2;//Mat::zeros(ImIn2.rows,ImIn2.cols,CV_8UC3);
-        MaskRotated1 = Mask1;
-        MaskRotated2 = Mask2;
-    }
-
-    if(showRotated)
-    {
-        Point2f vertices[4];
-        Mat ImToShow;
-
-
-        if(!showContour)
-        {
-            alignedRect1.points(vertices);
-            ImRotated1.copyTo(ImToShow);
-        }
-        else
-        {
-            alignedRect2.points(vertices);
-            ImRotated2.copyTo(ImToShow);
-        }
-        for (int i = 0; i < 4; i++)
-            line(ImToShow, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
-
-        imshow("Rotated", ImToShow);
-    }
-
-
-
-    Mat ImCropped, ImCropped1, ImCropped2, MaskCropped, MaskCropped1, MaskCropped2;
-
-    int croppWidth = ImIn1.cols;
-    int croppHeight = ImIn1.rows;
-    int croppX = 50;
-    int croppY = 50;
-    if(croppImage)
-    {
-        //Size croppedImageSize;
-
-
-        croppWidth = smallImageSize.width;//(((int)(alignedRect1.size.width * 1.2))/8)*8;
-        croppHeight = smallImageSize.height;//(((int)(alignedRect1.size.height * 1.2))/8)*8;
-
-        croppX = (int)alignedRect1.center.x - croppWidth/2;
-        if(croppX < 0)
-            croppX = 0;
-        croppY = (int)alignedRect1.center.y - croppHeight/2;
-        if(croppY < 0)
-            croppY = 0;
-
-        ImRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped1);
-        MaskRotated1(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(MaskCropped1);
-
-
-        croppX = (int)alignedRect2.center.x - croppWidth/2;
-        if(croppX < 0)
-            croppX = 0;
-        croppY = (int)alignedRect2.center.y - croppHeight/2;
-        if(croppY < 0)
-            croppY = 0;
-
-        ImRotated2(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(ImCropped2);
-        MaskRotated2(Rect(croppX,croppY,croppWidth,croppHeight)).copyTo(MaskCropped2);
-
-
-        ImCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),ImCropped1.type());
-        ImCropped1.copyTo(ImCropped(Rect(0, 0, croppWidth, croppHeight)));
-        ImCropped2.copyTo(ImCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
-
-
-    }
-    else
-    {
-        ImCropped1 = ImRotated1;
-        ImCropped2 = ImRotated2;
-
-        ImCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),ImCropped1.type());
-        ImCropped1.copyTo(ImCropped(Rect(0, 0, croppWidth, croppHeight)));
-        ImCropped2.copyTo(ImCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
-
-
-        //MaskCropped = Mask1;
-        MaskCropped1 = MaskRotated1;
-        MaskCropped2 = MaskRotated2;
-    }
-
-    // find valey(bruzdke)
-    Mat ImGraySmall1, ImGraySmall2;
-    cvtColor(ImCropped1,ImGraySmall1,CV_BGR2GRAY);
-    cvtColor(ImCropped2,ImGraySmall2,CV_BGR2GRAY);
-
-    Mat ImCroppedGradient1 = HorizontalGradientDown(ImGraySmall1);
-    Mat ImCroppedGradient2 = HorizontalGradientDown(ImGraySmall2);
-
-    Mat TempMask1,TempMask2;
-
-    MaskCropped1.copyTo(TempMask1);
-    MaskCropped2.copyTo(TempMask2);
-
-    RegionErosion13(TempMask1);
-    RegionErosion13(TempMask1);
-    RegionErosion13(TempMask1);
-    RegionErosion13(TempMask2);
-    RegionErosion13(TempMask2);
-    RegionErosion13(TempMask2);
-
-    float sum1 = AverageMaskedPixelsF(TempMask1, ImCroppedGradient1);
-    float sum2 = AverageMaskedPixelsF(TempMask2, ImCroppedGradient2);
-
-
-    if(sum1 < sum2)
-        MaskCropped1 = MaskCropped1 * 2;
-    else
-        MaskCropped2 = MaskCropped2 * 2;
-
-*/
-
-/*
-    if(showCropped)
-    {
-        Mat ImCroppedGradient;
-        ImCroppedGradient = Mat::zeros(Size(croppWidth * 2, croppHeight),ImCroppedGradient1.type());
-        ImCroppedGradient1.copyTo(ImCroppedGradient(Rect(0, 0, croppWidth, croppHeight)));
-        ImCroppedGradient2.copyTo(ImCroppedGradient(Rect(croppWidth, 0, croppWidth, croppHeight)));
-
-        imshow("ImCroppedGradient",ShowImageF32PseudoColor(ImCroppedGradient, 0.0, 100.0));
-
-        MaskCropped = Mat::zeros(Size(croppWidth * 2, croppHeight),MaskCropped1.type());
-        MaskCropped1.copyTo(MaskCropped(Rect(0, 0, croppWidth, croppHeight)));
-        MaskCropped2.copyTo(MaskCropped(Rect(croppWidth, 0, croppWidth, croppHeight)));
-
-        Mat ContourCropped = GetContour5(MaskCropped);
-
-        imshow("Cropped", ShowSolidRegionOnImage(ContourCropped,ImCropped));
-    }
-*/
 
 
     steady_clock::time_point t2 = steady_clock::now();
