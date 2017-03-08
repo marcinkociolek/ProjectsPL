@@ -2,16 +2,15 @@
 //#include <string>
 #include <vector>
 
-//#include <chrono>
-
 #include <opencv2/core/core.hpp>
-//#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-//#include "tiffio.h"
-
 #include "gradient.h"
-//#include "DispLib.h"
+#include "DispLib.h"
+
+//#define TERAZ_DEBUG
+
 
 
 #include "mazdaroi.h"
@@ -21,34 +20,62 @@
 
 #include "SegmentGrainImage.h"
 
+
+
 typedef MazdaRoi<unsigned int, 2> MR2DType;
 
-//QFileSystemModel *model;
-//QAbstractItemModel *model;
-
-
 using namespace std;
-//using namespace boost::filesystem;
-//using namespace boost;
 using namespace cv;
 
 //---------------------------------------------------------------------------------------------
-//              funtions
+//              functions
 //--------------------------------------------------------------------------------------------------
-Mat Combine2Images( Mat Im1, Mat Im2)
+void ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im2)
 {
+    if(!show)
+        return;
     int imMaxX, imMaxY;
     imMaxX = Im1.cols;
     if (imMaxX < Im2.cols)
         imMaxX = Im2.cols;
     imMaxY = Im1.rows;
-    if(imMaxY < Im2.rows)
+    if (imMaxY < Im2.rows)
         imMaxY = Im2.rows;
     Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, Im1.cols, Im1.rows)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols, Im2.rows)));
+    Im1.copyTo(Im(Rect(0, 0, Im1.cols , Im1.rows)));
+    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
+    imshow(WinName.c_str(), Im);
+    Im.release();
 
-    return Im;
+}
+//--------------------------------------------------------------------------------------------------
+void ShowImageRegionCombination(bool show, bool showContour, string WinName, Mat Im1, Mat Im2, Mat Mask1, Mat Mask2)
+{
+    if(!show)
+        return;
+    int imMaxX, imMaxY;
+    imMaxX = Im1.cols;
+    if (imMaxX < Im2.cols)
+        imMaxX = Im2.cols;
+    imMaxY = Im1.rows;
+    if (imMaxY < Im2.rows)
+        imMaxY = Im2.rows;
+    Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
+    Im1.copyTo(Im(Rect(0, 0, Im1.cols , Im1.rows)));
+    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
+
+    Mat Mask = Mat::zeros(Size(imMaxX *2,imMaxY) ,Mask1.type());
+    Mask1.copyTo(Mask(Rect(0, 0, Im1.cols , Im1.rows)));
+    Mask2.copyTo(Mask(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
+
+    if(showContour)
+    {
+        Mask = GetContour5(Mask);
+    }
+    imshow(WinName.c_str(), ShowSolidRegionOnImage(Mask,Im));
+    Mask.release();
+    Im.release();
+
 }
 //---------------------------------------------------------------------------------------------
 Mat FindMaskFromGray(Mat ImIn,int thesholdVal)
@@ -111,100 +138,73 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 
     return sumIm/sumReg;
 }
-//---------------------------------------------------------------------------------------------
-
 //--------------------------------------------------------------------------------------------------
+void ShowHLinesOnImage(bool show, string WinName, Mat Im1, Mat Im2, int lineU, int lineCU, int lineCL, int lineL)
+{
+    if(!show)
+        return;
+    int imMaxX = Im1.cols;
+    if(imMaxX < Im2.cols)
+        imMaxX = Im2.cols;
+    int imMaxY = Im1.rows;
+    if(imMaxY < Im2.rows)
+        imMaxY = Im2.rows;
 
+    Mat ImShow = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
+    Im1.copyTo(ImShow(Rect(0, 0, Im1.cols, Im1.rows)));
+    Im2.copyTo(ImShow(Rect(imMaxX, 0, Im2.cols, Im2.rows)));
+
+    //Mat ImShow;
+    //Im.copyTo(ImShow);
+    line(ImShow,Point(0,lineU),Point(ImShow.cols,lineU),CV_RGB(255,0,0),1);
+    line(ImShow,Point(0,lineCU),Point(ImShow.cols,lineCU),CV_RGB(255,0,0),1);
+    line(ImShow,Point(0,lineCL),Point(ImShow.cols,lineCL),CV_RGB(0,255,0),1);
+    line(ImShow,Point(0,lineL),Point(ImShow.cols,lineL),CV_RGB(0,255,0),1);
+
+
+    imshow(WinName.c_str(), ImShow);
+    ImShow.release();
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
-bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf,AnalysisParams * Params)
+bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf,SegmentParams * segParams)
 {
-    // patrameters could be made input or external
-    //int threshVal = 26;
-    int threshVal = 16;
-
-    bool removeSmallReg = true;
-    int rawMorphErosion1 = 3;
-    int rawMorphDilation2 = 0;
-    int rawMorphErosion3 = 0;
-    bool fillHoles = true;
-    bool divideSeparateReg = true;
-    int MinRegSize = 10000;
-    int regMorphErosion1 = 0;
-    int regMorphDilation2 = 0;
-    int regMorphErosion3 = 0;
-
-    //bool removeBorderRegion = true;
-    bool removeBorderRegion = false;
-
-    //bool fitEllipseToReg = true;
-    //bool rotateImage = true;
-    bool fitEllipseToReg = false;
-    bool rotateImage = false;
-
-
-
-    bool croppImage = true;
-
-    bool alignGrains = true;
-
-    bool addBlurToSecondImage = false;
-    bool findValey = true;
-
-    //vector <MR2DType*> rois;
-
- //   Mat ImIn;
- //   ImIn = ImIpl;
-//  if (ImIn->empty())
-//        return rois;
-//    int maxX = ImIn->cols/2;
-//    int maxY = ImIn->rows;
-    Mat ImIn1, ImIn2;// ImIn1T, ImIn2T;
-
-//    (*ImIn)(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
-//    (*ImIn)(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
-
-   // ImInVect[0].copyTo(ImIn1);
-
-    //ImIn1T = *ImInVect->at(0);
-    //ImIn2 = *ImInVect->at(1);
-
-    //ImIn1T.copyTo(ImIn1);
-
-
-//    if((*ImInVect)[0]->empty())
-//        return false;
-//    if((*ImInVect)[1]->empty())
-//        return false;
-
+    Mat ImIn1, ImIn2;
 
 //pms zbedne kopiowanie
-// mk bez tego kopiowaniarozmywam obydwa obrawy wejściowe obracam i przycinam
+// mk bez tego kopiowania rozmywam obydwa obrazy wejściowe obracam i przycinam
     (*ImInVect->at(0)).copyTo(ImIn1);
     (*ImInVect->at(1)).copyTo(ImIn2);
 
+#ifdef TERAZ_DEBUG
+    ShowImageCombination(segParams->showInput,"Input image",ImIn1, ImIn2);
+#endif
 
     int maxX = ImIn1.cols;
     int maxY = ImIn1.rows;
-
 
     Mat Mask1;
     Mat Mask2;
 
     // thresholding
-    Mask1 = FindMaskFromGray(ImIn1,threshVal);
-    Mask2 = FindMaskFromGray(ImIn2,threshVal);
+    Mask1 = FindMaskFromGray(ImIn1,segParams->threshVal);
+    Mask2 = FindMaskFromGray(ImIn2,segParams->threshVal);
 
+#ifdef TERAZ_DEBUG
+    ShowImageRegionCombination(segParams->showThesholded, segParams->showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
+#endif
 
     // remove regions of size 1 pix
-    if(removeSmallReg)
+    if(segParams->removeSmallReg)
     {
         Mask1 = RemovingTinyReg9(Mask1);
         Mask2 = RemovingTinyReg9(Mask2);
     }
 
     // morphology on thresholded image
-    switch (rawMorphErosion1)
+    switch (segParams->rawMorphErosion1)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -222,7 +222,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
-    switch (rawMorphDilation2)
+    switch (segParams->rawMorphDilation2)
     {
     case 1:
         RegionDilation5(Mask1);
@@ -240,7 +240,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
-    switch (rawMorphErosion3)
+    switch (segParams->rawMorphErosion3)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -258,8 +258,12 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
+#ifdef TERAZ_DEBUG
+    ShowImageRegionCombination(segParams->show1stMorphology, segParams->showContour, "Morphology1", ImIn1, ImIn2, Mask1, Mask2);
+#endif
+
     // procedure for removing choles inside object, obligatory for gradient thesholded image, usefull in other case
-    if(fillHoles)
+    if(segParams->fillHoles)
     {
         FillBorderWithValue(Mask1, 0xFFFF);
         OneRegionFill5Fast1(Mask1,  0xFFFF);
@@ -272,15 +276,19 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         DeleteRegionFromImage(Mask2, 0xFFFF);
     }
 
+#ifdef TERAZ_DEBUG
+    ShowImageRegionCombination(segParams->showHolesRemoved, segParams->showContour, "WithoutHoles", ImIn1, ImIn2, Mask1, Mask2);
+#endif
+
     // labelling
-    if(divideSeparateReg)
+    if(segParams->divideSeparateReg)
     {
-        DivideSeparateRegions(Mask1, MinRegSize);
-        DivideSeparateRegions(Mask2, MinRegSize);
+        DivideSeparateRegions(Mask1, segParams->MinRegSize);
+        DivideSeparateRegions(Mask2, segParams->MinRegSize);
     }
 
     //morphology after labelling
-    switch (regMorphErosion1)
+    switch (segParams->regMorphErosion1)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -298,7 +306,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
-    switch (regMorphDilation2)
+    switch (segParams->regMorphDilation2)
     {
     case 1:
         RegionDilation5(Mask1);
@@ -316,7 +324,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
-    switch (regMorphErosion3)
+    switch (segParams->regMorphErosion3)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -335,11 +343,15 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
     // removal of regions touchig image border
-    if(removeBorderRegion)
+    if(segParams->removeBorderRegion)
     {
         DeleteRegTouchingBorder(Mask1);
         DeleteRegTouchingBorder(Mask2);
     }
+
+#ifdef TERAZ_DEBUG
+    ShowImageRegionCombination(segParams->showMask, segParams->showContour, "Mask", ImIn1, ImIn2, Mask1, Mask2);
+#endif
 
     // find centroids
     int centerX1 = maxX;
@@ -371,9 +383,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         }
     }
 
-//pms nie przetestowano dla pustych obrazow.
-// Dzielenie przez sumPix bylo przed sprawdzeniem
-    if (sumPix < MinRegSize)
+    if (sumPix < segParams->MinRegSize)
         return 0;
 
     centerX1 = sumX/sumPix;
@@ -399,12 +409,11 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             wMask++;
         }
     }
-    if (sumPix < MinRegSize)
+    if (sumPix < segParams->MinRegSize)
         return 0;
 
     centerX2 = sumX/sumPix;
     centerY2 = sumY/sumPix;
-
 
     //fit ellipse
     RotatedRect fittedRect1,fittedRect2 ;
@@ -414,7 +423,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
     fittedRect2 = fittedRect1;
 
-    if(fitEllipseToReg)
+    if(segParams->fitEllipseToReg)
     {
         Mat ImTemp;
         vector<vector<Point> > contours;
@@ -440,21 +449,40 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             fittedRect2 = fitEllipse(pointsF);
         }
     }
+
+#ifdef TERAZ_DEBUG
+    if(segParams->showFitted)
+    {
+        Point2f vertices[4];
+        Mat ImToShow1,ImToShow2;
+        fittedRect1.points(vertices);
+        ImIn1.copyTo(ImToShow1);
+        for (int i = 0; i < 4; i++)
+            line(ImToShow1, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+
+        fittedRect2.points(vertices);
+        ImIn2.copyTo(ImToShow2);
+        for (int i = 0; i < 4; i++)
+            line(ImToShow2, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
+
+        Mat ImShow = Mat::zeros(Size(maxX *2,maxY) ,ImIn1.type());
+        ImToShow1.copyTo(ImShow(Rect(0, 0, maxX, maxY)));
+        ImToShow2.copyTo(ImShow(Rect(maxX, 0, maxX, maxY)));
+        imshow("Fitted", ImShow);
+    }
+#endif
+
     // rotate images
     RotatedRect alignedRect1 = fittedRect1;
     alignedRect1.angle = 0.0;
     RotatedRect alignedRect2 = fittedRect2;
     alignedRect2.angle = 0.0;
 
-
-    if(rotateImage)
+    if(segParams->rotateImage)
     {
         Mat RotationMatrix1,RotationMatrix2;
 
-        //Mat RegTemp;
-
         RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
-
 
         RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
         RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
@@ -479,14 +507,17 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         maxY = Mask1.rows;
     }
 
-    if(croppImage)
+#ifdef TERAZ_DEBUG
+    ShowImageRegionCombination(segParams->showRotated, segParams->showContour, "Rotated" , ImIn1, ImIn2, Mask1, Mask2);
+#endif
+
+    if(segParams->croppImage)
     {
         int croppX1Min = Mask1.cols;
         int croppX1Max = 0;
 
         int croppY1Min = Mask1.rows;
         int croppY1Max = 0;
-
 
         maxX = Mask1.cols;
         maxY = Mask1.rows;
@@ -517,7 +548,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
         int croppY2Min = Mask2.rows;
         int croppY2Max = 0;
-
 
         maxX = Mask2.cols;
         maxY = Mask2.rows;
@@ -570,7 +600,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         if (croppWidth2 <= 50)
             return 0;
 
-
         ImIn2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(ImCropped2);
         Mask2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(MaskCropped2);
 
@@ -584,9 +613,11 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         Mask2 = MaskCropped2;
         maxX = Mask1.cols;
         maxY = Mask1.rows;
-
     }
 
+#ifdef TERAZ_DEBUG
+    ShowImageRegionCombination(segParams->showCropped, segParams->showContour, "Cropped" , ImIn1, ImIn2, Mask1, Mask2);
+#endif
 
     // allign Grains
     int maxPosY = 0;
@@ -594,9 +625,8 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     int maxPosX = 0;
     int minPosX = maxX-1;
 
-
     int maxXY = maxX*maxY;
-    if(alignGrains)
+    if(segParams->alignGrains)
     {
         wMask1 = (unsigned short*)Mask1.data;
         for(int i = 0; i < maxXY; i++)
@@ -615,10 +645,8 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
                 if(minPosX > x)
                     minPosX = x;
             }
-
             wMask1++;
         }
-
     }
 
     int linesToCount = 200;
@@ -644,7 +672,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
     bool flipped = false;
-    if(alignGrains)
+    if(segParams->alignGrains)
     {
         wMask1 = (unsigned short*)Mask1.data + maxX * uStartLine;//(imCenterY - linesToCount - offsetToCount);
         int uRegPixelCount = 0;
@@ -666,7 +694,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             wMask1++;
         }
 
-
         if(uRegPixelCount >= lRegPixelCount)
         {
             flip(ImIn1,ImIn1, -1);
@@ -677,15 +704,13 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         }
     }
 
+#ifdef TERAZ_DEBUG
+    ShowHLinesOnImage(segParams->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    ShowImageRegionCombination(segParams->showAligned, segParams->showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
+#endif
 
-//    int rectHeight = 300;
-//    int rectWidth = 100;
-//    int rectLCX = ImIn1.cols/2 - rectWidth/2;
-//    int rectLCY = ImIn1.rows/2 - rectHeight/2;
-
-    Mat Mask1a = Mat::zeros(maxY,maxX,Mask1.type());
-    Mat Mask2a = Mat::zeros(maxY,maxX,Mask1.type());
-
+    Mat Mask1a = Mat::zeros(Mask1.rows ,Mask1.cols ,Mask1.type());
+    Mat Mask2a = Mat::zeros(Mask2.rows ,Mask2.cols ,Mask2.type());
 
     int ellipseSizeX = (maxPosX-minPosX)/4;
     int ellipseSizeY = (maxPosY-minPosY)/4;
@@ -695,32 +720,31 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     if(ellipseSizeY < 0)
         ellipseSizeY = 0;
 
-
-    ellipse(Mask1a, Point(maxX/2,maxY/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
-    ellipse(Mask2a, Point(maxX/2,maxY/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
+    ellipse(Mask1a, Point(Mask1a.cols/2,Mask1a.rows/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
+    ellipse(Mask2a, Point(Mask2a.cols/2,Mask2a.rows/2),Size(ellipseSizeX,ellipseSizeY),0,0,360,1,-1);
 
     // find valey(znajdź bruzdke)
     Mat ImGray1, ImGray2;
     cvtColor(ImIn1,ImGray1,CV_BGR2GRAY);
     cvtColor(ImIn2,ImGray2,CV_BGR2GRAY);
 
-    if(addBlurToSecondImage)
+    if(segParams->addBlurToSecondImage)
         blur(ImGray2,ImGray2,Size(5,5));
 
     Mat ImGradient1 = HorizontalGradientDown(ImGray1);
     Mat ImGradient2 = HorizontalGradientDown(ImGray2);
 
-    //Mat ImShowGradient = Combine2Images(ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0), ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0));
+#ifdef TERAZ_DEBUG
+    ShowImageRegionCombination(segParams->showGradient, segParams->showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
+#endif
 
     bool switchImages;
     Mat *ImOut1 = new Mat;
     Mat *ImOut2= new Mat;
-    if(findValey)
+    if(segParams->findValey)
     {
-
         float sum1 = AverageMaskedPixelsF(Mask1a, ImGradient1);
         float sum2 = AverageMaskedPixelsF(Mask2a, ImGradient2);
-
 
         if(sum1 < sum2)
         {
@@ -733,90 +757,24 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             switchImages = 0;
         }
     }
-/*
+
+#ifdef TERAZ_DEBUG
     if(switchImages)
     {
-        Mat TempMat;
-        TempMat = Mask1;
-        Mask1 = Mask2;
-        Mask2 = TempMat;
-
-        //ImIn2.copyTo(*ImOut1);
-        //ImIn1.copyTo(*ImOut2);
-
-        *ImOut1 = ImIn2;
-        *ImOut2 = ImIn1;
+        ShowImageRegionCombination(segParams->showOutput, segParams->showContour, "Output", ImIn2, ImIn1, Mask2, Mask1);
     }
     else
     {
-        //ImIn2.copyTo(*ImOut2);
-        //ImIn1.copyTo(*ImOut1);
-        *ImOut1 = ImIn1;
-        *ImOut2 = ImIn2;
+        ShowImageRegionCombination(segParams->showOutput, segParams->showContour, "Output", ImIn1, ImIn2, Mask1, Mask2);
     }
-*/
+#endif
+
     *ImOut1 = ImIn1;
     *ImOut2 = ImIn2;
 // output ROI
-    //vector <MR2DType*> rois;
     int begin[MR2DType::Dimensions];
     int end[MR2DType::Dimensions];
 
-
-//    int beginX, beginY , endX, endY;
-
-
-/*
-//Bruzdka
-//find mask bounding box
-
-    wMask = (unsigned short*)Mask1.data;
-    beginX = maxX;
-    beginY = maxY;
-    endX = 0;
-    endY = 0;
-
-    for(int y = 0 ; y< maxY; y++)
-    {
-        for(int x = 0 ; x< maxX; x++)
-        {
-            if (*wMask)
-            {
-                if(beginX > x)
-                    beginX = x;
-                if(beginY > y)
-                    beginY = y;
-                if(endX < x)
-                    endX = x;
-                if(endY < y)
-                    endY = y;
-            }
-           wMask++;
-        }
-    }
-    begin[0] = beginX;
-    begin[1] = beginY;
-    end[0] = endX;
-    end[1] = endY;
-
-
-    //create roi
-    MR2DType* roi1;
-    roi1 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator1(roi1);
-
-    for(int y = beginY; y<=endY; y++)
-    {
-        wMask = (unsigned short*)Mask1.data + y *maxX + beginX;
-        for(int x = beginX; x<=endX; x++)
-        {
-            if (*wMask && !iterator1.IsBehind())
-                iterator1.SetPixel();
-            ++iterator1;
-           wMask++;
-        }
-    }
-*/
     //Mask 1
     begin[0] = 0;
     begin[1] = 0;
@@ -847,55 +805,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
     outRoi->push_back(roi1);
 
-
-/*
-    //Grzbiet
-    //find mask bounding box
-    wMask = (unsigned short*)Mask2.data;
-    beginX = maxX;
-    beginY = maxY;
-    endX = 0;
-    endY = 0;
-
-    for(int y = 0 ; y< maxY; y++)
-    {
-        for(int x = 0 ; x< maxX; x++)
-        {
-            if (*wMask)
-            {
-                if(beginX > x)
-                    beginX = x;
-                if(beginY > y)
-                    beginY = y;
-                if(endX < x)
-                    endX = x;
-                if(endY < y)
-                    endY = y;
-            }
-           wMask++;
-        }
-    }
-    begin[0] = beginX;
-    begin[1] = beginY;
-    end[0] = endX;
-    end[1] = endY;
-
-    MR2DType* roi2;
-    roi2 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator2(roi2);
-    for(int y = beginY; y<=endY; y++)
-    {
-        wMask = (unsigned short*)Mask2.data + y *maxX + beginX;
-        for(int x = beginX; x<=endX; x++)
-        {
-            if (*wMask && !iterator2.IsBehind())
-                iterator2.SetPixel();
-            ++iterator2;
-           wMask++;
-        }
-    }
-    */
-
     // Mask 2
     begin[0] = 0;
     begin[1] = 0;
@@ -923,7 +832,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         roi2->SetColor(0x00ff00);
     }
 
-    //rois.push_back(roi2);
     outRoi->push_back(roi2);
 
     ImOutVect->push_back(ImOut1);

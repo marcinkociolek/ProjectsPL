@@ -22,9 +22,10 @@
 
 #include "tiffio.h"
 
-#include "processimage.h"
+//#include "processimage.h"
 #include "gradient.h"
 #include "DispLib.h"
+#include "SegmentGrainImage.h"
 
 #include "mazdaroi.h"
 #include "mazdaroiio.h"
@@ -284,6 +285,56 @@ void MainWindow::ProcessImage(void)
         ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
         ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
     }
+
+    SegmentParams segParams;
+
+    segParams.threshVal = threshVal;
+    segParams.removeSmallReg = removeSmallReg;
+    segParams.rawMorphErosion1 = rawMorphErosion1;
+    segParams.rawMorphDilation2 = rawMorphDilation2;
+    segParams.rawMorphErosion3 = rawMorphErosion3;
+    segParams.fillHoles = fillHoles;
+    segParams.divideSeparateReg = divideSeparateReg;
+    segParams.MinRegSize = MinRegSize;
+    segParams.regMorphErosion1 = regMorphErosion1;
+    segParams.regMorphDilation2 = regMorphDilation2;
+    segParams.regMorphErosion3 = regMorphErosion3;
+    segParams.removeBorderRegion = removeBorderRegion;
+    segParams.fitEllipseToReg = fitEllipseToReg;
+    segParams.rotateImage = rotateImage;
+    segParams.croppImage = croppImage;
+    segParams.alignGrains = alignGrains;
+    segParams.addBlurToSecondImage = !verticalInputImages;
+    segParams.findValey = findValey;
+
+    segParams.showContour = showContour;
+    segParams.showInput = showInput;
+    segParams.showThesholded = showThesholded;
+    segParams.show1stMorphology = show1stMorphology;
+    segParams.showHolesRemoved = showHolesRemoved;
+    segParams.showMask = showMask;
+    segParams.showContourOnInput = showContourOnInput;
+    segParams.showFitted = showFitted;
+    segParams.showRotated = showRotated;
+    segParams.showCropped = showCropped;
+    segParams.showAreaForAlign = showAreaForAlign;
+    segParams.showAligned = showAligned;
+    segParams.showGradient = showGradient;
+    segParams.showOutput = showOutput;
+
+    vector<Mat*> ImInVect;
+    ImInVect.push_back(&ImIn1);
+    ImInVect.push_back(&ImIn2);
+
+    vector<Mat*> ImOutVect;
+
+    vector<TransformacjaZiarna> TransfVect;
+    vector <MR2DType*> RoiVect;
+
+
+
+    steady_clock::time_point t1 = steady_clock::now();
+
 
 /*
     ImShow = Combine2Images(ImIn1, ImIn2);
@@ -979,24 +1030,43 @@ void MainWindow::ProcessImage(void)
     rois.push_back(roi2);
 
 */
-    if (saveResult)
+    if(SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &segParams))
     {
-        MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"GrzbietROI.tif").c_str(), &rois, NULL);
-        imwrite((FileToSave.string() + "Grzbiet.png").c_str(),ImIn2);
+        path FileToSave = OutputDirectory;
+        FileToSave.append(FileToOpen.stem().string());
+
+        if (saveResult)
+        {
+            MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"GrzbietROI.tif").c_str(), &RoiVect, NULL);
+            imwrite((FileToSave.string() + "Grzbiet.png").c_str(),ImIn2);
+        }
+
     }
-    while(rois.size() > 0)
+
+    while(ImOutVect.size() > 0)
     {
-        delete rois.back();
-        rois.pop_back();
+        ImOutVect.back()->release();
+        //delete ImOutVect.back();
+        ImOutVect.pop_back();
     }
+    while(RoiVect.size() > 0)
+    {
+        delete RoiVect.back();
+        RoiVect.pop_back();
+    }
+    while(ImInVect.size() > 0)
+    {
+        ImInVect.back()->release();
 
-
-
+        ImInVect.pop_back();
+    }
 
     steady_clock::time_point t2 = steady_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     ui->DurationLineEdit->setText(  QString::number(time_span.count()));
-
+    ImIn.release();
+    ImIn1.release();
+    ImIn2.release();
 
 }
 //--------------------------------------------------------------------------------------------------

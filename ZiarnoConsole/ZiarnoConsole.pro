@@ -12,7 +12,8 @@ TEMPLATE = app
 SOURCES += main.cpp\
     SegmentGrainImage.cpp \
     #../../ProjectsLib/LibMarcin/DispLib.cpp \
-    gradient.cpp
+    gradient.cpp \
+    DispLib.cpp
 
 
 HEADERS  += SegmentGrainImage.h \
@@ -20,7 +21,8 @@ HEADERS  += SegmentGrainImage.h \
     #../../ProjectsLib/LibMarcin/DispLib.h \
     ../../ProjectsLibForein/LibPMS/mazdadummy.h \
     ../../ProjectsLibForein/LibPMS/mazdaroi.h \
-    ../../ProjectsLibForein/LibPMS/mazdaroiio.h
+    ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
+    DispLib.h
 
 
 win32: INCLUDEPATH += C:\opencv\build\include\

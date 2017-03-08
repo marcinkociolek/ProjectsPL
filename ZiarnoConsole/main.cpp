@@ -11,7 +11,7 @@
 
 
 #include "gradient.h"
-//#include "DispLib.h"
+#include "DispLib.h"
 
 #include "mazdaroi.h"
 #include "mazdaroiio.h"
@@ -27,7 +27,7 @@ using namespace cv;
 //--------------------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-    IplImage *wImIpl = cvLoadImage("C:\\Data\\Ziarno\\TestFigs\\21.bmp");
+    IplImage *wImIpl = cvLoadImage("C:\\Data\\Ziarno\\TestFigs\\ZIEL_ZAD_00000.png");
 
     vector <MR2DType*> RoiVect;
 
@@ -35,17 +35,18 @@ int main(int argc, char *argv[])
 
     if (ImIn.empty())
         return 0;
-    //int maxX = ImIn.cols/2;
-    //int maxY = ImIn.rows;
-    int maxX = ImIn.cols;
-    int maxY = ImIn.rows/2;
+
+    int maxX = ImIn.cols/2;
+    int maxY = ImIn.rows;
+    //int maxX = ImIn.cols;
+    //int maxY = ImIn.rows/2;
 
     Mat ImIn1, ImIn2;
 
-    //(ImIn)(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
-    //(ImIn)(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
     (ImIn)(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
-    (ImIn)(Rect(0, maxY, maxX, maxY)).copyTo(ImIn2);
+    (ImIn)(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+    //(ImIn)(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
+    //(ImIn)(Rect(0, maxY, maxX, maxY)).copyTo(ImIn2);
 
     vector<Mat*> ImInVect;
     ImInVect.push_back(&ImIn1);
@@ -53,18 +54,23 @@ int main(int argc, char *argv[])
 
     vector<Mat*> ImOutVect;
 
-    std::vector<TransformacjaZiarna*> TransfVect;
+    ;
+    vector<TransformacjaZiarna> TransfVect;
+    SegmentParams segParams;
+    segParams.defaultHorizontal();
 
-    SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect,&TransfVect);
+    SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect,&TransfVect,&segParams);
 
     //rois = SegmentGrainImg(&ImIn);
 
-    imshow("ImageIn", Combine2Images(*ImInVect[0],*ImInVect[1]));
-    imshow("ImageOut", Combine2Images(*ImOutVect[0],*ImOutVect[1]));
+    //imshow("ImageIn", Combine2Images(*ImInVect[0],*ImInVect[1]));
+    //imshow("ImageOut", Combine2Images(*ImOutVect[0],*ImOutVect[1]));
+    ShowImageCombination(true, "ImageIn", *ImInVect[0],*ImInVect[1]);
+    ShowImageCombination(true, "ImageOut", *ImOutVect[0],*ImOutVect[1]);
     waitKey();
 
     // save output ROI
-    MazdaRoiIO<MR2DType>::Write("C:\\Data\\Ziarno\\TestFigs\\OK_000219Roi.tif", &RoiVect, NULL);
+    MazdaRoiIO<MR2DType>::Write("C:\\Data\\Ziarno\\TestFigs\\ZIEL_ZAD_00000Roi.tif", &RoiVect, NULL);
 
     while(RoiVect.size() > 0)
     {

@@ -24,6 +24,7 @@ Mat LoadImage(path FileToOpen)
 {
     return imread(FileToOpen.string().c_str());
 }
+/*
 //---------------------------------------------------------------------------------------------
 Mat FindMaskFromGray(Mat ImIn,int thesholdVal)
 {
@@ -48,6 +49,7 @@ Mat FindMaskFromGradient(Mat ImIn,int thesholdVal)
 
     return ImMask;
 }
+*/
 //---------------------------------------------------------------------------------------------
 
 int processFile(path FileToOpen,float threshVal)
@@ -136,6 +138,7 @@ int processFile(path FileToOpen,float threshVal)
     return 0;
 }
 //---------------------------------------------------------------------------
+/*
 float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 {
     int maxX = ImF.cols;
@@ -167,3 +170,4 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 
     return sumIm/sumReg;
 }
+*/
