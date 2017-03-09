@@ -30,7 +30,7 @@ void RegionErosion5(cv::Mat ImR);
 void RegionErosion9(cv::Mat ImR);
 void RegionErosion13(cv::Mat ImR);
 
-cv::Mat GetContour5(cv::Mat ImR);
+//cv::Mat GetContour5(cv::Mat ImR);
 
 //void ShowRegionOnImage16(Mat ImReg, Mat ImRGB);
 

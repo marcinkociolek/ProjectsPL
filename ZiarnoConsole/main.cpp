@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     SegmentParams segParams;
     segParams.defaultHorizontal();
 
-    SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect,&TransfVect,&segParams);
+    SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect,&TransfVect);
 
     //rois = SegmentGrainImg(&ImIn);
 

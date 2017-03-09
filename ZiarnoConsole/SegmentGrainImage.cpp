@@ -32,80 +32,7 @@ using namespace cv;
 
 #ifdef TERAZ_DEBUG
 #include "DispLib.h"
-void ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im2)
-{
-    if(!show)
-        return;
-    int imMaxX, imMaxY;
-    imMaxX = Im1.cols;
-    if (imMaxX < Im2.cols)
-        imMaxX = Im2.cols;
-    imMaxY = Im1.rows;
-    if (imMaxY < Im2.rows)
-        imMaxY = Im2.rows;
-    Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, Im1.cols , Im1.rows)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
-    imshow(WinName.c_str(), Im);
-    Im.release();
 
-}
-//--------------------------------------------------------------------------------------------------
-void ShowImageRegionCombination(bool show, bool showContour, string WinName, Mat Im1, Mat Im2, Mat Mask1, Mat Mask2)
-{
-    if(!show)
-        return;
-    int imMaxX, imMaxY;
-    imMaxX = Im1.cols;
-    if (imMaxX < Im2.cols)
-        imMaxX = Im2.cols;
-    imMaxY = Im1.rows;
-    if (imMaxY < Im2.rows)
-        imMaxY = Im2.rows;
-    Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, Im1.cols , Im1.rows)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
-
-    Mat Mask = Mat::zeros(Size(imMaxX *2,imMaxY) ,Mask1.type());
-    Mask1.copyTo(Mask(Rect(0, 0, Im1.cols , Im1.rows)));
-    Mask2.copyTo(Mask(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
-
-    if(showContour)
-    {
-        Mask = GetContour5(Mask);
-    }
-    imshow(WinName.c_str(), ShowSolidRegionOnImage(Mask,Im));
-    Mask.release();
-    Im.release();
-}
-
-//--------------------------------------------------------------------------------------------------
-void ShowHLinesOnImage(bool show, string WinName, Mat Im1, Mat Im2, int lineU, int lineCU, int lineCL, int lineL)
-{
-    if(!show)
-        return;
-    int imMaxX = Im1.cols;
-    if(imMaxX < Im2.cols)
-        imMaxX = Im2.cols;
-    int imMaxY = Im1.rows;
-    if(imMaxY < Im2.rows)
-        imMaxY = Im2.rows;
-
-    Mat ImShow = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(ImShow(Rect(0, 0, Im1.cols, Im1.rows)));
-    Im2.copyTo(ImShow(Rect(imMaxX, 0, Im2.cols, Im2.rows)));
-
-    //Mat ImShow;
-    //Im.copyTo(ImShow);
-    line(ImShow,Point(0,lineU),Point(ImShow.cols,lineU),CV_RGB(255,0,0),1);
-    line(ImShow,Point(0,lineCU),Point(ImShow.cols,lineCU),CV_RGB(255,0,0),1);
-    line(ImShow,Point(0,lineCL),Point(ImShow.cols,lineCL),CV_RGB(0,255,0),1);
-    line(ImShow,Point(0,lineL),Point(ImShow.cols,lineL),CV_RGB(0,255,0),1);
-
-
-    imshow(WinName.c_str(), ImShow);
-    ImShow.release();
-}
 #endif
 
 //---------------------------------------------------------------------------------------------
@@ -174,8 +101,9 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
-bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
+bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf, SegmentParams *params)
 {
+/*
     const int params_threshVal = 16;
     const bool params_removeSmallReg = true;
     const int params_rawMorphErosion1 = 3;
@@ -194,7 +122,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     const bool params_alignGrains = true;
     const bool params_addBlurToSecondImage = false;
     const bool params_findValey = true;
-
+*/
 
 /* Vertical split
 
@@ -220,6 +148,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
 
 #ifdef TERAZ_DEBUG
+/*
     const bool params_showContour = false;
     const bool params_showInput = false;
     const bool params_showThesholded = false;
@@ -234,6 +163,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     const bool params_showAligned = false;
     const bool params_showGradient = false;
     const bool params_showOutput = false;
+*/
 #endif
   
     Mat ImIn1, ImIn2;
@@ -244,7 +174,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     (*ImInVect->at(1)).copyTo(ImIn2);
 
 #ifdef TERAZ_DEBUG
-    ShowImageCombination(params_showInput,"Input image",ImIn1, ImIn2);
+    ShowImageCombination(params->showInput,"Input image",ImIn1, ImIn2);
 #endif
 
     int maxX = ImIn1.cols;
@@ -254,22 +184,22 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     Mat Mask2;
 
     // thresholding
-    Mask1 = FindMaskFromGray(ImIn1,params_threshVal);
-    Mask2 = FindMaskFromGray(ImIn2,params_threshVal);
+    Mask1 = FindMaskFromGray(ImIn1,params->threshVal);
+    Mask2 = FindMaskFromGray(ImIn2,params->threshVal);
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params_showThesholded, params_showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params->showThesholded, params->showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // remove regions of size 1 pix
-    if(params_removeSmallReg)
+    if(params->removeSmallReg)
     {
         Mask1 = RemovingTinyReg9(Mask1);
         Mask2 = RemovingTinyReg9(Mask2);
     }
 
     // morphology on thresholded image
-    switch (params_rawMorphErosion1)
+    switch (params->rawMorphErosion1)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -287,7 +217,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
-    switch (params_rawMorphDilation2)
+    switch (params->rawMorphDilation2)
     {
     case 1:
         RegionDilation5(Mask1);
@@ -305,7 +235,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
-    switch (params_rawMorphErosion3)
+    switch (params->rawMorphErosion3)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -324,11 +254,11 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params_show1stMorphology, params_showContour, "Morphology1", ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params->show1stMorphology, params->showContour, "Morphology1", ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // procedure for removing choles inside object, obligatory for gradient thesholded image, usefull in other case
-    if(params_fillHoles)
+    if(params->fillHoles)
     {
         FillBorderWithValue(Mask1, 0xFFFF);
         OneRegionFill5Fast1(Mask1,  0xFFFF);
@@ -342,18 +272,18 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params_showHolesRemoved, params_showContour, "WithoutHoles", ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params->showHolesRemoved, params->showContour, "WithoutHoles", ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // labelling
-    if(params_divideSeparateReg)
+    if(params->divideSeparateReg)
     {
-        DivideSeparateRegions(Mask1, params_MinRegSize);
-        DivideSeparateRegions(Mask2, params_MinRegSize);
+        DivideSeparateRegions(Mask1, params->MinRegSize);
+        DivideSeparateRegions(Mask2, params->MinRegSize);
     }
 
     //morphology after labelling
-    switch (params_regMorphErosion1)
+    switch (params->regMorphErosion1)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -371,7 +301,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
-    switch (params_regMorphDilation2)
+    switch (params->regMorphDilation2)
     {
     case 1:
         RegionDilation5(Mask1);
@@ -389,7 +319,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         break;
     }
 
-    switch (params_regMorphErosion3)
+    switch (params->regMorphErosion3)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -408,14 +338,14 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
     // removal of regions touchig image border
-    if(params_removeBorderRegion)
+    if(params->removeBorderRegion)
     {
         DeleteRegTouchingBorder(Mask1);
         DeleteRegTouchingBorder(Mask2);
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params_showMask, params_showContour, "Mask", ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params->showMask, params->showContour, "Mask", ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // find centroids
@@ -448,7 +378,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         }
     }
 
-    if (sumPix < params_MinRegSize)
+    if (sumPix < params->MinRegSize)
         return 0;
 
     centerX1 = sumX/sumPix;
@@ -474,7 +404,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             wMask++;
         }
     }
-    if (sumPix < params_MinRegSize)
+    if (sumPix < params->MinRegSize)
         return 0;
 
     centerX2 = sumX/sumPix;
@@ -488,7 +418,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
     fittedRect2 = fittedRect1;
 
-    if(params_fitEllipseToReg)
+    if(params->fitEllipseToReg)
     {
         Mat ImTemp;
         vector<vector<Point> > contours;
@@ -516,7 +446,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
 #ifdef TERAZ_DEBUG
-    if(params_showFitted)
+    if(params->showFitted)
     {
         Point2f vertices[4];
         Mat ImToShow1,ImToShow2;
@@ -543,7 +473,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     RotatedRect alignedRect2 = fittedRect2;
     alignedRect2.angle = 0.0;
 
-    if(params_rotateImage)
+    if(params->rotateImage)
     {
         Mat RotationMatrix1,RotationMatrix2;
 
@@ -573,10 +503,10 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params_showRotated, params_showContour, "Rotated" , ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params->showRotated, params->showContour, "Rotated" , ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
-    if(params_croppImage)
+    if(params->croppImage)
     {
         int croppX1Min = Mask1.cols;
         int croppX1Max = 0;
@@ -681,7 +611,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params_showCropped, params_showContour, "Cropped" , ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params->showCropped, params->showContour, "Cropped" , ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // allign Grains
@@ -691,7 +621,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     int minPosX = maxX-1;
 
     int maxXY = maxX*maxY;
-    if(params_alignGrains)
+    if(params->alignGrains)
     {
         wMask1 = (unsigned short*)Mask1.data;
         for(int i = 0; i < maxXY; i++)
@@ -737,7 +667,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
     bool flipped = false;
-    if(params_alignGrains)
+    if(params->alignGrains)
     {
         wMask1 = (unsigned short*)Mask1.data + maxX * uStartLine;//(imCenterY - linesToCount - offsetToCount);
         int uRegPixelCount = 0;
@@ -770,8 +700,8 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
 #ifdef TERAZ_DEBUG
-    ShowHLinesOnImage(params_showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
-    ShowImageRegionCombination(params_showAligned, params_showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
+    ShowHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    ShowImageRegionCombination(params->showAligned, params->showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
 #endif
 
     Mat Mask1a = Mat::zeros(Mask1.rows ,Mask1.cols ,Mask1.type());
@@ -793,20 +723,20 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     cvtColor(ImIn1,ImGray1,CV_BGR2GRAY);
     cvtColor(ImIn2,ImGray2,CV_BGR2GRAY);
 
-    if(params_addBlurToSecondImage)
+    if(params->addBlurToSecondImage)
         blur(ImGray2,ImGray2,Size(5,5));
 
     Mat ImGradient1 = HorizontalGradientDown(ImGray1);
     Mat ImGradient2 = HorizontalGradientDown(ImGray2);
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params_showGradient, params_showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
+    ShowImageRegionCombination(params->showGradient, params->showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
 #endif
 
     bool switchImages;
     Mat *ImOut1 = new Mat;
     Mat *ImOut2= new Mat;
-    if(params_findValey)
+    if(params->findValey)
     {
         float sum1 = AverageMaskedPixelsF(Mask1a, ImGradient1);
         float sum2 = AverageMaskedPixelsF(Mask2a, ImGradient2);
@@ -826,11 +756,11 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 #ifdef TERAZ_DEBUG
     if(switchImages)
     {
-        ShowImageRegionCombination(params_showOutput, params_showContour, "Output", ImIn2, ImIn1, Mask2, Mask1);
+        ShowImageRegionCombination(params->showOutput, params->showContour, "Output", ImIn2, ImIn1, Mask2, Mask1);
     }
     else
     {
-        ShowImageRegionCombination(params_showOutput, params_showContour, "Output", ImIn1, ImIn2, Mask1, Mask2);
+        ShowImageRegionCombination(params->showOutput, params->showContour, "Output", ImIn1, ImIn2, Mask1, Mask2);
     }
 #endif
 
@@ -936,3 +866,9 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 }
 //--------------------------------------------------------------------------------------------------
 
+bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
+{
+    SegmentParams segParams;
+    segParams.defaultHorizontal();
+    return SegmentGrainImg(ImInVect, ImOutVect,  outRoi, transf, &segParams);
+}

@@ -2,7 +2,7 @@
 
 #include <opencv2/core/core.hpp>
 
-//using namespace cv;
+using namespace cv;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cv::Mat GradientDown(cv::Mat ImIn)
@@ -1379,6 +1379,7 @@ void RegionErosionHorisontal13(Mat ImR)
 }
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+/*
 Mat GetContour5(Mat ImR)
 {
     //modyfied version works on whole image
@@ -1501,4 +1502,4 @@ void GetContour9(Mat ImR)
     delete[] ImRTemp;
 }
 
-
+*/

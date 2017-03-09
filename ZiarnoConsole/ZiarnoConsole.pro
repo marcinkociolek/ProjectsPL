@@ -13,7 +13,7 @@ SOURCES += main.cpp\
     SegmentGrainImage.cpp \
     #../../ProjectsLib/LibMarcin/DispLib.cpp \
     gradient.cpp \
-    DispLib.cpp
+    ../../ProjectsLib/LibMarcin/DispLib.cpp
 
 
 HEADERS  += SegmentGrainImage.h \
@@ -22,7 +22,7 @@ HEADERS  += SegmentGrainImage.h \
     ../../ProjectsLibForein/LibPMS/mazdadummy.h \
     ../../ProjectsLibForein/LibPMS/mazdaroi.h \
     ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
-    DispLib.h
+    ../../ProjectsLib/LibMarcin/DispLib.h
 
 
 win32: INCLUDEPATH += C:\opencv\build\include\
