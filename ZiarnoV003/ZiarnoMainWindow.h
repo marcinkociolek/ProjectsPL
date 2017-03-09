@@ -9,7 +9,7 @@
 
 
 using namespace boost::filesystem;
-using namespace cv;
+//using namespace cv;
 
 namespace Ui {
 class MainWindow;
@@ -27,17 +27,17 @@ public:
     path FileToOpen;
     path CurrentDir;
 
-    Mat ImShow;
-    Mat ImIn;
+    cv::Mat ImShow;
+    cv::Mat ImIn;
     //IplImage ImIn;
-    Mat ImIn1;
-    Mat ImIn2;
+    cv::Mat ImIn1;
+    cv::Mat ImIn2;
 
-    Mat ImMask1;
-    Mat ImMask2;
+    cv::Mat ImMask1;
+    cv::Mat ImMask2;
 
-    Mat Contour1;
-    Mat Contour2;
+    cv::Mat Contour1;
+    cv::Mat Contour2;
 
     int maxX;
     int maxY;
@@ -91,13 +91,13 @@ public:
 
 
     void ProcessImage(void);
-    void ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im2);
+    void ShowImageCombination(bool show, std::string WinName, cv::Mat Im1, cv::Mat Im2);
 
-    Mat  Combine2Images(Mat Im1, Mat Im2);
-    void ShowImageRegionCombination(bool show, bool contour, string WinName, Mat Im1, Mat Im2, Mat Mask1, Mat Mask2);
-    void ShowImageRegionCombination(bool show, bool showContour, string WinName, Mat Im, Mat Mask1, Mat Mask2);
-    void ShowHLinesOnImage(bool show, string WinName, Mat Im, int lineU, int lineCU, int lineCL, int lineL);
-    void ShowHLinesOnImage(bool show, string WinName, Mat Im1, Mat Im2, int lineU, int lineCU, int lineCL, int lineL);
+    cv::Mat  Combine2Images(cv::Mat Im1, cv::Mat Im2);
+    void ShowImageRegionCombination(bool show, bool contour, std::string WinName, cv::Mat Im1, cv::Mat Im2, cv::Mat Mask1, cv::Mat Mask2);
+    void ShowImageRegionCombination(bool show, bool showContour, std::string WinName, cv::Mat Im, cv::Mat Mask1, cv::Mat Mask2);
+    void ShowHLinesOnImage(bool show, std::string WinName, cv::Mat Im, int lineU, int lineCU, int lineCL, int lineL);
+    void ShowHLinesOnImage(bool show, std::string WinName, cv::Mat Im1, cv::Mat Im2, int lineU, int lineCU, int lineCL, int lineL);
     void OnOffImageWindow(void);
 
 private slots:

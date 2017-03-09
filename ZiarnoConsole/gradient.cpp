@@ -2,12 +2,12 @@
 
 #include <opencv2/core/core.hpp>
 
-using namespace cv;
+//using namespace cv;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-Mat GradientDown(Mat ImIn)
+cv::Mat GradientDown(cv::Mat ImIn)
 {
-    Mat ImF, ImOut;
+    cv::Mat ImF, ImOut;
     ImIn.convertTo(ImF,CV_32F);
 
 
@@ -18,7 +18,7 @@ Mat GradientDown(Mat ImIn)
     int maxXa = maxX - 1;
     int maxYa = maxY - 1;
 
-    ImOut = Mat::zeros(maxY,maxX,CV_32F);
+    ImOut = cv::Mat::zeros(maxY,maxX,CV_32F);
 
     float *wImOut = (float*)ImOut.data;
     float *wImIn[9];
@@ -98,9 +98,9 @@ Mat GradientDown(Mat ImIn)
     return ImOut;
 }
 //---------------------------------------------------------------------------
-Mat HorizontalGradientDown(Mat ImIn)
+cv::Mat HorizontalGradientDown(cv::Mat ImIn)
 {
-    Mat ImF, ImOut;
+    cv::Mat ImF, ImOut;
     ImIn.convertTo(ImF,CV_32F);
 
     int maxX = ImIn.cols;

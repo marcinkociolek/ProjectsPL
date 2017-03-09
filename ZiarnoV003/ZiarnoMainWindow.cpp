@@ -39,7 +39,7 @@ QAbstractItemModel *model;
 using namespace std;
 using namespace boost::filesystem;
 using namespace boost;
-using namespace cv;
+//using namespace cv;
 
 using namespace std::chrono;
 

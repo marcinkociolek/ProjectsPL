@@ -14,7 +14,7 @@
 
 typedef MazdaRoi<unsigned int, 2> MR2DType;
 
-using namespace cv;
+// using namespace cv;
 
 struct TransformacjaZiarna
 {
@@ -23,6 +23,8 @@ struct TransformacjaZiarna
     double angle; // kąt obrotu obrazu wynikowego względem oryginalnego
 };
 
+
+/*
 class SegmentParams
 {
 public:
@@ -113,13 +115,10 @@ public:
         regMorphErosion1 = 0;
         regMorphDilation2 = 0;
         regMorphErosion3 = 0;
-
         removeBorderRegion = true;
-
         fitEllipseToReg = true;
         rotateImage = true;
         croppImage = true;
-
         alignGrains = true;
         addBlurToSecondImage = false;
         findValey = true;
@@ -139,15 +138,9 @@ public:
         showOutput = false;
     }
 };
+*/
 
 
-//Mat Combine2Images( Mat Im1, Mat Im2);
-void ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im2);
-Mat FindMaskFromGray(Mat ImIn,int thesholdVal);
-Mat FindMaskFromGradient(Mat ImIn,int thesholdVal);
-float AverageMaskedPixelsF(Mat Reg, Mat ImF);
-
-bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi,
-                     std::vector<TransformacjaZiarna> *transf, SegmentParams * SegParams);
+bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf);
 
 #endif
