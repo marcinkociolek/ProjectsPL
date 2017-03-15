@@ -3,7 +3,7 @@
 
 #include <opencv2/core/core.hpp>
 
-//using namespace cv;
+// using namespace cv;
 
 
 cv::Mat GradientDown(cv::Mat ImIn);

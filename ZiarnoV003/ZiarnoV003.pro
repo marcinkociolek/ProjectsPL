@@ -17,18 +17,16 @@ SOURCES += main.cpp\
     processimage.cpp \
     ../../ProjectsLib/LibMarcin/gradient.cpp \
     ../../ProjectsLib/LibMarcin/DispLib.cpp \
-    ../ZiarnoConsole/gradient.cpp \
     ../ZiarnoConsole/SegmentGrainImage.cpp
 
 HEADERS  += ZiarnoMainWindow.h \
     processimage.h \
-    ../../ProjectsLib/LibMarcin/gradient.h \
     ../../ProjectsLib/LibMarcin/DispLib.h \
     ../../ProjectsLibForein/LibPMS/mazdadummy.h \
     ../../ProjectsLibForein/LibPMS/mazdaroi.h \
     ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
-    ../ZiarnoConsole/gradient.h \
-    ../ZiarnoConsole/SegmentGrainImage.h
+    ../ZiarnoConsole/SegmentGrainImage.h \
+    ../../ProjectsLib/LibMarcin/gradient.h
 
 FORMS    += ZiarnoMainWindow.ui
 

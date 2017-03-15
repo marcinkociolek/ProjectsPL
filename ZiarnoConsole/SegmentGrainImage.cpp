@@ -103,6 +103,7 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 
 bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf, SegmentParams *params)
 {
+    bool minSizeReached = true;
 /*
     const int params_threshVal = 16;
     const bool params_removeSmallReg = true;
@@ -379,7 +380,11 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
     if (sumPix < params->MinRegSize)
+    {
+        Mask1.release();
+        Mask2.release();
         return 0;
+    }
 
     centerX1 = sumX/sumPix;
     centerY1 = sumY/sumPix;
@@ -405,7 +410,11 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         }
     }
     if (sumPix < params->MinRegSize)
+    {
+        Mask1.release();
+        Mask2.release();
         return 0;
+    }
 
     centerX2 = sumX/sumPix;
     centerY2 = sumY/sumPix;
@@ -575,9 +584,9 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         int croppY1 = croppY1Min;
 
         if (croppHeight1 <= 200)
-            return 0;
+            minSizeReached = false; //return 0;
         if (croppWidth1 <= 50)
-            return 0;
+            minSizeReached = false; //return 0;
 
 
         Mat ImCropped1, ImCropped2, MaskCropped1, MaskCropped2;
@@ -591,9 +600,9 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         int croppY2 = croppY2Min;
 
         if (croppHeight2 <= 200)
-            return 0;
+            minSizeReached = false; //return 0;
         if (croppWidth2 <= 50)
-            return 0;
+            minSizeReached = false; //return 0;
 
         ImIn2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(ImCropped2);
         Mask2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(MaskCropped2);
@@ -621,7 +630,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     int minPosX = maxX-1;
 
     int maxXY = maxX*maxY;
-    if(params->alignGrains)
+    if(params->alignGrains && minSizeReached)
     {
         wMask1 = (unsigned short*)Mask1.data;
         for(int i = 0; i < maxXY; i++)
@@ -667,7 +676,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
     bool flipped = false;
-    if(params->alignGrains)
+    if(params->alignGrains && minSizeReached)
     {
         wMask1 = (unsigned short*)Mask1.data + maxX * uStartLine;//(imCenterY - linesToCount - offsetToCount);
         int uRegPixelCount = 0;
