@@ -8,7 +8,7 @@
 
 #include "gradient.h"
 
-//#define TERAZ_DEBUG
+#define TERAZ_DEBUG
 
 
 
