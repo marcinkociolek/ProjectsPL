@@ -46,6 +46,7 @@ public:
     bool alignGrains;
     bool addBlurToSecondImage;
     bool findValey;
+    bool subsegment;
 
     bool showContour;
     bool showInput;
@@ -61,6 +62,7 @@ public:
     bool showAligned;
     bool showGradient;
     bool showOutput;
+    bool showOutput2;
 
 
     void defaultHorizontal(void)
@@ -86,6 +88,8 @@ public:
         addBlurToSecondImage = false;
         findValey = true;
 
+        subsegment = true;
+
         showContour = false;
         showInput = false;
         showThesholded = false;
@@ -100,6 +104,7 @@ public:
         showAligned = false;
         showGradient = false;
         showOutput = false;
+        showOutput2 = false;
     }
 
     void defaultVertical(void)
@@ -122,6 +127,9 @@ public:
         alignGrains = true;
         addBlurToSecondImage = false;
         findValey = true;
+
+        subsegment = true;
+
         showContour = false;
         showInput = false;
         showThesholded = false;
@@ -136,6 +144,7 @@ public:
         showAligned = false;
         showGradient = false;
         showOutput = false;
+        showOutput2 = false;
     }
 };
 

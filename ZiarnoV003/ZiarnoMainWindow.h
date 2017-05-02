@@ -67,6 +67,8 @@ public:
     bool fitEllipseToReg;
     bool rotateImage;
     bool croppImage;
+    bool subsegment;
+
     bool saveResult;
 
     // display options
@@ -87,6 +89,7 @@ public:
     bool showAligned;
     bool showGradient;
     bool showOutput;
+    bool showOutput2;
 
 
 
@@ -189,6 +192,10 @@ private slots:
     void on_VerticalDivisionCheckBox_toggled(bool checked);
 
     void on_SaveResultCheckBox_toggled(bool checked);
+
+    void on_ShowOutput2CheckBox_toggled(bool checked);
+
+    void on_SubsegmentCheckBox_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

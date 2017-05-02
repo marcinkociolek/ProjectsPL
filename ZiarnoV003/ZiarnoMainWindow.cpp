@@ -39,7 +39,7 @@ QAbstractItemModel *model;
 using namespace std;
 using namespace boost::filesystem;
 using namespace boost;
-//using namespace cv;
+using namespace cv;
 
 using namespace std::chrono;
 
@@ -125,11 +125,14 @@ MainWindow::MainWindow(QWidget *parent) :
     removeBorderRegion  = ui->RemoveBorderRegionCheckBox->checkState();
     alignGrains         = ui->AlignCheckBox->checkState();
     findValey           = ui->FindValeyCheckBox->checkState();
-    saveResult          =ui->SaveResultCheckBox->checkState();
+
 
     fitEllipseToReg     = ui->FitEllipseCheckBox->checkState();
     rotateImage         = ui->RotateCheckBox->checkState();
     croppImage          = ui->CroppCheckBox->checkState();
+    subsegment          = ui->SubsegmentCheckBox->checkState();
+
+    saveResult          =ui->SaveResultCheckBox->checkState();
 
     // display options
     showInput           = ui->ShowInputImageCheckBox->checkState();
@@ -141,6 +144,7 @@ MainWindow::MainWindow(QWidget *parent) :
     showAligned         = ui->ShowAlignedCheckBox->checkState();
     showGradient        = ui->ShowGradientCheckBox->checkState();
     showOutput          = ui->ShowOutputCheckBox->checkState();
+    showOutput2         = ui->ShowOutput2CheckBox->checkState();
 
 
 
@@ -160,7 +164,7 @@ MainWindow::MainWindow(QWidget *parent) :
         displayFlag = WINDOW_AUTOSIZE;
 
 
-    InputDirectory = "C:\\Data\\Ziarno\\3.11.2015_uszkodzone\\Zielone, zadeszczone, zanieczyszczenia organiczne\\";
+    InputDirectory = "C:\\Data\\Ziarno\\14.04.2016 Rozne klasy\\Dobre\\";
     OutputDirectory = "c:\\";
 }
 
@@ -306,6 +310,7 @@ void MainWindow::ProcessImage(void)
     segParams.alignGrains = alignGrains;
     segParams.addBlurToSecondImage = !verticalInputImages;
     segParams.findValey = findValey;
+    segParams.subsegment = subsegment;
 
     segParams.showContour = showContour;
     segParams.showInput = showInput;
@@ -321,6 +326,7 @@ void MainWindow::ProcessImage(void)
     segParams.showAligned = showAligned;
     segParams.showGradient = showGradient;
     segParams.showOutput = showOutput;
+    segParams.showOutput2 = showOutput2;
 
     vector<Mat*> ImInVect;
     ImInVect.push_back(&ImIn1);
@@ -899,5 +905,24 @@ void MainWindow::on_VerticalDivisionCheckBox_toggled(bool checked)
 void MainWindow::on_SaveResultCheckBox_toggled(bool checked)
 {
     saveResult = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_ShowOutput2CheckBox_toggled(bool checked)
+{
+
+    showOutput2 = checked;
+    if(showOutput2)
+        namedWindow("Output2", displayFlag);
+    else
+        destroyWindow("Output2");
+
+    ProcessImage();
+
+}
+
+void MainWindow::on_SubsegmentCheckBox_toggled(bool checked)
+{
+    subsegment = checked;
     ProcessImage();
 }

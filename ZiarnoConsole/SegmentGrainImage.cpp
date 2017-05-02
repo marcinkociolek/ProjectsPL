@@ -742,7 +742,21 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     ShowImageRegionCombination(params->showGradient, params->showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
 #endif
 
-    bool switchImages;
+//subsegmentation
+    if(params->subsegment)
+    {
+        FindLefLowerEdge2(Mask1);
+        FindRightLowerEdge2(Mask1);
+        FindTop(Mask1);
+        MarkEllipse(Mask1);
+
+        FindLefLowerEdge2(Mask2);
+        FindRightLowerEdge2(Mask2);
+        FindTop(Mask2);
+        MarkEllipse(Mask2);
+    }
+
+    bool switchImages = 0;
     Mat *ImOut1 = new Mat;
     Mat *ImOut2= new Mat;
     if(params->findValey)
@@ -752,13 +766,16 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
         if(sum1 < sum2)
         {
-            Mask1 = Mask1 * 2;
             switchImages = 1;
+        }
+
+        if(switchImages)
+        {
+            AddValToRegNr(Mask1, 5);
         }
         else
         {
-            Mask2 = Mask2 * 2;
-            switchImages = 0;
+            AddValToRegNr(Mask2, 5);
         }
     }
 
@@ -772,6 +789,33 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         ShowImageRegionCombination(params->showOutput, params->showContour, "Output", ImIn1, ImIn2, Mask1, Mask2);
     }
 #endif
+/*
+//subsegmentation
+    if(params->subsegment)
+    {
+        if(switchImages)
+        {
+            FindLefLowerEdge2(Mask2);
+            FindRightLowerEdge2(Mask2);
+        }
+        else
+        {
+            FindLefLowerEdge2(Mask1);
+            FindRightLowerEdge2(Mask1);
+        }
+    }
+*/
+#ifdef TERAZ_DEBUG
+    if(switchImages)
+    {
+        ShowImageRegionCombination(params->showOutput2, params->showContour, "Output2", ImIn2, ImIn1, Mask2, Mask1);
+    }
+    else
+    {
+        ShowImageRegionCombination(params->showOutput2, params->showContour, "Output2", ImIn1, ImIn2, Mask1, Mask2);
+    }
+#endif
+
 
     *ImOut1 = ImIn1;
     *ImOut2 = ImIn2;

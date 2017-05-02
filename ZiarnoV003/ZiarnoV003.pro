@@ -15,9 +15,9 @@ TEMPLATE = app
 SOURCES += main.cpp\
         ZiarnoMainWindow.cpp \
     processimage.cpp \
-    ../../ProjectsLib/LibMarcin/gradient.cpp \
     ../../ProjectsLib/LibMarcin/DispLib.cpp \
-    ../ZiarnoConsole/SegmentGrainImage.cpp
+    ../ZiarnoConsole/SegmentGrainImage.cpp \
+    ../ZiarnoConsole/gradient.cpp
 
 HEADERS  += ZiarnoMainWindow.h \
     processimage.h \
@@ -26,7 +26,7 @@ HEADERS  += ZiarnoMainWindow.h \
     ../../ProjectsLibForein/LibPMS/mazdaroi.h \
     ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
     ../ZiarnoConsole/SegmentGrainImage.h \
-    ../../ProjectsLib/LibMarcin/gradient.h
+    ../ZiarnoConsole/gradient.h
 
 FORMS    += ZiarnoMainWindow.ui
 

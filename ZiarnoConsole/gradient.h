@@ -30,6 +30,17 @@ void RegionErosion5(cv::Mat ImR);
 void RegionErosion9(cv::Mat ImR);
 void RegionErosion13(cv::Mat ImR);
 
+void RegionErosionH13(cv::Mat ImR);
+void RegionDilationH13(cv::Mat ImR);
+
+void FindLefLowerEdge(cv::Mat ImR);
+void FindLefLowerEdge2(cv::Mat ImR);
+void FindRightLowerEdge2(cv::Mat ImR);
+void FindTop(cv::Mat ImR);
+void MarkEllipse(cv::Mat ImR);
+
+void AddValToRegNr(cv::Mat ImR, unsigned short regOfset);
+
 //cv::Mat GetContour5(cv::Mat ImR);
 
 //void ShowRegionOnImage16(Mat ImReg, Mat ImRGB);
