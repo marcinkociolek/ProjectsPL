@@ -36,8 +36,8 @@ void RegionDilationH13(cv::Mat ImR);
 void FindLefLowerEdge(cv::Mat ImR);
 void FindLefLowerEdge2(cv::Mat ImR);
 void FindRightLowerEdge2(cv::Mat ImR);
-void FindTop(cv::Mat ImR);
-void MarkEllipse(cv::Mat ImR);
+void FindTop(cv::Mat ImR, float limitRatio = 0.2);
+void MarkEllipse(cv::Mat ImR, float positionYRatio, float sizeXRatio, float sizeYRatio);
 
 void AddValToRegNr(cv::Mat ImR, unsigned short regOfset);
 

@@ -742,20 +742,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     ShowImageRegionCombination(params->showGradient, params->showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
 #endif
 
-//subsegmentation
-    if(params->subsegment)
-    {
-        FindLefLowerEdge2(Mask1);
-        FindRightLowerEdge2(Mask1);
-        FindTop(Mask1);
-        MarkEllipse(Mask1);
-
-        FindLefLowerEdge2(Mask2);
-        FindRightLowerEdge2(Mask2);
-        FindTop(Mask2);
-        MarkEllipse(Mask2);
-    }
-
     bool switchImages = 0;
     Mat *ImOut1 = new Mat;
     Mat *ImOut2= new Mat;
@@ -767,15 +753,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         if(sum1 < sum2)
         {
             switchImages = 1;
-        }
-
-        if(switchImages)
-        {
-            AddValToRegNr(Mask1, 5);
-        }
-        else
-        {
-            AddValToRegNr(Mask2, 5);
         }
     }
 
@@ -789,30 +766,56 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         ShowImageRegionCombination(params->showOutput, params->showContour, "Output", ImIn1, ImIn2, Mask1, Mask2);
     }
 #endif
-/*
-//subsegmentation
+
+    //subsegmentation
+    Mat Mask1b,Mask2b;
+    Mask1.copyTo(Mask1b);
+    Mask2.copyTo(Mask2b);
     if(params->subsegment)
     {
+        FindLefLowerEdge2(Mask1b);
+        FindRightLowerEdge2(Mask1b);
+        FindTop(Mask1b);
+
+        FindLefLowerEdge2(Mask2b);
+        FindRightLowerEdge2(Mask2b);
+        FindTop(Mask2b);
+
         if(switchImages)
         {
-            FindLefLowerEdge2(Mask2);
-            FindRightLowerEdge2(Mask2);
+            MarkEllipse(Mask1b,0.6,0.25,0.25);
+            MarkEllipse(Mask2b,0.7,0.2,0.25);
         }
         else
         {
-            FindLefLowerEdge2(Mask1);
-            FindRightLowerEdge2(Mask1);
+            MarkEllipse(Mask1b,0.7,0.2,0.25);
+            MarkEllipse(Mask2b,0.6,0.25,0.25);
         }
+    }
+
+    if(params->subsegment)
+    {
+
+
+    }
+/*
+    if(switchImages)
+    {
+        AddValToRegNr(Mask1, 5);
+    }
+    else
+    {
+        AddValToRegNr(Mask2, 5);
     }
 */
 #ifdef TERAZ_DEBUG
     if(switchImages)
     {
-        ShowImageRegionCombination(params->showOutput2, params->showContour, "Output2", ImIn2, ImIn1, Mask2, Mask1);
+        ShowImageRegionCombination(params->showOutput2, params->showContour, "Output2", ImIn2, ImIn1, Mask2b, Mask1b);
     }
     else
     {
-        ShowImageRegionCombination(params->showOutput2, params->showContour, "Output2", ImIn1, ImIn2, Mask1, Mask2);
+        ShowImageRegionCombination(params->showOutput2, params->showContour, "Output2", ImIn1, ImIn2, Mask1b, Mask2b);
     }
 #endif
 
@@ -840,18 +843,90 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
        wMask++;
     }
 
+    MR2DType* roi11;
+    roi11 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator11(roi11);
+    wMask = (unsigned short*)Mask1b.data;
+    while(! iterator11.IsBehind())
+    {
+        if (*wMask==2)
+            iterator11.SetPixel();
+        ++iterator11;
+       wMask++;
+    }
+
+    MR2DType* roi12;
+    roi12 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator12(roi12);
+    wMask = (unsigned short*)Mask1b.data;
+    while(! iterator12.IsBehind())
+    {
+        if (*wMask==3)
+            iterator12.SetPixel();
+        ++iterator12;
+       wMask++;
+    }
+
+    MR2DType* roi13;
+    roi13 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator13(roi13);
+    wMask = (unsigned short*)Mask1b.data;
+    while(! iterator13.IsBehind())
+    {
+        if (*wMask==4)
+            iterator13.SetPixel();
+        ++iterator13;
+       wMask++;
+    }
+
+    MR2DType* roi14;
+    roi14 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator14(roi14);
+    wMask = (unsigned short*)Mask1b.data;
+    while(! iterator14.IsBehind())
+    {
+        if (*wMask==5)
+            iterator14.SetPixel();
+        ++iterator14;
+       wMask++;
+    }
+
+
+
     if(switchImages)
     {
         roi1->SetName("D");
         roi1->SetColor(0x00ff00);
+        roi11->SetName("D1");
+        roi11->SetColor(0x00ff00);
+        roi12->SetName("D2");
+        roi12->SetColor(0x00ff00);
+        roi13->SetName("D3");
+        roi13->SetColor(0x00ff00);
+        roi14->SetName("D4");
+        roi14->SetColor(0x00ff00);
     }
     else
     {
         roi1->SetName("V");
         roi1->SetColor(0xff0000);
+        roi11->SetName("V1");
+        roi11->SetColor(0xff0000);
+        roi12->SetName("V2");
+        roi12->SetColor(0xff0000);
+        roi13->SetName("V3");
+        roi13->SetColor(0xff0000);
+        roi14->SetName("V4");
+        roi14->SetColor(0xff0000);
+
+
     }
 
     outRoi->push_back(roi1);
+    outRoi->push_back(roi11);
+    outRoi->push_back(roi12);
+    outRoi->push_back(roi13);
+    outRoi->push_back(roi14);
 
     // Mask 2
     begin[0] = 0;
@@ -869,18 +944,89 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         ++iterator2;
        wMask++;
     }
+    MR2DType* roi21;
+    roi21 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator21(roi21);
+    wMask = (unsigned short*)Mask2b.data;
+    while(! iterator21.IsBehind())
+    {
+        if (*wMask==2)
+            iterator21.SetPixel();
+        ++iterator21;
+       wMask++;
+    }
+
+    MR2DType* roi22;
+    roi22 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator22(roi22);
+    wMask = (unsigned short*)Mask2b.data;
+    while(! iterator22.IsBehind())
+    {
+        if (*wMask==3)
+            iterator22.SetPixel();
+        ++iterator22;
+       wMask++;
+    }
+
+    MR2DType* roi23;
+    roi23 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator23(roi23);
+    wMask = (unsigned short*)Mask2b.data;
+    while(! iterator23.IsBehind())
+    {
+        if (*wMask==4)
+            iterator23.SetPixel();
+        ++iterator23;
+       wMask++;
+    }
+
+    MR2DType* roi24;
+    roi24 = new MR2DType(begin, end);
+    MazdaRoiIterator<MR2DType> iterator24(roi24);
+    wMask = (unsigned short*)Mask2b.data;
+    while(! iterator24.IsBehind())
+    {
+        if (*wMask==5)
+            iterator24.SetPixel();
+        ++iterator24;
+       wMask++;
+    }
+
+
+
+
     if(switchImages)
     {
         roi2->SetName("V");
         roi2->SetColor(0xff0000);
+        roi21->SetName("V1");
+        roi21->SetColor(0xff0000);
+        roi22->SetName("V2");
+        roi22->SetColor(0xff0000);
+        roi23->SetName("V3");
+        roi23->SetColor(0xff0000);
+        roi24->SetName("V4");
+        roi24->SetColor(0xff0000);
     }
     else
     {
         roi2->SetName("D");
         roi2->SetColor(0x00ff00);
+        roi21->SetName("D1");
+        roi21->SetColor(0x00ff00);
+        roi22->SetName("D2");
+        roi22->SetColor(0x00ff00);
+        roi23->SetName("D3");
+        roi23->SetColor(0x00ff00);
+        roi24->SetName("D4");
+        roi24->SetColor(0x00ff00);
     }
 
     outRoi->push_back(roi2);
+    outRoi->push_back(roi21);
+    outRoi->push_back(roi22);
+    outRoi->push_back(roi23);
+    outRoi->push_back(roi24);
 
     ImOutVect->push_back(ImOut1);
     ImOutVect->push_back(ImOut2);
@@ -908,6 +1054,8 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     Mask2.release();
     Mask1a.release();
     Mask2a.release();
+    Mask1b.release();
+    Mask2b.release();
 
     ImGradient1.release();
     ImGradient2.release();

@@ -2083,13 +2083,13 @@ void FindRightLowerEdge2(Mat ImR)
     delete[] ImRDilated;
 }
 //------------------------------------------------------------------------------
-void FindTop(Mat ImR)
+void FindTop(Mat ImR, float limitRatio)
 {
     int maxX = ImR.cols;
     int maxY = ImR.rows;
     int maxXY = maxX * maxY;
 
-    int limit = maxXY*4/20;
+    int limit = (int)((float)maxXY*limitRatio);
     unsigned short *wImR = (unsigned short*)ImR.data;
     for (int i = 0; i < limit; i++)
     {
@@ -2101,14 +2101,16 @@ void FindTop(Mat ImR)
     }
 }
 //------------------------------------------------------------------------------
-void MarkEllipse(Mat ImR)
+void MarkEllipse(Mat ImR, float positionYRatio, float sizeXRatio, float sizeYRatio)
 {
     int maxX = ImR.cols;
     int maxY = ImR.rows;
     int maxXY = maxX * maxY;
 
     Mat RegEllipse = Mat::zeros(maxY,maxX, CV_16U);
-    ellipse(RegEllipse, Point(maxX/2,maxY*3/4),Size(maxX/6,maxY/6),0,0,360,1,-1);
+    ellipse(RegEllipse, Point(maxX/2,(int)((float)maxY*positionYRatio)),
+                        Size((int)((float)maxX*sizeXRatio),(int)((float)maxY*sizeYRatio)),
+                        0,0,360,1,-1);
     // ellipse(RegEllipse, Point(maxX/2,maxY/2),Size(40,80),0,0,360,1,-1);
     //ellipse(RegEllipse, Point(50,50),Size(40,40),0,0,360,1,-1);
     unsigned short *wImR = (unsigned short*)ImR.data;
