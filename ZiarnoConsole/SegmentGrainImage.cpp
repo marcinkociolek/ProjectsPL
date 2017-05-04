@@ -422,7 +422,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     //fit ellipse
     RotatedRect fittedRect1,fittedRect2 ;
     fittedRect1.angle = 0.0;
-    fittedRect1.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
+    fittedRect1.center = Point2f((float)(ImIn1.cols)/2,(float)(ImIn1.rows)/2);
     fittedRect1.size = Size2f(100.0,100.0);
 
     fittedRect2 = fittedRect1;
@@ -783,13 +783,13 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
         if(switchImages)
         {
-            MarkEllipse(Mask1b,0.6,0.25,0.25);
+            MarkEllipse(Mask1b,0.65,0.25,0.3);
             MarkEllipse(Mask2b,0.7,0.2,0.25);
         }
         else
         {
             MarkEllipse(Mask1b,0.7,0.2,0.25);
-            MarkEllipse(Mask2b,0.6,0.25,0.25);
+            MarkEllipse(Mask2b,0.65,0.25,0.3);
         }
     }
 
