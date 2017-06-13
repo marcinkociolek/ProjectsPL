@@ -675,7 +675,8 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         lStopLine = lStartLine + linesToCount;
     }
 #ifdef TERAZ_DEBUG
-    ShowHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    //ShowHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    ShowRegBetweenHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2, Mask1, Mask2, 200);
 //    ShowImageRegionCombination(params->showAligned, params->showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
 #endif
 
