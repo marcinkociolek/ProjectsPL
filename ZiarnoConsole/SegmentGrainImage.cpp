@@ -674,12 +674,18 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         lStartLine = 0;
         lStopLine = lStartLine + linesToCount;
     }
+#ifdef TERAZ_DEBUG
+    ShowHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+//    ShowImageRegionCombination(params->showAligned, params->showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
+#endif
 
     bool flipped = false;
+    int uRegPixelCount = 0;
+    int lRegPixelCount = 0;
     if(params->alignGrains && minSizeReached)
     {
         wMask1 = (unsigned short*)Mask1.data + maxX * uStartLine;//(imCenterY - linesToCount - offsetToCount);
-        int uRegPixelCount = 0;
+
         for(int i = 0; i < pixelCount; i++)
         {
             if(*wMask1)
@@ -689,7 +695,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         }
 
         wMask1 = (unsigned short*)Mask1.data + maxX * lStartLine;//(imCenterY + offsetToCount);
-        int lRegPixelCount = 0;
+
         for(int i = 0; i< pixelCount; i++)
         {
             if(*wMask1)
@@ -706,13 +712,13 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             flip(Mask2,Mask2, -1);
             flipped = true;
         }
+
     }
 
 #ifdef TERAZ_DEBUG
-    ShowHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+//    ShowHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
     ShowImageRegionCombination(params->showAligned, params->showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
 #endif
-
     Mat Mask1a = Mat::zeros(Mask1.rows ,Mask1.cols ,Mask1.type());
     Mat Mask2a = Mat::zeros(Mask2.rows ,Mask2.cols ,Mask2.type());
 
