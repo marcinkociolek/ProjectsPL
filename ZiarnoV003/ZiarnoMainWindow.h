@@ -48,6 +48,7 @@ public:
 
     // analisis options
     bool verticalInputImages;
+    int inputType;
     int segmentType;
     float threshVal;
     bool removeSmallReg;
@@ -196,6 +197,8 @@ private slots:
     void on_ShowOutput2CheckBox_toggled(bool checked);
 
     void on_SubsegmentCheckBox_toggled(bool checked);
+
+    void on_InputTypecomboBox_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

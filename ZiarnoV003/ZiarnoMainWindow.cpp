@@ -107,8 +107,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->RegionMorfology3ComboBox->addItem("erode9");
     ui->RegionMorfology3ComboBox->addItem("erode13");
 
+    ui->InputTypecomboBox->addItem("Horizontal");
+    ui->InputTypecomboBox->addItem("Vertical");
+    ui->InputTypecomboBox->addItem("3 separated");
+
+    ui->InputTypecomboBox->setCurrentIndex(2);
 
     // analisis options
+    inputType = ui->InputTypecomboBox->currentIndex();
     verticalInputImages = ui->VerticalDivisionCheckBox->checkState();
     segmentType         = ui->SegmentationComboBox->currentIndex();
     threshVal           = ui->spinBox->value();
@@ -146,13 +152,7 @@ MainWindow::MainWindow(QWidget *parent) :
     showOutput          = ui->ShowOutputCheckBox->checkState();
     showOutput2         = ui->ShowOutput2CheckBox->checkState();
 
-
-
-
     showContourOnInput  = ui->ShowContourOnImageCheckBox->checkState();
-
-
-
 
     showFitted          = ui->ShowFitedElipseCheckBox->checkState();
     showRotated         = ui->ShowRotatedCheckBox->checkState();
@@ -209,8 +209,12 @@ void MainWindow::on_pushButton_clicked()
     {
         if (FileToProcess.path().extension() != ".bmp" && FileToProcess.path().extension() != ".png" )
             continue;
-
         path PathLocal = FileToProcess.path();
+
+        regex FilePattern(".+_top_.+");
+        if ((inputType == 2) && (!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
+            continue;
+
         if (!exists(PathLocal))
         {
             //Files << PathLocal.filename().string() << " File not exists" << "\n";
@@ -219,25 +223,9 @@ void MainWindow::on_pushButton_clicked()
             msgBox.exec();
             break;
         }
-        //Files << PathLocal.filename().string().c_str();
         ui->FileListWidget->addItem(PathLocal.filename().string().c_str());
     }
-   // model = new QStringListModel(Files);
-    //ui->FileListView->setModel(model);
-//    model->setRootPath("D:\\");  //(PathLocal.filename().string().c_str());
-//    ui->FileListView->setModel(model);
-//    QModelIndex index = model->index(dialog.getExistingDirectory()) ;
-//    ui->FileListView->setRootIndex(index);
-//    ui->FileTreeView->setRootIndex(index);
-   // ui->FileListWidget->setCurrentRow(0);
-
 }
-
-
-
-
-
-
 void MainWindow::on_spinBox_valueChanged(int arg1)
 {
     threshVal = arg1;
@@ -246,17 +234,34 @@ void MainWindow::on_spinBox_valueChanged(int arg1)
 
 void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText)
 {
-    FileToOpen = InputDirectory;
-    FileToOpen.append(currentText.toStdWString());
-    if (!exists(FileToOpen))
-        return;
-    ImIn = imread(FileToOpen.string().c_str());
-    if (ImIn.empty())
-        return;
-//    maxX = ImIn.cols/2;
-//    maxY = ImIn.rows;
-//    ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
-//    ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
+    switch (inputType)
+    {
+    case 2:
+        {
+            string FileNameTop(currentText.toStdString());
+            string FileNameBottom = regex_replace(FileNameTop,regex("_top_"),"_bot_");
+            string FileNameSide = regex_replace(FileNameTop,regex("_top_"),"_side_");
+
+            FileToOpen = InputDirectory;
+            FileToOpen.append(FileNameTop);
+            ImIn1 = imread(FileToOpen.string().c_str());
+
+            FileToOpen = InputDirectory;
+            FileToOpen.append(FileNameBottom);
+            ImIn2 = imread(FileToOpen.string().c_str());
+        }
+        break;
+    default:
+        FileToOpen = InputDirectory;
+        FileToOpen.append(currentText.toStdWString());
+        if (!exists(FileToOpen))
+            return;
+        ImIn = imread(FileToOpen.string().c_str());
+
+        if (ImIn.empty())
+            return;
+        break;
+    }
 
     threshVal = ui->spinBox->value();
 
@@ -270,19 +275,29 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
 void MainWindow::ProcessImage(void)
 {
     string OutText = "";
-    if (ImIn.empty())
-        return;
-    if(verticalInputImages)
+
+    switch(inputType)
     {
+    case 1:
+        if (ImIn.empty())
+            return;
         maxX = ImIn.cols;
         maxY = ImIn.rows/2;
 
         ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
         ImIn(Rect(0, maxY, maxX, maxY)).copyTo(ImIn2);
-    }
-
-    else
-    {
+        break;
+    case 2:
+        if (ImIn1.empty())
+            return;
+        if (ImIn2.empty())
+            return;
+        maxX = ImIn1.cols;
+        maxY = ImIn1.rows;
+        break;
+    default:
+        if (ImIn.empty())
+            return;
         maxX = ImIn.cols/2;
         maxY = ImIn.rows;
 
@@ -308,7 +323,11 @@ void MainWindow::ProcessImage(void)
     segParams.rotateImage = rotateImage;
     segParams.croppImage = croppImage;
     segParams.alignGrains = alignGrains;
-    segParams.addBlurToSecondImage = !verticalInputImages;
+    if(inputType == 0)
+        segParams.addBlurToSecondImage = 1;
+    else
+        segParams.addBlurToSecondImage = 0;
+    //segParams.addBlurToSecondImage = !verticalInputImages;
     segParams.findValey = findValey;
     segParams.subsegment = subsegment;
 
@@ -924,5 +943,11 @@ void MainWindow::on_ShowOutput2CheckBox_toggled(bool checked)
 void MainWindow::on_SubsegmentCheckBox_toggled(bool checked)
 {
     subsegment = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_InputTypecomboBox_currentIndexChanged(int index)
+{
+    inputType = index;
     ProcessImage();
 }
