@@ -30,7 +30,7 @@
    <widget class="QSpinBox" name="spinBox">
     <property name="geometry">
      <rect>
-      <x>490</x>
+      <x>480</x>
       <y>0</y>
       <width>42</width>
       <height>22</height>
@@ -194,7 +194,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>80</y>
+      <y>100</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -207,7 +207,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>100</y>
+      <y>120</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -220,7 +220,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>140</y>
+      <y>160</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -233,7 +233,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>120</y>
+      <y>140</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -285,9 +285,9 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>341</y>
+      <y>360</y>
       <width>211</width>
-      <height>171</height>
+      <height>161</height>
      </rect>
     </property>
    </widget>
@@ -308,7 +308,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>160</y>
+      <y>180</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -321,7 +321,7 @@
     <property name="geometry">
      <rect>
       <x>240</x>
-      <y>320</y>
+      <y>340</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -392,7 +392,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>180</y>
+      <y>200</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -405,7 +405,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>200</y>
+      <y>220</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -512,7 +512,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>240</y>
+      <y>260</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -525,7 +525,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>260</y>
+      <y>280</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -538,7 +538,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>280</y>
+      <y>300</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -567,7 +567,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>300</y>
+      <y>320</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -638,7 +638,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>220</y>
+      <y>240</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -670,7 +670,7 @@
     <property name="geometry">
      <rect>
       <x>560</x>
-      <y>320</y>
+      <y>340</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -719,6 +719,38 @@
     </property>
     <property name="text">
      <string>Input type</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="ShowThirdCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>80</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Third</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxThreshVal3">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>0</y>
+      <width>42</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>255</number>
+    </property>
+    <property name="value">
+     <number>16</number>
+    </property>
+    <property name="displayIntegerBase">
+     <number>10</number>
     </property>
    </widget>
   </widget>

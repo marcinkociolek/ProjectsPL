@@ -23,7 +23,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-
+    std::string CurrentFileName;
     path FileToOpen;
     path CurrentDir;
 
@@ -32,6 +32,7 @@ public:
     //IplImage ImIn;
     cv::Mat ImIn1;
     cv::Mat ImIn2;
+    cv::Mat ImIn3;
 
     cv::Mat ImMask1;
     cv::Mat ImMask2;
@@ -51,6 +52,7 @@ public:
     int inputType;
     int segmentType;
     float threshVal;
+    int threshVal3;
     bool removeSmallReg;
     int rawMorphErosion1;
     int rawMorphDilation2;
@@ -76,6 +78,8 @@ public:
     int displayFlag;
 
     bool showContour;
+
+    bool showThirdImage;
 
     bool showInput;
     bool showThesholded;
@@ -199,6 +203,10 @@ private slots:
     void on_SubsegmentCheckBox_toggled(bool checked);
 
     void on_InputTypecomboBox_currentIndexChanged(int index);
+
+    void on_ShowThirdCheckBox_toggled(bool checked);
+
+    void on_spinBoxThreshVal3_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;

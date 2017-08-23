@@ -29,6 +29,7 @@ class SegmentParams
 {
 public:
     int threshVal;
+    int threshVal3;
     bool removeSmallReg;
     int rawMorphErosion1;
     int rawMorphDilation2;
@@ -48,6 +49,7 @@ public:
     bool findValey;
     bool subsegment;
 
+    bool showThird;
     bool showContour;
     bool showInput;
     bool showThesholded;

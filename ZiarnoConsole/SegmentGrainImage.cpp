@@ -167,15 +167,19 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 */
 #endif
   
-    Mat ImIn1, ImIn2;
+    Mat ImIn1, ImIn2, ImIn3;
 
 //pms zbedne kopiowanie
 // mk bez tego kopiowania rozmywam obydwa obrazy wejściowe obracam i przycinam
     (*ImInVect->at(0)).copyTo(ImIn1);
     (*ImInVect->at(1)).copyTo(ImIn2);
+    //if(*ImInVect->size() > 2)
+        (*ImInVect->at(2)).copyTo(ImIn3);
 
 #ifdef TERAZ_DEBUG
     ShowImageCombination(params->showInput,"Input image",ImIn1, ImIn2);
+    if(params->showThird && params->showInput)
+        imshow("Input image 3",ImIn3);
 #endif
 
     int maxX = ImIn1.cols;
@@ -188,8 +192,15 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     Mask1 = FindMaskFromGray(ImIn1,params->threshVal);
     Mask2 = FindMaskFromGray(ImIn2,params->threshVal);
 
+    //third image
+    Mat Mask3 = Mat::zeros(ImIn3.rows, ImIn3.cols, ImIn3.type());
+    threshold(ImIn3, Mask3, params->threshVal3 ,1,THRESH_BINARY);
+    Mask3.convertTo(Mask3, CV_16U);
+
 #ifdef TERAZ_DEBUG
     ShowImageRegionCombination(params->showThesholded, params->showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
+    if(params->showThird && params->showThesholded)
+        imshow("Thresholded 3",ShowRegion(Mask3));
 #endif
 
     // remove regions of size 1 pix

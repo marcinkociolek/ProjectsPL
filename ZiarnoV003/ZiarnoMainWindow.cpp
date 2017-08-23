@@ -72,7 +72,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->ShowComboBox->addItem("Contour");
     ui->ShowComboBox->setCurrentIndex(1);
 
-    threshVal = ui->spinBox->value();
     MinRegSize = ui->MinRegionSizeSpinBox->value();
 
     ui->RawRegionMorfology1ComboBox->addItem("none");
@@ -118,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
     verticalInputImages = ui->VerticalDivisionCheckBox->checkState();
     segmentType         = ui->SegmentationComboBox->currentIndex();
     threshVal           = ui->spinBox->value();
+    threshVal3          = ui->spinBoxThreshVal3->value();
     removeSmallReg      = ui->RemoveSmalRegionscheckBox->checkState();
     rawMorphErosion1    = ui->RawRegionMorfology1ComboBox->currentIndex();
     rawMorphDilation2   = ui->RawRegionMorfology2ComboBox->currentIndex();
@@ -141,6 +141,8 @@ MainWindow::MainWindow(QWidget *parent) :
     saveResult          =ui->SaveResultCheckBox->checkState();
 
     // display options
+    showThirdImage      = ui->ShowThirdCheckBox->checkState();
+
     showInput           = ui->ShowInputImageCheckBox->checkState();
     showThesholded      = ui->ShowThresholdedImgeCheckBox->checkState();
     show1stMorphology   = ui->ShowAfter1MorphologyCheckBox->checkState();
@@ -238,9 +240,10 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
     {
     case 2:
         {
-            string FileNameTop(currentText.toStdString());
-            string FileNameBottom = regex_replace(FileNameTop,regex("_top_"),"_bot_");
-            string FileNameSide = regex_replace(FileNameTop,regex("_top_"),"_side_");
+            CurrentFileName = currentText.toStdString();
+            string FileNameTop(CurrentFileName);
+            string FileNameBottom = regex_replace(CurrentFileName,regex("_top_"),"_bot_");
+            string FileNameSide = regex_replace(CurrentFileName,regex("_top_"),"_side_");
 
             FileToOpen = InputDirectory;
             FileToOpen.append(FileNameTop);
@@ -249,6 +252,10 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
             FileToOpen = InputDirectory;
             FileToOpen.append(FileNameBottom);
             ImIn2 = imread(FileToOpen.string().c_str());
+
+            FileToOpen = InputDirectory;
+            FileToOpen.append(FileNameSide);
+            ImIn3 = imread(FileToOpen.string().c_str());
         }
         break;
     default:
@@ -263,7 +270,7 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
         break;
     }
 
-    threshVal = ui->spinBox->value();
+    //threshVal = ui->spinBox->value();
 
     ProcessImage();
 }
@@ -288,10 +295,27 @@ void MainWindow::ProcessImage(void)
         ImIn(Rect(0, maxY, maxX, maxY)).copyTo(ImIn2);
         break;
     case 2:
-        if (ImIn1.empty())
-            return;
-        if (ImIn2.empty())
-            return;
+        if (ImIn1.empty()||ImIn2.empty())
+        {
+            string FileNameTop = CurrentFileName;
+            string FileNameBottom = regex_replace(CurrentFileName,regex("_top_"),"_bot_");
+            string FileNameSide = regex_replace(CurrentFileName,regex("_top_"),"_side_");
+
+            FileToOpen = InputDirectory;
+            FileToOpen.append(FileNameTop);
+            ImIn1 = imread(FileToOpen.string().c_str());
+
+            FileToOpen = InputDirectory;
+            FileToOpen.append(FileNameBottom);
+            ImIn2 = imread(FileToOpen.string().c_str());
+
+            FileToOpen = InputDirectory;
+            FileToOpen.append(FileNameSide);
+            ImIn3 = imread(FileToOpen.string().c_str());
+
+            if (ImIn1.empty()||ImIn2.empty()||ImIn3.empty())
+                return;
+        }
         maxX = ImIn1.cols;
         maxY = ImIn1.rows;
         break;
@@ -308,6 +332,7 @@ void MainWindow::ProcessImage(void)
     SegmentParams segParams;
 
     segParams.threshVal = threshVal;
+    segParams.threshVal3 = threshVal3;
     segParams.removeSmallReg = removeSmallReg;
     segParams.rawMorphErosion1 = rawMorphErosion1;
     segParams.rawMorphDilation2 = rawMorphDilation2;
@@ -331,6 +356,8 @@ void MainWindow::ProcessImage(void)
     segParams.findValey = findValey;
     segParams.subsegment = subsegment;
 
+    segParams.showThird = showThirdImage;
+
     segParams.showContour = showContour;
     segParams.showInput = showInput;
     segParams.showThesholded = showThesholded;
@@ -350,6 +377,7 @@ void MainWindow::ProcessImage(void)
     vector<Mat*> ImInVect;
     ImInVect.push_back(&ImIn1);
     ImInVect.push_back(&ImIn2);
+    ImInVect.push_back(&ImIn3);
 
     vector<Mat*> ImOutVect;
 
@@ -399,6 +427,7 @@ void MainWindow::ProcessImage(void)
     //ImIn.release();
     ImIn1.release();
     ImIn2.release();
+    ImIn3.release();
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -635,9 +664,17 @@ void MainWindow::on_ShowInputImageCheckBox_toggled(bool checked)
 {
     showInput = checked;
     if(showInput)
+    {
         namedWindow("Input image", displayFlag);
+        if(showThirdImage)
+            namedWindow("Input image 3", displayFlag);
+    }
     else
+    {
         destroyWindow("Input image");
+        destroyWindow("Input image3");
+    }
+
     ProcessImage();
 }
 
@@ -645,9 +682,14 @@ void MainWindow::on_ShowThresholdedImgeCheckBox_toggled(bool checked)
 {
     showThesholded = checked;
     if(showThesholded)
+    {
         namedWindow("Thresholded", displayFlag);
+        if(showThirdImage)
+            namedWindow("Thresholded 3", displayFlag);
+    }
     else
         destroyWindow("Thresholded");
+        destroyWindow("Thresholded 3");
     ProcessImage();
 }
 
@@ -898,7 +940,7 @@ void MainWindow::on_pushButtonConvertAll_clicked()
         ImIn(Rect(0, 0, maxX, maxY)).copyTo(ImIn1);
         ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
 
-        threshVal = ui->spinBox->value();
+        //threshVal = ui->spinBox->value();
 
         ProcessImage();
     }
@@ -949,5 +991,17 @@ void MainWindow::on_SubsegmentCheckBox_toggled(bool checked)
 void MainWindow::on_InputTypecomboBox_currentIndexChanged(int index)
 {
     inputType = index;
+    ProcessImage();
+}
+
+void MainWindow::on_ShowThirdCheckBox_toggled(bool checked)
+{
+    showThirdImage = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_spinBoxThreshVal3_valueChanged(int arg1)
+{
+    threshVal3 = arg1;
     ProcessImage();
 }
