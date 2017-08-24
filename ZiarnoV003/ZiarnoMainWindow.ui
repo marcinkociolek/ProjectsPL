@@ -215,6 +215,9 @@
     <property name="text">
      <string>Show Thresholded image</string>
     </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QCheckBox" name="ShowWithoutHolesCheckBox">
     <property name="geometry">
@@ -576,7 +579,7 @@
      <string>Show output</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QLineEdit" name="OutDirectoryLineEdit">
@@ -679,7 +682,7 @@
      <string>Show output 2</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QCheckBox" name="SubsegmentCheckBox">
@@ -733,6 +736,9 @@
     <property name="text">
      <string>Show Third</string>
     </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxThreshVal3">
     <property name="geometry">
@@ -747,7 +753,7 @@
      <number>255</number>
     </property>
     <property name="value">
-     <number>16</number>
+     <number>100</number>
     </property>
     <property name="displayIntegerBase">
      <number>10</number>

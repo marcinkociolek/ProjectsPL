@@ -150,6 +150,7 @@ public:
     }
 };
 
+cv::Mat MK_threshold8bit(cv::Mat Im8bit, unsigned char threshold);
 
 bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf, SegmentParams *params);
 bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf);

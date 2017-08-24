@@ -98,6 +98,114 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 }
 
 //--------------------------------------------------------------------------------------------------
+cv::Mat MK_threshold8bit(cv::Mat Im8Bit, unsigned char threshold)
+{
+    int maxX = Im8Bit.cols;
+    int maxY = Im8Bit.rows;
+    int maxXY = maxX * maxY;
+    if(maxX == 0 || maxY ==0)
+        return Mat::zeros(1,1,CV_16U);
+
+    if(!Im8Bit.isContinuous())
+        return Mat::zeros(1,1,CV_16U);
+
+    Mat Mask = Mat::zeros(maxY,maxX,CV_16U);
+    unsigned short *wMask = (unsigned short *)Mask.data;
+    unsigned char *wIm8bit = (unsigned char *)Im8Bit.data;
+
+    for (int i = 0; i < maxXY; i++)
+    {
+            if(*wIm8bit >= threshold)
+            {
+                *wMask = 1;
+            }
+            wMask++;
+            wIm8bit++;
+    }
+    return Mask;
+
+}
+//--------------------------------------------------------------------------------------------------
+cv::Mat MK_thresholdBRG(cv::Mat ImBGR, float threshold)
+{
+    int maxX = ImBGR.cols;
+    int maxY = ImBGR.rows;
+    int maxXY = maxX * maxY;
+    if(maxX == 0 || maxY ==0)
+        return Mat::zeros(1,1,CV_16U);
+
+    if(!ImBGR.isContinuous())
+        return Mat::zeros(1,1,CV_16U);
+
+    Mat Mask = Mat::zeros(maxY,maxX,CV_16U);
+    unsigned short *wMask = (unsigned short *)Mask.data;
+    unsigned char *wImBGR = (unsigned char *)ImBGR.data;
+
+    for (int i = 0; i < maxXY; i++)
+    {
+        float brightness ;
+        brightness = (float)*wImBGR * 0.114;
+        wImBGR++;
+        brightness += (float)*wImBGR * 0.587;
+        wImBGR++;
+        brightness += (float)*wImBGR * 0.299;
+        wImBGR++;
+
+        if(brightness >= threshold)
+            {
+                *wMask = 1;
+            }
+            wMask++;
+            wImBGR++;
+    }
+    return Mask;
+}
+
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold)
+{
+    int maxX = ImBGR.cols;
+    int maxY = ImBGR.rows;
+    if(maxX == 0 || maxY ==0)
+        return 0;
+
+    if(!ImBGR.isContinuous())
+        return 0;
+
+    unsigned char *wImBGR = (unsigned char*)ImBGR.data;
+
+    int *LineWidths = new int[maxY];
+    int firstLine = 0;
+
+    for (int y = 0; y < maxY; y++)
+    {
+        int sumLineBlackPixels = 0;
+        for (int x = 0; x < maxX; x++)
+        {
+            float brightness ;
+            brightness = (float)*wImBGR * 0.114;
+            wImBGR++;
+            brightness += (float)*wImBGR * 0.587;
+            wImBGR++;
+            brightness += (float)*wImBGR * 0.299;
+            wImBGR++;
+
+            if(brightness <= threshold)
+                sumLineBlackPixels ++;
+        }
+        LineWidths[y] = sumLineBlackPixels;
+        if(!sumLineBlackPixels)
+        {
+            firstLine = y;
+        }
+
+    }
+    return firstLine;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
@@ -174,7 +282,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     (*ImInVect->at(0)).copyTo(ImIn1);
     (*ImInVect->at(1)).copyTo(ImIn2);
     //if(*ImInVect->size() > 2)
-        (*ImInVect->at(2)).copyTo(ImIn3);
+    (*ImInVect->at(2)).copyTo(ImIn3);
 
 #ifdef TERAZ_DEBUG
     ShowImageCombination(params->showInput,"Input image",ImIn1, ImIn2);
@@ -187,20 +295,23 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
     Mat Mask1;
     Mat Mask2;
+    Mat Mask3;
 
     // thresholding
     Mask1 = FindMaskFromGray(ImIn1,params->threshVal);
     Mask2 = FindMaskFromGray(ImIn2,params->threshVal);
 
-    //third image
-    Mat Mask3 = Mat::zeros(ImIn3.rows, ImIn3.cols, ImIn3.type());
-    threshold(ImIn3, Mask3, params->threshVal3 ,1,THRESH_BINARY);
-    Mask3.convertTo(Mask3, CV_16U);
+    //Mask3 = FindMaskFromGray(ImIn3,params->threshVal3);
+    int firstLine = FindGrainHeighOnBRG(ImIn3, params->threshVal3);
 
 #ifdef TERAZ_DEBUG
     ShowImageRegionCombination(params->showThesholded, params->showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
     if(params->showThird && params->showThesholded)
-        imshow("Thresholded 3",ShowRegion(Mask3));
+    {
+        Mat ImShow = ImIn3;
+        line(ImShow,Point(0,firstLine),Point(ImShow.cols,firstLine),Scalar(256,0,0));
+        imshow("Thresholded 3",ImShow);
+    }
 #endif
 
     // remove regions of size 1 pix

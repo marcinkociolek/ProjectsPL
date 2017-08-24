@@ -390,7 +390,16 @@ void MainWindow::ProcessImage(void)
 
 
 
-    if(SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &segParams))
+    bool done;
+
+    done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &segParams);
+
+    steady_clock::time_point t2 = steady_clock::now();
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    ui->DurationLineEdit->setText(  QString::number(time_span.count()));
+
+
+    if(done)
     {
         path FileToSave = OutputDirectory;
         FileToSave.append(FileToOpen.stem().string());
@@ -421,9 +430,7 @@ void MainWindow::ProcessImage(void)
         ImInVect.pop_back();
     }
 
-    steady_clock::time_point t2 = steady_clock::now();
-    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-    ui->DurationLineEdit->setText(  QString::number(time_span.count()));
+
     //ImIn.release();
     ImIn1.release();
     ImIn2.release();
@@ -672,7 +679,7 @@ void MainWindow::on_ShowInputImageCheckBox_toggled(bool checked)
     else
     {
         destroyWindow("Input image");
-        destroyWindow("Input image3");
+        destroyWindow("Input image 3");
     }
 
     ProcessImage();
