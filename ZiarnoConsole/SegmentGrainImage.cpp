@@ -163,6 +163,7 @@ cv::Mat MK_thresholdBRG(cv::Mat ImBGR, float threshold)
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
+/*
 int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold)
 {
     int maxX = ImBGR.cols;
@@ -174,9 +175,10 @@ int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold)
         return 0;
 
     unsigned char *wImBGR = (unsigned char*)ImBGR.data;
-
-    int *LineWidths = new int[maxY];
+    int *BlacLineLengths = new int[maxY];
     int firstLine = 0;
+    int firstBlackPixelOnEdgePos = 0;
+    bool firstLineFound = false;
 
     for (int y = 0; y < maxY; y++)
     {
@@ -192,18 +194,40 @@ int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold)
             wImBGR++;
 
             if(brightness <= threshold)
+            {
                 sumLineBlackPixels ++;
+                if(x == 0 && firstBlackPixelOnEdgePos < y)
+                    firstBlackPixelOnEdgePos = y;
+            }
         }
-        LineWidths[y] = sumLineBlackPixels;
-        if(!sumLineBlackPixels)
+        BlacLineLengths[y] = sumLineBlackPixels;
+        if(sumLineBlackPixels && !firstLineFound)
         {
             firstLine = y;
+            firstLineFound = true;
+        }
+        if(firstBlackPixelOnEdgePos)
+        {
+            break;
         }
 
     }
-    return firstLine;
-}
+    int start = firstBlackPixelOnEdgePos - (firstBlackPixelOnEdgePos - firstLine) *2 / 3;
 
+    int minLineLength = maxX;
+    int minLinePosition = 0;
+    for(int y = start; y<firstBlackPixelOnEdgePos; y++)
+    {
+        if(minLineLength > BlacLineLengths[y])
+        {
+            minLineLength = BlacLineLengths[y];
+            minLinePosition = y;
+        }
+    }
+    delete[] BlacLineLengths;
+    return minLinePosition - firstLine;
+}
+*/
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
@@ -275,19 +299,17 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 */
 #endif
   
-    Mat ImIn1, ImIn2, ImIn3;
+    Mat ImIn1, ImIn2;
 
 //pms zbedne kopiowanie
 // mk bez tego kopiowania rozmywam obydwa obrazy wejściowe obracam i przycinam
     (*ImInVect->at(0)).copyTo(ImIn1);
     (*ImInVect->at(1)).copyTo(ImIn2);
-    //if(*ImInVect->size() > 2)
-    (*ImInVect->at(2)).copyTo(ImIn3);
+
 
 #ifdef TERAZ_DEBUG
     ShowImageCombination(params->showInput,"Input image",ImIn1, ImIn2);
-    if(params->showThird && params->showInput)
-        imshow("Input image 3",ImIn3);
+
 #endif
 
     int maxX = ImIn1.cols;
@@ -295,23 +317,15 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 
     Mat Mask1;
     Mat Mask2;
-    Mat Mask3;
+
 
     // thresholding
     Mask1 = FindMaskFromGray(ImIn1,params->threshVal);
     Mask2 = FindMaskFromGray(ImIn2,params->threshVal);
 
-    //Mask3 = FindMaskFromGray(ImIn3,params->threshVal3);
-    int firstLine = FindGrainHeighOnBRG(ImIn3, params->threshVal3);
 
 #ifdef TERAZ_DEBUG
     ShowImageRegionCombination(params->showThesholded, params->showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
-    if(params->showThird && params->showThesholded)
-    {
-        Mat ImShow = ImIn3;
-        line(ImShow,Point(0,firstLine),Point(ImShow.cols,firstLine),Scalar(256,0,0));
-        imshow("Thresholded 3",ImShow);
-    }
 #endif
 
     // remove regions of size 1 pix
@@ -560,8 +574,21 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
         if(contours.size())
         {
-            Mat(contours[0]).convertTo(pointsF, CV_32F);
-            fittedRect1 = fitEllipse(pointsF);
+            int maxSize = 0;
+            int maxContour = 0;
+            for(int i = 0;i<contours.size();i++)
+            {
+                if(maxSize < contours[i].size())
+                {
+                    maxSize = contours[i].size();
+                    maxContour = i;
+                }
+            }
+            if(maxSize > 10)
+            {
+                Mat(contours[maxContour]).convertTo(pointsF, CV_32F);
+                fittedRect1 = fitEllipse(pointsF);
+            }
         }
 
         contours.clear();
@@ -571,8 +598,21 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
         if(contours.size())
         {
-            Mat(contours[0]).convertTo(pointsF, CV_32F);
-            fittedRect2 = fitEllipse(pointsF);
+            int maxSize = 0;
+            int maxContour = 0;
+            for(int i = 0;i<contours.size();i++)
+            {
+                if(maxSize < contours[i].size())
+                {
+                    maxSize = contours[i].size();
+                    maxContour = i;
+                }
+            }
+            if(maxSize > 10)
+            {
+                Mat(contours[maxContour]).convertTo(pointsF, CV_32F);
+                fittedRect2 = fitEllipse(pointsF);
+            }
         }
     }
 

@@ -26,6 +26,7 @@
 #include "gradient.h"
 #include "DispLib.h"
 #include "SegmentGrainImage.h"
+#include "heightfromsideimage.h"
 
 #include "mazdaroi.h"
 #include "mazdaroiio.h"
@@ -377,7 +378,7 @@ void MainWindow::ProcessImage(void)
     vector<Mat*> ImInVect;
     ImInVect.push_back(&ImIn1);
     ImInVect.push_back(&ImIn2);
-    ImInVect.push_back(&ImIn3);
+    //ImInVect.push_back(&ImIn3);
 
     vector<Mat*> ImOutVect;
 
@@ -398,7 +399,15 @@ void MainWindow::ProcessImage(void)
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     ui->DurationLineEdit->setText(  QString::number(time_span.count()));
 
+    //Mask3 = FindMaskFromGray(ImIn3,params->threshVal3);
+    int firstLine = FindGrainHeighOnBRG(ImIn3, threshVal3);
 
+    if(showThirdImage)
+    {
+        Mat ImShow = ImIn3;
+        line(ImShow,Point(0,firstLine),Point(ImShow.cols,firstLine),Scalar(256,0,0));
+        imshow("Thresholded 3",ImShow);
+    }
     if(done)
     {
         path FileToSave = OutputDirectory;
