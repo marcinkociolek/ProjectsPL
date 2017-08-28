@@ -126,7 +126,7 @@ cv::Mat MK_threshold8bit(cv::Mat Im8Bit, unsigned char threshold)
 
 }
 //--------------------------------------------------------------------------------------------------
-cv::Mat MK_thresholdBRG(cv::Mat ImBGR, float threshold)
+cv::Mat MK_thresholdBRG(cv::Mat ImBGR, int threshold)
 {
     int maxX = ImBGR.cols;
     int maxY = ImBGR.rows;
@@ -137,98 +137,63 @@ cv::Mat MK_thresholdBRG(cv::Mat ImBGR, float threshold)
     if(!ImBGR.isContinuous())
         return Mat::zeros(1,1,CV_16U);
 
-    Mat Mask = Mat::zeros(maxY,maxX,CV_16U);
+    Mat Mask(maxY,maxX,CV_16U);
+    //Mat Mask = Mat::zeros(maxY,maxX,CV_16U);
     unsigned short *wMask = (unsigned short *)Mask.data;
     unsigned char *wImBGR = (unsigned char *)ImBGR.data;
 
     for (int i = 0; i < maxXY; i++)
     {
-        float brightness ;
-        brightness = (float)*wImBGR * 0.114;
-        wImBGR++;
-        brightness += (float)*wImBGR * 0.587;
-        wImBGR++;
-        brightness += (float)*wImBGR * 0.299;
-        wImBGR++;
+        int brightness ;
+        brightness = (int)*wImBGR * 114;
+        //wImBGR++;
+        brightness += (int)*(wImBGR+1) * 587;
+        //wImBGR++;
+        brightness += (int)*(wImBGR+2) * 299;
+        //wImBGR++;
+        brightness /=1000;
 
         if(brightness >= threshold)
-            {
-                *wMask = 1;
-            }
-            wMask++;
-            wImBGR++;
+        {
+            *wMask = 1;
+        }
+        else
+            *wMask = 0;
+        wMask++;
+        wImBGR+=3;
+
     }
     return Mask;
 }
 
 //--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-/*
-int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold)
+void MaskOutsideEllipse(cv::Mat Mask)
 {
-    int maxX = ImBGR.cols;
-    int maxY = ImBGR.rows;
-    if(maxX == 0 || maxY ==0)
-        return 0;
+    int maxX = Mask.cols;
+    int maxY = Mask.rows;
+    int centerX = maxX/2;
+    int centerY = maxY/2;
+    if(!maxX || !maxY)
+        return;
+    if(!Mask.isContinuous())
+        return;
 
-    if(!ImBGR.isContinuous())
-        return 0;
-
-    unsigned char *wImBGR = (unsigned char*)ImBGR.data;
-    int *BlacLineLengths = new int[maxY];
-    int firstLine = 0;
-    int firstBlackPixelOnEdgePos = 0;
-    bool firstLineFound = false;
-
-    for (int y = 0; y < maxY; y++)
+    unsigned short *wMask = (unsigned short *)Mask.data;
+    float denominatorX = (float)(centerX * centerX)*.8;
+    float denominatorY = (float)(centerY * centerY)*.9;
+    for (int y = 0;  y < maxY; y++)
     {
-        int sumLineBlackPixels = 0;
-        for (int x = 0; x < maxX; x++)
+        for (int x = 0;  x < maxX; x++)
         {
-            float brightness ;
-            brightness = (float)*wImBGR * 0.114;
-            wImBGR++;
-            brightness += (float)*wImBGR * 0.587;
-            wImBGR++;
-            brightness += (float)*wImBGR * 0.299;
-            wImBGR++;
-
-            if(brightness <= threshold)
-            {
-                sumLineBlackPixels ++;
-                if(x == 0 && firstBlackPixelOnEdgePos < y)
-                    firstBlackPixelOnEdgePos = y;
-            }
-        }
-        BlacLineLengths[y] = sumLineBlackPixels;
-        if(sumLineBlackPixels && !firstLineFound)
-        {
-            firstLine = y;
-            firstLineFound = true;
-        }
-        if(firstBlackPixelOnEdgePos)
-        {
-            break;
-        }
-
-    }
-    int start = firstBlackPixelOnEdgePos - (firstBlackPixelOnEdgePos - firstLine) *2 / 3;
-
-    int minLineLength = maxX;
-    int minLinePosition = 0;
-    for(int y = start; y<firstBlackPixelOnEdgePos; y++)
-    {
-        if(minLineLength > BlacLineLengths[y])
-        {
-            minLineLength = BlacLineLengths[y];
-            minLinePosition = y;
+            float ellipse = (float)((x - centerX) * (x - centerX)) / denominatorX
+                          + (float)((y - centerY) * (y - centerY)) / denominatorY;;
+            if(ellipse > 1)
+                *wMask = 0;
+            wMask++;
         }
     }
-    delete[] BlacLineLengths;
-    return minLinePosition - firstLine;
+
 }
-*/
-//--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
@@ -322,7 +287,13 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     // thresholding
     Mask1 = FindMaskFromGray(ImIn1,params->threshVal);
     Mask2 = FindMaskFromGray(ImIn2,params->threshVal);
-
+    //Mask1 = MK_thresholdBRG(ImIn1,params->threshVal);
+    //Mask2 = MK_thresholdBRG(ImIn2,params->threshVal);
+    if(params->zeroOutsideEllipse)
+    {
+        MaskOutsideEllipse(Mask1);
+        MaskOutsideEllipse(Mask2);
+    }
 
 #ifdef TERAZ_DEBUG
     ShowImageRegionCombination(params->showThesholded, params->showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
@@ -1239,6 +1210,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
 bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
 {
     SegmentParams segParams;
-    segParams.defaultHorizontal();
+    segParams.default3Images();
     return SegmentGrainImg(ImInVect, ImOutVect,  outRoi, transf, &segParams);
 }

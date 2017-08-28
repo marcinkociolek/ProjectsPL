@@ -2,20 +2,20 @@
 #include "heightfromsideimage.h"
 
 //--------------------------------------------------------------------------------------------------
-int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold)
+int FindGrainHeighOnBRG(cv::Mat ImBGR, int threshold)
 {
     int maxX = ImBGR.cols;
     int maxY = ImBGR.rows;
     if(maxX == 0 || maxY ==0)
-        return 0;
+        return -1;
 
     if(!ImBGR.isContinuous())
-        return 0;
+        return -2;
 
     unsigned char *wImBGR = (unsigned char*)ImBGR.data;
     int *BlacLineLengths = new int[maxY];
-    int firstLine = 0;
-    int firstBlackPixelOnEdgePos = 0;
+    int firstLine = -1;
+    int firstBlackPixelOnEdgePos = -1;
     bool firstLineFound = false;
 
     for (int y = 0; y < maxY; y++)
@@ -24,13 +24,13 @@ int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold)
         for (int x = 0; x < maxX; x++)
         {
             float brightness ;
-            brightness = (float)*wImBGR * 0.114;
+            brightness = (int)*wImBGR * 114;
             wImBGR++;
-            brightness += (float)*wImBGR * 0.587;
+            brightness += (int)*wImBGR * 587;
             wImBGR++;
-            brightness += (float)*wImBGR * 0.299;
+            brightness += (int)*wImBGR * 299;
             wImBGR++;
-
+            brightness /=1000;
             if(brightness <= threshold)
             {
                 sumLineBlackPixels ++;
@@ -44,13 +44,18 @@ int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold)
             firstLine = y;
             firstLineFound = true;
         }
-        if(firstBlackPixelOnEdgePos)
+        if(firstBlackPixelOnEdgePos>=0)
         {
             break;
         }
 
     }
-    int start = firstBlackPixelOnEdgePos - (firstBlackPixelOnEdgePos - firstLine) *2 / 3;
+    if(!firstLineFound)
+        return -3;
+    if(firstBlackPixelOnEdgePos == -1)
+        return -4;
+
+    int start = firstBlackPixelOnEdgePos - (firstBlackPixelOnEdgePos - firstLine) * 2 / 3;
 
     int minLineLength = maxX;
     int minLinePosition = 0;

@@ -53,6 +53,7 @@ public:
     int segmentType;
     float threshVal;
     int threshVal3;
+    bool zeroOutsideEllipse;
     bool removeSmallReg;
     int rawMorphErosion1;
     int rawMorphDilation2;
@@ -207,6 +208,8 @@ private slots:
     void on_ShowThirdCheckBox_toggled(bool checked);
 
     void on_spinBoxThreshVal3_valueChanged(int arg1);
+
+    void on_ZeroMaskOutsideEllipseRegionscheckBox_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

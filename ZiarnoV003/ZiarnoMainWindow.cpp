@@ -79,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->RawRegionMorfology1ComboBox->addItem("erode5");
     ui->RawRegionMorfology1ComboBox->addItem("erode9");
     ui->RawRegionMorfology1ComboBox->addItem("erode13");
-
+    ui->RawRegionMorfology1ComboBox->setCurrentIndex(2);
 
     ui->RawRegionMorfology2ComboBox->addItem("none");
     ui->RawRegionMorfology2ComboBox->addItem("dilate5");
@@ -119,6 +119,8 @@ MainWindow::MainWindow(QWidget *parent) :
     segmentType         = ui->SegmentationComboBox->currentIndex();
     threshVal           = ui->spinBox->value();
     threshVal3          = ui->spinBoxThreshVal3->value();
+
+    zeroOutsideEllipse  = ui->ZeroMaskOutsideEllipseRegionscheckBox->checkState();
     removeSmallReg      = ui->RemoveSmalRegionscheckBox->checkState();
     rawMorphErosion1    = ui->RawRegionMorfology1ComboBox->currentIndex();
     rawMorphDilation2   = ui->RawRegionMorfology2ComboBox->currentIndex();
@@ -333,7 +335,8 @@ void MainWindow::ProcessImage(void)
     SegmentParams segParams;
 
     segParams.threshVal = threshVal;
-    segParams.threshVal3 = threshVal3;
+    //segParams.threshVal3 = threshVal3;
+    segParams.zeroOutsideEllipse = zeroOutsideEllipse;
     segParams.removeSmallReg = removeSmallReg;
     segParams.rawMorphErosion1 = rawMorphErosion1;
     segParams.rawMorphDilation2 = rawMorphDilation2;
@@ -357,7 +360,7 @@ void MainWindow::ProcessImage(void)
     segParams.findValey = findValey;
     segParams.subsegment = subsegment;
 
-    segParams.showThird = showThirdImage;
+    //segParams.showThird = showThirdImage;
 
     segParams.showContour = showContour;
     segParams.showInput = showInput;
@@ -400,7 +403,8 @@ void MainWindow::ProcessImage(void)
     ui->DurationLineEdit->setText(  QString::number(time_span.count()));
 
     //Mask3 = FindMaskFromGray(ImIn3,params->threshVal3);
-    int firstLine = FindGrainHeighOnBRG(ImIn3, threshVal3);
+    //int firstLine = FindGrainHeighOnBRG(ImIn3, threshVal3);
+    int firstLine = FindGrainHeighOnBRG(ImIn3);
 
     if(showThirdImage)
     {
@@ -1019,5 +1023,11 @@ void MainWindow::on_ShowThirdCheckBox_toggled(bool checked)
 void MainWindow::on_spinBoxThreshVal3_valueChanged(int arg1)
 {
     threshVal3 = arg1;
+    ProcessImage();
+}
+
+void MainWindow::on_ZeroMaskOutsideEllipseRegionscheckBox_toggled(bool checked)
+{
+    zeroOutsideEllipse = checked;
     ProcessImage();
 }

@@ -29,7 +29,7 @@ class SegmentParams
 {
 public:
     int threshVal;
-    int threshVal3;
+    bool zeroOutsideEllipse;
     bool removeSmallReg;
     int rawMorphErosion1;
     int rawMorphDilation2;
@@ -49,7 +49,7 @@ public:
     bool findValey;
     bool subsegment;
 
-    bool showThird;
+    //bool showThird;
     bool showContour;
     bool showInput;
     bool showThesholded;
@@ -70,6 +70,7 @@ public:
     void defaultHorizontal(void)
     {
         threshVal = 16;
+        zeroOutsideEllipse = false;
         removeSmallReg = true;
         rawMorphErosion1 = 3;
         rawMorphDilation2 = 0;
@@ -112,6 +113,48 @@ public:
     void defaultVertical(void)
     {
         threshVal = 26;
+        zeroOutsideEllipse = false;
+        removeSmallReg = true;
+        rawMorphErosion1 = 3;
+        rawMorphDilation2 = 0;
+        rawMorphErosion3 = 0;
+        fillHoles = true;
+        divideSeparateReg = true;
+        MinRegSize = 10000;
+        regMorphErosion1 = 0;
+        regMorphDilation2 = 0;
+        regMorphErosion3 = 0;
+        removeBorderRegion = true;
+        fitEllipseToReg = true;
+        rotateImage = true;
+        croppImage = true;
+        alignGrains = true;
+        addBlurToSecondImage = false;
+        findValey = true;
+
+        subsegment = true;
+
+        showContour = false;
+        showInput = false;
+        showThesholded = false;
+        show1stMorphology = false;
+        showHolesRemoved = false;
+        showMask = false;
+        showContourOnInput = false;
+        showFitted = false;
+        showRotated = false;
+        showCropped = false;
+        showAreaForAlign = false;
+        showAligned = false;
+        showGradient = false;
+        showOutput = false;
+        showOutput2 = false;
+    }
+
+    void default3Images(void)
+    {
+        threshVal = 16;
+        zeroOutsideEllipse = true;
         removeSmallReg = true;
         rawMorphErosion1 = 3;
         rawMorphDilation2 = 0;
@@ -151,7 +194,7 @@ public:
 };
 
 cv::Mat MK_threshold8bit(cv::Mat Im8bit, unsigned char threshold);
-//int FindGrainHeighOnBRG(cv::Mat ImBGR, float threshold);
+cv::Mat MK_thresholdBRG(cv::Mat ImBGR, int threshold);
 
 bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf, SegmentParams *params);
 bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf);
