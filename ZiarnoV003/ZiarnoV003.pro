@@ -16,9 +16,9 @@ SOURCES += main.cpp\
         ZiarnoMainWindow.cpp \
     processimage.cpp \
     ../../ProjectsLib/LibMarcin/DispLib.cpp \
-    ../ZiarnoConsole/SegmentGrainImage.cpp \
     ../ZiarnoConsole/gradient.cpp \
-    ../ZiarnoConsole/heightfromsideimage.cpp
+    ../ZiarnoConsole/heightfromsideimage.cpp \
+    ../ZiarnoConsole/SegmentGrainImageS.cpp
 
 HEADERS  += ZiarnoMainWindow.h \
     processimage.h \
@@ -26,9 +26,9 @@ HEADERS  += ZiarnoMainWindow.h \
     ../../ProjectsLibForein/LibPMS/mazdadummy.h \
     ../../ProjectsLibForein/LibPMS/mazdaroi.h \
     ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
-    ../ZiarnoConsole/SegmentGrainImage.h \
     ../ZiarnoConsole/gradient.h \
-    ../ZiarnoConsole/heightfromsideimage.h
+    ../ZiarnoConsole/heightfromsideimage.h \
+    ../ZiarnoConsole/SegmentGrainImageS.h
 
 FORMS    += ZiarnoMainWindow.ui
 

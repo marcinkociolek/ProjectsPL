@@ -25,7 +25,8 @@
 //#include "processimage.h"
 #include "gradient.h"
 #include "DispLib.h"
-#include "SegmentGrainImage.h"
+//#include "SegmentGrainImage.h"
+#include "SegmentGrainImageS.h"
 #include "heightfromsideimage.h"
 
 #include "mazdaroi.h"
@@ -332,6 +333,7 @@ void MainWindow::ProcessImage(void)
         ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
     }
 
+/*
     SegmentParams segParams;
 
     segParams.threshVal = threshVal;
@@ -377,7 +379,7 @@ void MainWindow::ProcessImage(void)
     segParams.showGradient = showGradient;
     segParams.showOutput = showOutput;
     segParams.showOutput2 = showOutput2;
-
+*/
     vector<Mat*> ImInVect;
     ImInVect.push_back(&ImIn1);
     ImInVect.push_back(&ImIn2);
@@ -396,7 +398,7 @@ void MainWindow::ProcessImage(void)
 
     bool done;
 
-    done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &segParams);
+    done = SegmentGrainImgS(&ImInVect, &ImOutVect, &RoiVect, &TransfVect);//, &segParams);
 
     steady_clock::time_point t2 = steady_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
