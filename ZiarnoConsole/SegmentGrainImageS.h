@@ -9,7 +9,7 @@
 //#include "../../qmazda/SharedImage/mazdaroi.h"
 //#include "../../qmazda/SharedImage/mazdaroiio.h"
 
-//#define TERAZ_DEBUG
+#define TERAZ_DEBUG
 
 
 typedef MazdaRoi<unsigned int, 2> MR2DType;
@@ -24,11 +24,12 @@ struct TransformacjaZiarna
 };
 
 
-/*
+#ifdef TERAZ_DEBUG
 class SegmentParams
 {
 public:
     int threshVal;
+    bool zeroOutsideEllipse;
     bool removeSmallReg;
     int rawMorphErosion1;
     int rawMorphDilation2;
@@ -46,6 +47,8 @@ public:
     bool alignGrains;
     bool addBlurToSecondImage;
     bool findValey;
+
+    bool temp;
 
     bool showContour;
     bool showInput;
@@ -138,9 +141,14 @@ public:
         showOutput = false;
     }
 };
-*/
+bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
+                     std::vector<TransformacjaZiarna> *transf, SegmentParams *params);
+#else
+bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
+                      std::vector<TransformacjaZiarna> *transf);
+#endif
 
 
-bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf);
+
 
 #endif

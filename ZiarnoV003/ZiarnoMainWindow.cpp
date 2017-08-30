@@ -115,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->InputTypecomboBox->setCurrentIndex(2);
 
     // analisis options
-    inputType = ui->InputTypecomboBox->currentIndex();
+    inputType =             ui->InputTypecomboBox->currentIndex();
     verticalInputImages = ui->VerticalDivisionCheckBox->checkState();
     segmentType         = ui->SegmentationComboBox->currentIndex();
     threshVal           = ui->spinBox->value();
@@ -141,6 +141,8 @@ MainWindow::MainWindow(QWidget *parent) :
     rotateImage         = ui->RotateCheckBox->checkState();
     croppImage          = ui->CroppCheckBox->checkState();
     subsegment          = ui->SubsegmentCheckBox->checkState();
+
+    temp                = ui->TempCheckBox->checkState();
 
     saveResult          =ui->SaveResultCheckBox->checkState();
 
@@ -217,7 +219,7 @@ void MainWindow::on_pushButton_clicked()
             continue;
         path PathLocal = FileToProcess.path();
 
-        regex FilePattern(".+_top_.+");
+        regex FilePattern(".+_T.+");
         if ((inputType == 2) && (!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
             continue;
 
@@ -246,8 +248,8 @@ void MainWindow::on_FileListWidget_currentTextChanged(const QString &currentText
         {
             CurrentFileName = currentText.toStdString();
             string FileNameTop(CurrentFileName);
-            string FileNameBottom = regex_replace(CurrentFileName,regex("_top_"),"_bot_");
-            string FileNameSide = regex_replace(CurrentFileName,regex("_top_"),"_side_");
+            string FileNameBottom = regex_replace(CurrentFileName,regex("_T"),"_B");
+            string FileNameSide = regex_replace(CurrentFileName,regex("_T"),"_S");
 
             FileToOpen = InputDirectory;
             FileToOpen.append(FileNameTop);
@@ -302,8 +304,8 @@ void MainWindow::ProcessImage(void)
         if (ImIn1.empty()||ImIn2.empty())
         {
             string FileNameTop = CurrentFileName;
-            string FileNameBottom = regex_replace(CurrentFileName,regex("_top_"),"_bot_");
-            string FileNameSide = regex_replace(CurrentFileName,regex("_top_"),"_side_");
+            string FileNameBottom = regex_replace(CurrentFileName,regex("_T"),"_B");
+            string FileNameSide = regex_replace(CurrentFileName,regex("_T"),"_S");
 
             FileToOpen = InputDirectory;
             FileToOpen.append(FileNameTop);
@@ -333,7 +335,7 @@ void MainWindow::ProcessImage(void)
         ImIn(Rect(maxX, 0, maxX, maxY)).copyTo(ImIn2);
     }
 
-/*
+#ifdef TERAZ_DEBUG
     SegmentParams segParams;
 
     segParams.threshVal = threshVal;
@@ -360,7 +362,9 @@ void MainWindow::ProcessImage(void)
         segParams.addBlurToSecondImage = 0;
     //segParams.addBlurToSecondImage = !verticalInputImages;
     segParams.findValey = findValey;
-    segParams.subsegment = subsegment;
+    //segParams.subsegment = subsegment;
+
+    segParams.temp = temp;
 
     //segParams.showThird = showThirdImage;
 
@@ -378,8 +382,10 @@ void MainWindow::ProcessImage(void)
     segParams.showAligned = showAligned;
     segParams.showGradient = showGradient;
     segParams.showOutput = showOutput;
-    segParams.showOutput2 = showOutput2;
-*/
+    //segParams.showOutput2 = showOutput2;
+
+#endif
+
     vector<Mat*> ImInVect;
     ImInVect.push_back(&ImIn1);
     ImInVect.push_back(&ImIn2);
@@ -397,21 +403,26 @@ void MainWindow::ProcessImage(void)
 
 
     bool done;
+#ifdef TERAZ_DEBUG
 
+    done = SegmentGrainImgS(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &segParams);
+#else
     done = SegmentGrainImgS(&ImInVect, &ImOutVect, &RoiVect, &TransfVect);//, &segParams);
-
+#endif
     steady_clock::time_point t2 = steady_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     ui->DurationLineEdit->setText(  QString::number(time_span.count()));
 
     //Mask3 = FindMaskFromGray(ImIn3,params->threshVal3);
     //int firstLine = FindGrainHeighOnBRG(ImIn3, threshVal3);
-    int firstLine = FindGrainHeighOnBRG(ImIn3);
 
+    //int firstLine = FindGrainHeighOnBRG(ImIn3);
+    cvtColor(ImIn3,ImIn3, CV_BGR2GRAY);
+    int firstLine = FindGrainHeighOnGray(ImIn3);
     if(showThirdImage)
     {
         Mat ImShow = ImIn3;
-        line(ImShow,Point(0,firstLine),Point(ImShow.cols,firstLine),Scalar(256,0,0));
+        line(ImShow,Point(0,firstLine),Point(ImShow.cols,firstLine),Scalar(128,0,0));
         imshow("Thresholded 3",ImShow);
     }
     if(done)
@@ -706,12 +717,10 @@ void MainWindow::on_ShowThresholdedImgeCheckBox_toggled(bool checked)
     if(showThesholded)
     {
         namedWindow("Thresholded", displayFlag);
-        if(showThirdImage)
-            namedWindow("Thresholded 3", displayFlag);
+
     }
     else
         destroyWindow("Thresholded");
-        destroyWindow("Thresholded 3");
     ProcessImage();
 }
 
@@ -891,7 +900,7 @@ void MainWindow::on_ShowOutputCheckBox_toggled(bool checked)
 {
     showOutput = checked;
     if(showOutput)
-        namedWindow("Output", displayFlag);
+        namedWindow("Output", WINDOW_AUTOSIZE);
     else
         destroyWindow("Output");
 
@@ -1019,6 +1028,10 @@ void MainWindow::on_InputTypecomboBox_currentIndexChanged(int index)
 void MainWindow::on_ShowThirdCheckBox_toggled(bool checked)
 {
     showThirdImage = checked;
+    if(showThirdImage)
+        namedWindow("Thresholded 3", displayFlag);
+    else
+        destroyWindow("Thresholded 3");
     ProcessImage();
 }
 
@@ -1031,5 +1044,11 @@ void MainWindow::on_spinBoxThreshVal3_valueChanged(int arg1)
 void MainWindow::on_ZeroMaskOutsideEllipseRegionscheckBox_toggled(bool checked)
 {
     zeroOutsideEllipse = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_TempCheckBox_toggled(bool checked)
+{
+    temp = checked;
     ProcessImage();
 }

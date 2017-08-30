@@ -75,6 +75,8 @@ public:
 
     bool saveResult;
 
+    bool temp;
+
     // display options
     int displayFlag;
 
@@ -210,6 +212,8 @@ private slots:
     void on_spinBoxThreshVal3_valueChanged(int arg1);
 
     void on_ZeroMaskOutsideEllipseRegionscheckBox_toggled(bool checked);
+
+    void on_TempCheckBox_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

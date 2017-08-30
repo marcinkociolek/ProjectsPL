@@ -9,14 +9,8 @@
 #include "gradient.h"
 //#include "DispLib.h"
 
-//#define TERAZ_DEBUG
-
-
-
 #include "mazdaroi.h"
 #include "mazdaroiio.h"
-//#include "../../qmazda/SharedImage/mazdaroi.h"
-//#include "../../qmazda/SharedImage/mazdaroiio.h"
 
 #include "SegmentGrainImageS.h"
 
@@ -33,82 +27,6 @@ using namespace cv;
 
 #ifdef TERAZ_DEBUG
 #include "DispLib.h"
-/*
-void ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im2)
-{
-    if(!show)
-        return;
-    int imMaxX, imMaxY;
-    imMaxX = Im1.cols;
-    if (imMaxX < Im2.cols)
-        imMaxX = Im2.cols;
-    imMaxY = Im1.rows;
-    if (imMaxY < Im2.rows)
-        imMaxY = Im2.rows;
-    Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, Im1.cols , Im1.rows)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
-    imshow(WinName.c_str(), Im);
-    Im.release();
-
-}
-//--------------------------------------------------------------------------------------------------
-void ShowImageRegionCombination(bool show, bool showContour, string WinName, Mat Im1, Mat Im2, Mat Mask1, Mat Mask2)
-{
-    if(!show)
-        return;
-    int imMaxX, imMaxY;
-    imMaxX = Im1.cols;
-    if (imMaxX < Im2.cols)
-        imMaxX = Im2.cols;
-    imMaxY = Im1.rows;
-    if (imMaxY < Im2.rows)
-        imMaxY = Im2.rows;
-    Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, Im1.cols , Im1.rows)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
-
-    Mat Mask = Mat::zeros(Size(imMaxX *2,imMaxY) ,Mask1.type());
-    Mask1.copyTo(Mask(Rect(0, 0, Im1.cols , Im1.rows)));
-    Mask2.copyTo(Mask(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
-
-    if(showContour)
-    {
-        Mask = GetContour5(Mask);
-    }
-    imshow(WinName.c_str(), ShowSolidRegionOnImage(Mask,Im));
-    Mask.release();
-    Im.release();
-}
-
-//--------------------------------------------------------------------------------------------------
-void ShowHLinesOnImage(bool show, string WinName, Mat Im1, Mat Im2, int lineU, int lineCU, int lineCL, int lineL)
-{
-    if(!show)
-        return;
-    int imMaxX = Im1.cols;
-    if(imMaxX < Im2.cols)
-        imMaxX = Im2.cols;
-    int imMaxY = Im1.rows;
-    if(imMaxY < Im2.rows)
-        imMaxY = Im2.rows;
-
-    Mat ImShow = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(ImShow(Rect(0, 0, Im1.cols, Im1.rows)));
-    Im2.copyTo(ImShow(Rect(imMaxX, 0, Im2.cols, Im2.rows)));
-
-    //Mat ImShow;
-    //Im.copyTo(ImShow);
-    line(ImShow,Point(0,lineU),Point(ImShow.cols,lineU),CV_RGB(255,0,0),1);
-    line(ImShow,Point(0,lineCU),Point(ImShow.cols,lineCU),CV_RGB(255,0,0),1);
-    line(ImShow,Point(0,lineCL),Point(ImShow.cols,lineCL),CV_RGB(0,255,0),1);
-    line(ImShow,Point(0,lineL),Point(ImShow.cols,lineL),CV_RGB(0,255,0),1);
-
-
-    imshow(WinName.c_str(), ImShow);
-    ImShow.release();
-}
-*/
 #endif
 
 //---------------------------------------------------------------------------------------------
@@ -134,7 +52,6 @@ Mat FindMaskFromGradient(Mat ImIn,int thesholdVal)
     cvtColor(ImIn,ImGray,CV_BGR2GRAY);
 
     Mat ImGradient = GradientDown(ImGray);
-
 
     Mat ImMask = GradientThresh(ImGradient,(float)thesholdVal);
 
@@ -202,111 +119,24 @@ void MaskOutsideEllipse(cv::Mat Mask)
 
 }
 //--------------------------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------------------
-
-bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
+void MaskOutsideEllipseCV(cv::Mat Mask)
 {
-    const int params_threshVal = 16;
-	const bool params_zeroOutsideEllipse = true;
-    const bool params_removeSmallReg = true;
-    const int params_rawMorphErosion1 = 3;
-    const int params_rawMorphDilation2 = 0;
-    const int params_rawMorphErosion3 = 0;
-    const bool params_fillHoles = true;
-    const bool params_divideSeparateReg = true;
-    const int params_MinRegSize = 10000;
-    const int params_regMorphErosion1 = 0;
-    const int params_regMorphDilation2 = 0;
-    const int params_regMorphErosion3 = 0;
-    const bool params_removeBorderRegion = false;
-    const bool params_fitEllipseToReg = true;
-    const bool params_rotateImage = true;
-    const bool params_croppImage = true;
-    const bool params_alignGrains = true;
-    const bool params_addBlurToSecondImage = false;
-    const bool params_findValey = true;
+    int maxX = Mask.cols;
+    int maxY = Mask.rows;
+    int centerX = maxX/2;
+    int centerY = maxY/2;
+    if(!maxX || !maxY)
+        return;
+    Mat Ellipse = Mat::zeros(maxY,maxX,CV_16U);
+    ellipse(Ellipse,Point(centerX,centerY),Size(centerX*0.9,centerY*0.9),0.0, 0.0,360.0,1,-1);
+    Mask = Mask.mul(Ellipse);
+    //imshow("Ellipse",Ellipse*60000);
+}
 
-
-/* Vertical split
-
-    const bool params_threshVal = 26;
-    const bool params_removeSmallReg = true;
-    const bool params_rawMorphErosion1 = 3;
-    const bool params_rawMorphDilation2 = 0;
-    const bool params_rawMorphErosion3 = 0;
-    const bool params_fillHoles = true;
-    const bool params_divideSeparateReg = true;
-    const bool params_MinRegSize = 10000;
-    const bool params_regMorphErosion1 = 0;
-    const bool params_regMorphDilation2 = 0;
-    const bool params_regMorphErosion3 = 0;
-    const bool params_removeBorderRegion = true;
-    const bool params_fitEllipseToReg = true;
-    const bool params_rotateImage = true;
-    const bool params_croppImage = true;
-    const bool params_alignGrains = true;
-    const bool params_addBlurToSecondImage = false;
-    const bool params_findValey = true;
-*/
-
-
-#ifdef TERAZ_DEBUG
-    const bool params_showContour = true;
-    const bool params_showInput = false;
-    const bool params_showThesholded = true;
-    const bool params_show1stMorphology = false;
-    const bool params_showHolesRemoved = false;
-    const bool params_showMask = false;
-    const bool params_showContourOnInput = false;
-    const bool params_showFitted = false;
-    const bool params_showRotated = false;
-    const bool params_showCropped = false;
-    const bool params_showAreaForAlign = false;
-    const bool params_showAligned = false;
-    const bool params_showGradient = false;
-    const bool params_showOutput = true;
-#endif
-
-    Mat ImIn1, ImIn2;
-
-//pms zbedne kopiowanie
-// mk bez tego kopiowania rozmywam obydwa obrazy wejściowe obracam i przycinam
-    (*ImInVect->at(0)).copyTo(ImIn1);
-    (*ImInVect->at(1)).copyTo(ImIn2);
-
-#ifdef TERAZ_DEBUG
-    ShowImageCombination(params_showInput,"Input image",ImIn1, ImIn2);
-#endif
-
-    int maxX = ImIn1.cols;
-    int maxY = ImIn1.rows;
-
-    Mat Mask1;
-    Mat Mask2;
-
-    // thresholding
-    Mask1 = FindMaskFromGray(ImIn1,params_threshVal);
-    Mask2 = FindMaskFromGray(ImIn2,params_threshVal);
-	
-	if(params_zeroOutsideEllipse)
-    {
-        MaskOutsideEllipse(Mask1);
-        MaskOutsideEllipse(Mask2);
-    }
-
-#ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params_showThesholded, params_showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
-#endif
-
-    // remove regions of size 1 pix
-    if(params_removeSmallReg)
-    {
-        Mask1 = RemovingTinyReg9(Mask1);
-        Mask2 = RemovingTinyReg9(Mask2);
-    }
-
-    // morphology on thresholded image
-    switch (params_rawMorphErosion1)
+//--------------------------------------------------------------------------------------------------
+void MorphologyOnTwoMasks(cv::Mat Mask1, cv::Mat Mask2, int erosion1, int dilation2, int erosion3)
+{
+    switch (erosion1)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -324,7 +154,7 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
         break;
     }
 
-    switch (params_rawMorphDilation2)
+    switch (dilation2)
     {
     case 1:
         RegionDilation5(Mask1);
@@ -342,7 +172,7 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
         break;
     }
 
-    switch (params_rawMorphErosion3)
+    switch (erosion3)
     {
     case 1:
         RegionErosion5(Mask1);
@@ -359,6 +189,151 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
     default:
         break;
     }
+}
+//--------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+#ifdef TERAZ_DEBUG
+bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
+                     std::vector<TransformacjaZiarna> *transf, SegmentParams *params)
+#else
+bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
+#endif
+{
+    int params_threshVal = params->threshVal;
+    bool params_zeroOutsideEllipse = params->zeroOutsideEllipse;
+    bool params_removeSmallReg = params->removeSmallReg;
+    int params_rawMorphErosion1 = params->rawMorphErosion1;
+    int params_rawMorphDilation2 = params->rawMorphDilation2;
+    int params_rawMorphErosion3 = params->rawMorphErosion3;
+    bool params_fillHoles = params->fillHoles;
+    bool params_divideSeparateReg = params->divideSeparateReg;
+    int params_MinRegSize = params->MinRegSize;
+    int params_regMorphErosion1 = params->regMorphErosion1;
+    int params_regMorphDilation2 = params->regMorphDilation2;
+    int params_regMorphErosion3 = params->regMorphErosion3;
+    bool params_removeBorderRegion = params->removeBorderRegion;
+    bool params_fitEllipseToReg = params->fitEllipseToReg;
+    bool params_rotateImage = params->rotateImage;
+    bool params_croppImage = params->croppImage;
+    bool params_alignGrains = params->alignGrains;
+    bool params_addBlurToSecondImage = params->addBlurToSecondImage;
+    bool params_findValey = params->findValey;
+
+    bool params_temp = params->temp;
+
+#ifdef TERAZ_DEBUG
+    const bool params_showContour = params->showContour;
+    const bool params_showInput = params->showInput;
+    const bool params_showThesholded = params->showThesholded;
+    const bool params_show1stMorphology = params->show1stMorphology;
+    const bool params_showHolesRemoved = params->showHolesRemoved;
+    const bool params_showMask = params->showMask;
+    const bool params_showContourOnInput = params->showContourOnInput;
+    const bool params_showFitted = params->showFitted;
+    const bool params_showRotated = params->showRotated;
+    const bool params_showCropped = params->showCropped;
+    const bool params_showAreaForAlign = params->showAreaForAlign;
+    const bool params_showAligned = params->showAligned;
+    const bool params_showGradient = params->showGradient;
+    const bool params_showOutput = params->showOutput;
+#else
+    const int params_threshVal = 16;
+    const bool params_zeroOutsideEllipse = true;
+    const bool params_removeSmallReg = true;
+    const int params_rawMorphErosion1 = 3;
+    const int params_rawMorphDilation2 = 0;
+    const int params_rawMorphErosion3 = 0;
+    const bool params_fillHoles = true;
+    const bool params_divideSeparateReg = true;
+    const int params_MinRegSize = 10000;
+    const int params_regMorphErosion1 = 0;
+    const int params_regMorphDilation2 = 0;
+    const int params_regMorphErosion3 = 0;
+    const bool params_removeBorderRegion = false;
+    const bool params_fitEllipseToReg = true;
+    const bool params_rotateImage = true;
+    const bool params_croppImage = true;
+    const bool params_alignGrains = true;
+    const bool params_addBlurToSecondImage = false;
+    const bool params_findValey = true;
+#endif
+
+    Mat ImIn1, ImIn2;
+
+//pms zbedne kopiowanie
+// mk bez tego kopiowania rozmywam obydwa obrazy wejściowe obracam i przycinam
+    (*ImInVect->at(0)).copyTo(ImIn1);
+    (*ImInVect->at(1)).copyTo(ImIn2);
+
+    if(!ImIn1.rows || !ImIn1.cols || !ImIn1.isContinuous())
+        return false;
+    if(!ImIn2.rows || !ImIn2.cols || !ImIn2.isContinuous())
+        return false;
+
+
+#ifdef TERAZ_DEBUG
+    ShowImageCombination(params_showInput,"Input image",ImIn1, ImIn2);
+#endif
+
+    int maxX = ImIn1.cols;
+    int maxY = ImIn1.rows;
+
+    Mat Mask1;
+    Mat Mask2;
+
+    // thresholding
+    Mask1 = FindMaskFromGray(ImIn1,params_threshVal);
+    Mask2 = FindMaskFromGray(ImIn2,params_threshVal);
+    if(!Mask1.cols || !Mask1.rows || !Mask1.isContinuous())
+        return false;
+    if(!Mask2.cols || !Mask2.rows || !Mask2.isContinuous())
+        return false;
+
+    if(params_zeroOutsideEllipse)
+    {
+        MaskOutsideEllipse(Mask1);
+        MaskOutsideEllipse(Mask2);
+    }
+// slower
+    /*
+    if(params_zeroOutsideEllipse && params_temp)
+    {
+        MaskOutsideEllipseCV(Mask1);
+        MaskOutsideEllipseCV(Mask2);
+    }
+    */
+
+#ifdef TERAZ_DEBUG
+    ShowImageRegionCombination(params_showThesholded, params_showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
+#endif
+
+    // remove regions of size 1 pix
+    // useles when erosion applied
+/*
+    if(params_removeSmallReg)
+    {
+        Mask1 = RemovingTinyReg9(Mask1);
+        Mask2 = RemovingTinyReg9(Mask2);
+    }
+*/
+    // morphology on thresholded image
+    if(params_rawMorphErosion1)
+    {
+        int kernelSize = params_rawMorphErosion1*2+1;
+        Mat Kernel = getStructuringElement(MORPH_ELLIPSE,Size(kernelSize,kernelSize));
+        erode(Mask1,Mask1,Kernel);
+        erode(Mask2,Mask2,Kernel);
+    }
+    if(params_rawMorphDilation2)
+    {
+        int kernelSize = params_rawMorphErosion1*2+1;
+        Mat Kernel = getStructuringElement(MORPH_ELLIPSE,Size(kernelSize,kernelSize));
+        dilate(Mask1,Mask1,Kernel);
+        dilate(Mask2,Mask2,Kernel);
+    }
+
+//    MorphologyOnTwoMasks(Mask1, Mask2, params_rawMorphErosion1, params_rawMorphDilation2,
+//                         params_rawMorphErosion1);
 
 #ifdef TERAZ_DEBUG
     ShowImageRegionCombination(params_show1stMorphology, params_showContour, "Morphology1", ImIn1, ImIn2, Mask1, Mask2);
@@ -390,59 +365,7 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
     }
 
     //morphology after labelling
-    switch (params_regMorphErosion1)
-    {
-    case 1:
-        RegionErosion5(Mask1);
-        RegionErosion5(Mask2);
-        break;
-    case 2:
-        RegionErosion9(Mask1);
-        RegionErosion9(Mask2);
-        break;
-    case 3:
-        RegionErosion13(Mask1);
-        RegionErosion13(Mask2);
-        break;
-    default:
-        break;
-    }
-
-    switch (params_regMorphDilation2)
-    {
-    case 1:
-        RegionDilation5(Mask1);
-        RegionDilation5(Mask2);
-        break;
-    case 2:
-        RegionDilation9(Mask1);
-        RegionDilation9(Mask2);
-        break;
-    case 3:
-        RegionDilation13(Mask1);
-        RegionDilation13(Mask2);
-        break;
-    default:
-        break;
-    }
-
-    switch (params_regMorphErosion3)
-    {
-    case 1:
-        RegionErosion5(Mask1);
-        RegionErosion5(Mask2);
-        break;
-    case 2:
-        RegionErosion9(Mask1);
-        RegionErosion9(Mask2);
-        break;
-    case 3:
-        RegionErosion13(Mask1);
-        RegionErosion13(Mask2);
-        break;
-    default:
-        break;
-    }
+    // removed because never was used
 
     // removal of regions touchig image border
     if(params_removeBorderRegion)
