@@ -128,7 +128,7 @@ void MaskOutsideEllipseCV(cv::Mat Mask)
     if(!maxX || !maxY)
         return;
     Mat Ellipse = Mat::zeros(maxY,maxX,CV_16U);
-    ellipse(Ellipse,Point(centerX,centerY),Size(centerX*0.9,centerY*0.9),0.0, 0.0,360.0,1,-1);
+    ellipse(Ellipse,Point(centerX,centerY),Size(centerX*0.8,centerY*0.9),0.0, 0.0,360.0,1,-1);
     Mask = Mask.mul(Ellipse);
     //imshow("Ellipse",Ellipse*60000);
 }
@@ -309,29 +309,62 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
 
     // remove regions of size 1 pix
     // useles when erosion applied
-/*
-    if(params_removeSmallReg)
+    if(params_removeSmallReg && !params_rawMorphErosion1)
     {
         Mask1 = RemovingTinyReg9(Mask1);
         Mask2 = RemovingTinyReg9(Mask2);
     }
-*/
+
     // morphology on thresholded image
-    if(params_rawMorphErosion1)
+    //if(params_rawMorphErosion1)
+    if(params_temp)
     {
-        int kernelSize = params_rawMorphErosion1*2+1;
-        Mat Kernel = getStructuringElement(MORPH_ELLIPSE,Size(kernelSize,kernelSize));
+        //int kernelSize = params_rawMorphErosion1*2+1;
+        Mat Kernel;
+        switch(params_rawMorphErosion1)
+        {
+        case 3:
+            Kernel = (cv::Mat_<uchar>(5,5) << 0,0,1,0,0,
+                                              0,1,1,1,0,
+                                              1,1,1,1,1,
+                                              0,1,1,1,0,
+                                              0,0,1,0,0);
+            break;
+        case 2:
+            Kernel = (cv::Mat_<uchar>(3,3) << 1,1,1,
+                                              1,1,1,
+                                              1,1,1);
+            break;
+        default:
+            Kernel = (cv::Mat_<uchar>(3,3) << 0,1,0,
+                                              1,1,1,
+                                              0,1,0);
+            break;
+        }
+        //namedWindow("kernel", WINDOW_NORMAL);
+        //imshow("kernel",Kernel*100);
         erode(Mask1,Mask1,Kernel);
         erode(Mask2,Mask2,Kernel);
     }
+    else
+        //MorphologyOnTwoMasks(Mask1, Mask2, params_rawMorphErosion1, params_rawMorphDilation2,
+        MorphologyOnTwoMasks(Mask1, Mask2, params_rawMorphErosion1, 0, 0);
+/*
     if(params_rawMorphDilation2)
     {
-        int kernelSize = params_rawMorphErosion1*2+1;
+        int kernelSize = params_rawMorphDilation2*2+1;
         Mat Kernel = getStructuringElement(MORPH_ELLIPSE,Size(kernelSize,kernelSize));
         dilate(Mask1,Mask1,Kernel);
         dilate(Mask2,Mask2,Kernel);
     }
-
+    if(params_rawMorphErosion2)
+    {
+        int kernelSize = params_rawMorphErosion3*2+1;
+        Mat Kernel = getStructuringElement(MORPH_ELLIPSE,Size(kernelSize,kernelSize));
+        erode(Mask1,Mask1,Kernel);
+        erode(Mask2,Mask2,Kernel);
+    }
+*/
 //    MorphologyOnTwoMasks(Mask1, Mask2, params_rawMorphErosion1, params_rawMorphDilation2,
 //                         params_rawMorphErosion1);
 
@@ -368,7 +401,7 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
     // removed because never was used
 
     // removal of regions touchig image border
-    if(params_removeBorderRegion)
+    if(params_removeBorderRegion && !params_zeroOutsideEllipse)
     {
         DeleteRegTouchingBorder(Mask1);
         DeleteRegTouchingBorder(Mask2);

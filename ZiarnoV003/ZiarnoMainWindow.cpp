@@ -172,8 +172,9 @@ MainWindow::MainWindow(QWidget *parent) :
         displayFlag = WINDOW_AUTOSIZE;
 
 
-    InputDirectory = "C:\\Data\\Ziarno\\14.04.2016 Rozne klasy\\Dobre\\";
+    InputDirectory = "C:\\Data\\Ziarno\\2017.08.30\\";
     OutputDirectory = "c:\\";
+    OnOffImageWindow();
 }
 
 MainWindow::~MainWindow()
@@ -398,8 +399,8 @@ void MainWindow::ProcessImage(void)
 
 
 
-    steady_clock::time_point t1 = steady_clock::now();
-
+    //steady_clock::time_point t1 = steady_clock::now();
+    int startTime = getTickCount();
 
 
     bool done;
@@ -409,9 +410,12 @@ void MainWindow::ProcessImage(void)
 #else
     done = SegmentGrainImgS(&ImInVect, &ImOutVect, &RoiVect, &TransfVect);//, &segParams);
 #endif
-    steady_clock::time_point t2 = steady_clock::now();
-    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-    ui->DurationLineEdit->setText(  QString::number(time_span.count()));
+    //steady_clock::time_point t2 = steady_clock::now();
+    //duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    int stopTime = getTickCount();
+
+
+    ui->DurationLineEdit->setText(  QString::number((double)(stopTime - startTime)/1000.0));
 
     //Mask3 = FindMaskFromGray(ImIn3,params->threshVal3);
     //int firstLine = FindGrainHeighOnBRG(ImIn3, threshVal3);
