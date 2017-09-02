@@ -14,13 +14,15 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp\
-        ../../ProjectsLib/LibMarcin/DispLib.cpp
+        ../../ProjectsLib/LibMarcin/DispLib.cpp \
+    ../../ProjectsLib/LibMarcin/StringFcLib.cpp
 
 HEADERS  += mainwindow.h\
         ../../ProjectsLib/LibMarcin/DispLib.h \
         ../../ProjectsLibForein/LibPMS/mazdadummy.h \
         ../../ProjectsLibForein/LibPMS/mazdaroi.h \
-        ../../ProjectsLibForein/LibPMS/mazdaroiio.h
+        ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
+        ../../ProjectsLib/LibMarcin/StringFcLib.h
 
 FORMS    += mainwindow.ui
 

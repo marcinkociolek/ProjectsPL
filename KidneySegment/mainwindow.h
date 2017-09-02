@@ -19,10 +19,46 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 // my definitions--------------------------------------------------------------------------------------------
+    boost::filesystem::path InputDirectory;
+    int frameNr;
+    std::string CurrentFrame00FileName;
+    cv::Mat InIm;
+    int maxX;
+    int maxY;
+
+    int minShow;
+    int maxShow;
+
+    int imageShowScale;
+
+    bool showGray;
+    bool showPseudoColor;
+    bool displayFlag;
+
+
+
+// my functions
+    void MainWindow::ProcessFile();
+
+    void MainWindow::OnOffImageWindow(void);
 
 //SLOTS------------------------------------------------------------------------------------------------------
 private slots:
     void on_OpenFolderPushButton_clicked();
+
+    void on_InFileListWidget_currentTextChanged(const QString &currentText);
+
+    void on_spinBoxFrameNr_valueChanged(int arg1);
+
+    void on_spinBoxMinShow_valueChanged(int arg1);
+
+    void on_spinBoxMaxShow_valueChanged(int arg1);
+
+    void on_spinBoxImageScale_valueChanged(int arg1);
+
+    void on_checkBoxShowGray_toggled(bool checked);
+
+    void on_checkBoxShowPseudoColor_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
