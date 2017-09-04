@@ -400,7 +400,7 @@ void MainWindow::ProcessImage(void)
 
 
     //steady_clock::time_point t1 = steady_clock::now();
-    int startTime = getTickCount();
+    //int startTime = getTickCount();
 
 
     bool done;
@@ -412,17 +412,20 @@ void MainWindow::ProcessImage(void)
 #endif
     //steady_clock::time_point t2 = steady_clock::now();
     //duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-    int stopTime = getTickCount();
+    //int stopTime = getTickCount();
 
 
-    ui->DurationLineEdit->setText(  QString::number((double)(stopTime - startTime)/1000.0));
+
 
     //Mask3 = FindMaskFromGray(ImIn3,params->threshVal3);
     //int firstLine = FindGrainHeighOnBRG(ImIn3, threshVal3);
 
     //int firstLine = FindGrainHeighOnBRG(ImIn3);
     cvtColor(ImIn3,ImIn3, CV_BGR2GRAY);
+    int startTime = getTickCount();
     int firstLine = FindGrainHeighOnGray(ImIn3);
+    int stopTime = getTickCount();
+    ui->DurationLineEdit->setText(  QString::number((double)(stopTime - startTime)/1000.0));
     if(showThirdImage)
     {
         Mat ImShow = ImIn3;

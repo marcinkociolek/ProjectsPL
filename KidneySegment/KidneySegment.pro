@@ -15,14 +15,16 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp\
         ../../ProjectsLib/LibMarcin/DispLib.cpp \
-    ../../ProjectsLib/LibMarcin/StringFcLib.cpp
+    ../../ProjectsLib/LibMarcin/StringFcLib.cpp \
+    ../../ProjectsLib/LibMarcin/gradient.cpp
 
 HEADERS  += mainwindow.h\
         ../../ProjectsLib/LibMarcin/DispLib.h \
         ../../ProjectsLibForein/LibPMS/mazdadummy.h \
         ../../ProjectsLibForein/LibPMS/mazdaroi.h \
         ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
-        ../../ProjectsLib/LibMarcin/StringFcLib.h
+        ../../ProjectsLib/LibMarcin/StringFcLib.h \
+    ../../ProjectsLib/LibMarcin/gradient.h
 
 FORMS    += mainwindow.ui
 

@@ -12,6 +12,7 @@
 
 #include "DispLib.h"
 #include "StringFcLib.h"
+#include "gradient.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -33,8 +34,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     showGray = ui->checkBoxShowGray->checkState();
     showPseudoColor = ui->checkBoxShowPseudoColor->checkState();
+    showRegOnImagePC = ui->checkBoxRegOnPseudoColor->checkState();
+    showGradient = ui->checkBoxShowGradient->checkState();
+
     maxX = 192;
     maxY = 192;
+
+    minThresh = ui->spinBoxThreshMin->value();
+    maxThresh = ui->spinBoxThreshMax->value();
 
     displayFlag = CV_WINDOW_NORMAL;
     OnOffImageWindow();
@@ -70,12 +77,56 @@ void MainWindow::ProcessFile()
     if(showPseudoColor)
         imshow("Input pseudocolor",ShowImage16PseudoColor(InIm,minShow,maxShow));
 
-    int coef = 65535/(maxShow-minShow);
+
+    int denominator = maxShow-minShow;
+    if (denominator == 0)
+        denominator = 1;
+    int coef = 65535/denominator;
+
     if(showGray)
-        imshow("Input gray",InIm * coef) ;
+        imshow("Input gray",InIm * coef);
+
+    Mask = SegmetU16BetweentwoThresholds(InIm, minThresh, maxThresh);
+
+    if(showRegOnImagePC)
+    {
+        Mat ImShow = ShowSolidRegionOnImageInGray(Mask, ShowImage16PseudoColor(InIm,minShow,maxShow), 255);
+        imshow("Mask treshold",ImShow);
+    }
+    if(showGradient)
+    {
+        Mat ImGradient =  GradientDown(InIm);
+        imshow("Gradient",ShowImageF32PseudoColor(ImGradient,minShow,maxShow));
+    }
 }
 
 //----------------------------------------------------------------------------------------------------------
+Mat MainWindow::SegmetU16BetweentwoThresholds(Mat Im, unsigned short threshMin, unsigned short threshMax)
+{
+    int maxX = Im.cols;
+    int maxY = Im.rows;
+    int maxXY = maxX * maxY;
+    Mat Mask = Mat::zeros(maxY, maxX, CV_16U);
+
+    if(!maxX || !maxY)
+        return Mask;
+    if(!Im.isContinuous())
+        return Mask;
+
+
+    unsigned short *wMask = (unsigned short *)Mask.data;
+    unsigned short *wIm = (unsigned short *)Im.data;
+    for (int i = 0;  i < maxXY; i++)
+    {
+        if(*wIm >= threshMin && *wIm <= threshMax)
+           *wMask = 1;
+
+        wMask++;
+        wIm++;
+    }
+    return Mask;
+}
+
 //----------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------
@@ -95,6 +146,18 @@ void MainWindow::OnOffImageWindow(void)
     {
         namedWindow("Input pseudocolor", displayFlag);
         resizeWindow("Input pseudocolor",scaledX,scaledY);
+    }
+
+    if(showPseudoColor)
+    {
+        namedWindow("Mask treshold", displayFlag);
+        resizeWindow("Mask treshold",scaledX,scaledY);
+    }
+
+    if(showGradient)
+    {
+        namedWindow("Gradient", displayFlag);
+        resizeWindow("Gradient",scaledX,scaledY);
     }
 }
 
@@ -189,6 +252,10 @@ void MainWindow::on_spinBoxImageScale_valueChanged(int arg1)
         resizeWindow("Input gray",scaledX,scaledY);
     if(showPseudoColor)
         resizeWindow("Input pseudocolor",scaledX,scaledY);
+    if(showRegOnImagePC)
+        resizeWindow("Mask treshold",scaledX,scaledY);
+    if(showGradient)
+        resizeWindow("Gradient",scaledX,scaledY);
 
     //ProcessFile();
 }
@@ -202,5 +269,29 @@ void MainWindow::on_checkBoxShowGray_toggled(bool checked)
 void MainWindow::on_checkBoxShowPseudoColor_toggled(bool checked)
 {
     showPseudoColor = checked;
+    ProcessFile();
+}
+
+void MainWindow::on_spinBoxThreshMin_valueChanged(int arg1)
+{
+    minThresh = arg1;
+    ProcessFile();
+}
+
+void MainWindow::on_spinBoxThreshMax_valueChanged(int arg1)
+{
+    maxThresh = arg1;
+    ProcessFile();
+}
+
+void MainWindow::on_checkBoxRegOnPseudoColor_toggled(bool checked)
+{
+    showRegOnImagePC = checked;
+    ProcessFile();
+}
+
+void MainWindow::on_checkBoxShowGradient_toggled(bool checked)
+{
+    showGradient = checked;
     ProcessFile();
 }

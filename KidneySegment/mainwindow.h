@@ -33,7 +33,16 @@ public:
 
     bool showGray;
     bool showPseudoColor;
+    bool showRegOnImagePC;
+    bool showGradient;
+
     bool displayFlag;
+
+
+    int minThresh;
+    int maxThresh;
+
+    cv::Mat Mask;
 
 
 
@@ -41,6 +50,7 @@ public:
     void MainWindow::ProcessFile();
 
     void MainWindow::OnOffImageWindow(void);
+    cv::Mat MainWindow::SegmetU16BetweentwoThresholds(cv::Mat Im, unsigned short threshMin, unsigned short threshMax);
 
 //SLOTS------------------------------------------------------------------------------------------------------
 private slots:
@@ -59,6 +69,14 @@ private slots:
     void on_checkBoxShowGray_toggled(bool checked);
 
     void on_checkBoxShowPseudoColor_toggled(bool checked);
+
+    void on_spinBoxThreshMin_valueChanged(int arg1);
+
+    void on_spinBoxThreshMax_valueChanged(int arg1);
+
+    void on_checkBoxRegOnPseudoColor_toggled(bool checked);
+
+    void on_checkBoxShowGradient_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
