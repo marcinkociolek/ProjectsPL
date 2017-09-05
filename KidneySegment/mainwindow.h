@@ -78,6 +78,8 @@ private slots:
 
     void on_checkBoxShowGradient_toggled(bool checked);
 
+    void on_pushButtonGetPixelValues_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

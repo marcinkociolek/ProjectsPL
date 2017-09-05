@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QImage>
 
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
@@ -18,6 +19,8 @@ using namespace std;
 using namespace boost::filesystem;
 using namespace boost;
 using namespace cv;
+//----------------------------------------------------------------------------------------------------------
+
 //----------------------------------------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -45,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     displayFlag = CV_WINDOW_NORMAL;
     OnOffImageWindow();
+    //setMouseCallback("Input pseudocolor", mouseWrapper, 0);
 
 
 }
@@ -96,8 +100,15 @@ void MainWindow::ProcessFile()
     if(showGradient)
     {
         Mat ImGradient =  GradientDown(InIm);
-        imshow("Gradient",ShowImageF32PseudoColor(ImGradient,minShow,maxShow));
+        Mat ImShow = ShowImageF32PseudoColor(ImGradient,minShow,maxShow);
+        cvtColor(ImShow,ImShow,CV_BGR2RGB);
+        QImage QIm((unsigned char*)ImShow.data, ImShow.cols, ImShow.rows, QImage::Format_RGB888);
+        ui->labelImage->setPixmap(QPixmap::fromImage(QIm));
+        ui->labelImage->
+        //imshow("Gradient",ShowImageF32PseudoColor(ImGradient,minShow,maxShow));
+
     }
+
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -128,7 +139,8 @@ Mat MainWindow::SegmetU16BetweentwoThresholds(Mat Im, unsigned short threshMin, 
 }
 
 //----------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------
+
+
 //----------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------
@@ -294,4 +306,9 @@ void MainWindow::on_checkBoxShowGradient_toggled(bool checked)
 {
     showGradient = checked;
     ProcessFile();
+}
+
+void MainWindow::on_pushButtonGetPixelValues_clicked()
+{
+
 }

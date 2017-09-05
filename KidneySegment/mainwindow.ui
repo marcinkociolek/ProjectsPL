@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>731</width>
-    <height>630</height>
+    <width>900</width>
+    <height>665</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
       <x>20</x>
       <y>40</y>
       <width>521</width>
-      <height>271</height>
+      <height>211</height>
      </rect>
     </property>
    </widget>
@@ -51,10 +51,18 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>320</y>
-      <width>42</width>
-      <height>22</height>
+      <y>256</y>
+      <width>51</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
     <property name="maximum">
      <number>29</number>
@@ -64,7 +72,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>350</y>
+      <y>296</y>
       <width>521</width>
       <height>20</height>
      </rect>
@@ -73,11 +81,16 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>320</y>
-      <width>47</width>
-      <height>13</height>
+      <x>80</x>
+      <y>256</y>
+      <width>61</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>FrameNr</string>
@@ -86,11 +99,19 @@
    <widget class="QSpinBox" name="spinBoxMinShow">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>320</y>
-      <width>61</width>
-      <height>22</height>
+      <x>150</x>
+      <y>256</y>
+      <width>71</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
     <property name="minimum">
      <number>-65536</number>
@@ -99,26 +120,34 @@
      <number>65535</number>
     </property>
     <property name="singleStep">
-     <number>16</number>
+     <number>2</number>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxMaxShow">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>320</y>
-      <width>61</width>
-      <height>22</height>
+      <x>300</x>
+      <y>256</y>
+      <width>71</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
     <property name="maximum">
      <number>65535</number>
     </property>
     <property name="singleStep">
-     <number>16</number>
+     <number>2</number>
     </property>
     <property name="value">
-     <number>640</number>
+     <number>500</number>
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBoxShowGray">
@@ -156,11 +185,19 @@
    <widget class="QSpinBox" name="spinBoxImageScale">
     <property name="geometry">
      <rect>
-      <x>380</x>
-      <y>320</y>
+      <x>450</x>
+      <y>256</y>
       <width>42</width>
-      <height>22</height>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
     <property name="minimum">
      <number>1</number>
@@ -169,17 +206,22 @@
      <number>8</number>
     </property>
     <property name="value">
-     <number>4</number>
+     <number>3</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>320</y>
-      <width>47</width>
-      <height>14</height>
+      <x>230</x>
+      <y>256</y>
+      <width>71</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -188,11 +230,16 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>320</y>
-      <width>47</width>
-      <height>14</height>
+      <x>380</x>
+      <y>256</y>
+      <width>71</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Max disp</string>
@@ -201,11 +248,16 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>430</x>
-      <y>320</y>
+      <x>500</x>
+      <y>260</y>
       <width>47</width>
-      <height>14</height>
+      <height>21</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Zoom</string>
@@ -216,9 +268,17 @@
      <rect>
       <x>550</x>
       <y>170</y>
-      <width>43</width>
-      <height>22</height>
+      <width>61</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
     <property name="maximum">
      <number>65535</number>
@@ -232,9 +292,17 @@
      <rect>
       <x>550</x>
       <y>200</y>
-      <width>43</width>
-      <height>22</height>
+      <width>61</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
     <property name="maximum">
      <number>65535</number>
@@ -249,11 +317,16 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>600</x>
+      <x>620</x>
       <y>170</y>
-      <width>71</width>
-      <height>16</height>
+      <width>101</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Min threshold</string>
@@ -262,11 +335,16 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>600</x>
+      <x>620</x>
       <y>200</y>
-      <width>47</width>
-      <height>14</height>
+      <width>101</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Max Threshold</string>
@@ -301,13 +379,75 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButtonGetPixelValues">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>110</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Get Pixel Values</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxValIntensity">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>250</y>
+      <width>43</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>200</number>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxValGradient">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>270</y>
+      <width>43</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>200</number>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditPixelIntensity">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>300</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelImage">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>330</y>
+      <width>371</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>731</width>
+     <width>900</width>
      <height>21</height>
     </rect>
    </property>
