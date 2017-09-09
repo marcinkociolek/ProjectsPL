@@ -14,9 +14,12 @@ public:
     explicit MyImageWidget(QWidget *parent = 0);
     void paintEvent(QPaintEvent *event);
     void paintBitmap(cv::Mat Im);
-signals:
 
+    void MyImageWidget::mousePressEvent(QMouseEvent *event);
+signals:
+    void on_mousePressed(QPoint point);
 public slots:
+        //void on_mousePressed(QPoint point);
 };
 
 #endif // MYIMAGEWIDGET_H
