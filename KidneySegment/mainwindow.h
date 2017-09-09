@@ -84,17 +84,6 @@ private:
     Ui::MainWindow *ui;
 };
 
-class MyImageAccesWidget :public QWidget
-{
 
-public:
-    int x;
-    int y;
-    cv::Mat Im;
-    void MyImageAccesWidget::paintEvent(QPaintEvent *event);
-public slots:
-    void MyImageAccesWidget::mousePressEvent(QMouseEvent *event);
-
-};
 
 #endif // MAINWINDOW_H

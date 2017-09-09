@@ -49,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent) :
     maxThresh = ui->spinBoxThreshMax->value();
 
     displayFlag = CV_WINDOW_NORMAL;
+    ScaleImages();
     //OnOffImageWindow();
     //setMouseCallback("Input pseudocolor", mouseWrapper, 0);
 
@@ -113,8 +114,10 @@ void MainWindow::ProcessFile()
         ui->labelMask->setPixmap(QPixmap::fromImage(QIm));
 
     }
+    ui->widgetImage->paintBitmap(ShowImage16PseudoColor(InIm,minShow,maxShow));
+    ui->widgetImage->repaint();
     //ui->widgetImage->Im = ShowImage16PseudoColor(InIm,minShow,maxShow);
-    //ui->widgetImage->pain
+    //ui->widgetImage->Dupa(1);
 
 
 }
@@ -278,7 +281,9 @@ void MainWindow::ScaleImages()
     }
     else
         ui->labelMask->setGeometry(0,330,0,0);
-    ProcessFile();
+
+    ui->widgetImage->setGeometry(750,10,scaledX,scaledY);
+    //ProcessFile();
 
 }
 
@@ -304,12 +309,14 @@ void MainWindow::on_spinBoxImageScale_valueChanged(int arg1)
 {
     imageShowScale = arg1;
     ScaleImages();
+    ProcessFile();
 }
 
 void MainWindow::on_checkBoxShowGray_toggled(bool checked)
 {
     showGray = checked;
     ScaleImages();
+    ProcessFile();
 }
 
 void MainWindow::on_checkBoxShowPseudoColor_toggled(bool checked)
@@ -322,11 +329,13 @@ void MainWindow::on_spinBoxThreshMin_valueChanged(int arg1)
 {
     minThresh = arg1;
     ProcessFile();
+    ProcessFile();
 }
 
 void MainWindow::on_spinBoxThreshMax_valueChanged(int arg1)
 {
     maxThresh = arg1;
+    ProcessFile();
     ProcessFile();
 }
 
@@ -334,12 +343,14 @@ void MainWindow::on_checkBoxRegOnPseudoColor_toggled(bool checked)
 {
     showRegOnImagePC = checked;
     ScaleImages();
+    ProcessFile();
 }
 
 void MainWindow::on_checkBoxShowGradient_toggled(bool checked)
 {
     showGradient = checked;
     ScaleImages();
+    ProcessFile();
 }
 
 void MainWindow::on_pushButtonGetPixelValues_clicked()
@@ -347,24 +358,3 @@ void MainWindow::on_pushButtonGetPixelValues_clicked()
 
 }
 //########################################################################################
-
-void MyImageAccesWidget::paintEvent(QPaintEvent *event)
-{
-     QPainter painter(this);
-
-     QImage QIm((unsigned char*)Im.data, Im.cols, Im.rows, QImage::Format_RGB888);
-     //QImage qImage((uchar*) Im->imageData, Im->, image->height, QImage::Format_RGB32);
-
-     painter.drawImage(QIm.rect(), QIm);
-     event->accept();
-}
-
-void MyImageAccesWidget::mousePressEvent(QMouseEvent *event)
-{
-
-     int x = event->x();
-
-     int y = event->y();
-
-}
-
