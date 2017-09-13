@@ -253,34 +253,38 @@ void MainWindow::ScaleImages()
     int scaledX = maxX*imageShowScale;
     int scaledY = maxY*imageShowScale;
     int positionX = 30;
+    int positionY = 20;
+    positionY += maxY*imageShowScale;
+    if(positionY<330)
+        positionY = 330;
     if(showGray)
     {
-        ui->labelGray->setGeometry(positionX,330,scaledX,scaledY);
+        ui->labelGray->setGeometry(positionX,positionY,scaledX,scaledY);
         positionX += 10 + scaledX;
     }
     else
-        ui->labelGray->setGeometry(0,330,0,0);
+        ui->labelGray->setGeometry(0,positionY,0,0);
     if(showPseudoColor)
     {
-        ui->labelImage->setGeometry(positionX,330,scaledX,scaledY);
+        ui->labelImage->setGeometry(positionX,positionY,scaledX,scaledY);
         positionX += 10 + scaledX;
     }
     else
-        ui->labelImage->setGeometry(0,330,0,0);
+        ui->labelImage->setGeometry(0,positionY,0,0);
     if(showGradient)
     {
-        ui->labelGradient->setGeometry(positionX,330,scaledX,scaledY);
+        ui->labelGradient->setGeometry(positionX,positionY,scaledX,scaledY);
         positionX += 10 + scaledX;
     }
     else
-        ui->labelGradient->setGeometry(0,330,0,0);
+        ui->labelGradient->setGeometry(0,positionY,0,0);
     if(showRegOnImagePC)
     {
-        ui->labelMask->setGeometry(positionX,330,scaledX,scaledY);
+        ui->labelMask->setGeometry(positionX,positionY,scaledX,scaledY);
         positionX += 10 + scaledX;
     }
     else
-        ui->labelMask->setGeometry(0,330,0,0);
+        ui->labelMask->setGeometry(0,positionY,0,0);
 
     ui->widgetImage->setGeometry(750,10,scaledX,scaledY);
     //ProcessFile();

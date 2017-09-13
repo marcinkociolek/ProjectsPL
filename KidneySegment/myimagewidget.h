@@ -15,7 +15,7 @@ public:
     void paintEvent(QPaintEvent *event);
     void paintBitmap(cv::Mat Im);
 
-    void MyImageWidget::mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
 signals:
     void on_mousePressed(QPoint point);
 public slots:

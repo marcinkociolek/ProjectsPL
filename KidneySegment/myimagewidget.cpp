@@ -35,6 +35,7 @@ void MyImageWidget::paintEvent(QPaintEvent *event)
    //painter.drawImage(QIm.rect(), QIm);
    event->accept();
 }
+
 void MyImageWidget::mousePressEvent(QMouseEvent *event)
 {
     //int x = event->x();
