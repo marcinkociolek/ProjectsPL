@@ -54,6 +54,8 @@ public:
 
 //SLOTS------------------------------------------------------------------------------------------------------
 private slots:
+    void on_widgetImage_mousePressed(QPoint point);
+
     void on_OpenFolderPushButton_clicked();
 
     void on_InFileListWidget_currentTextChanged(const QString &currentText);

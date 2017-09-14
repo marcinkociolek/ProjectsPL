@@ -361,4 +361,11 @@ void MainWindow::on_pushButtonGetPixelValues_clicked()
 {
 
 }
+
+void MainWindow::on_widgetImage_mousePressed(QPoint point)
+{
+    ui->spinBoxValGradient->setValue(point.x());
+    ui->spinBoxValIntensity->setValue(point.y());
+}
+
 //########################################################################################

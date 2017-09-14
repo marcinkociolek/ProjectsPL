@@ -548,8 +548,31 @@
    <extends>QWidget</extends>
    <header>myimagewidget.h</header>
    <container>1</container>
+   <slots>
+    <signal>on_mousePressed(QPoint)</signal>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>widgetImage</sender>
+   <signal>on_mousePressed(QPoint)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>on_widgetImage_mousePressed(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>920</x>
+     <y>259</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1087</x>
+     <y>272</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>on_widgetImage_mousePressed(QPoint)</slot>
+ </slots>
 </ui>
