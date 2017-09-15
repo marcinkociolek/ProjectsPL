@@ -501,23 +501,20 @@
    <widget class="MyImageWidget" name="widgetImage" native="true">
     <property name="geometry">
      <rect>
-      <x>750</x>
-      <y>80</y>
-      <width>200</width>
-      <height>200</height>
+      <x>730</x>
+      <y>20</y>
+      <width>120</width>
+      <height>80</height>
      </rect>
     </property>
     <property name="sizePolicy">
-     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-      <horstretch>3</horstretch>
-      <verstretch>3</verstretch>
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
      </sizepolicy>
     </property>
     <property name="cursor">
      <cursorShape>CrossCursor</cursorShape>
-    </property>
-    <property name="mouseTracking">
-     <bool>true</bool>
     </property>
    </widget>
   </widget>
@@ -562,12 +559,12 @@
    <slot>on_widgetImage_mousePressed(QPoint)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>920</x>
-     <y>259</y>
+     <x>781</x>
+     <y>109</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1087</x>
-     <y>272</y>
+     <x>862</x>
+     <y>220</y>
     </hint>
    </hints>
   </connection>

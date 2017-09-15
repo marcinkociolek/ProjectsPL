@@ -43,5 +43,11 @@ void MyImageWidget::mousePressEvent(QMouseEvent *event)
     const QPoint point = event->pos();
     emit on_mousePressed(point);
 }
-
-
+/*
+void MyImageWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    const QPoint point = event->pos();
+    event->
+    emit on_mouseMove(point);
+}
+*/
