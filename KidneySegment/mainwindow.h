@@ -23,6 +23,7 @@ public:
     int frameNr;
     std::string CurrentFrame00FileName;
     cv::Mat InIm;
+
     int maxX;
     int maxY;
 
@@ -42,8 +43,10 @@ public:
     int minThresh;
     int maxThresh;
 
-    cv::Mat Mask;
 
+    cv::Mat Mask;
+    cv::Mat Mask2;
+    int regionIndex;
 
 
 // my functions
@@ -55,6 +58,8 @@ public:
 //SLOTS------------------------------------------------------------------------------------------------------
 private slots:
     void on_widgetImage_mousePressed(QPoint point);
+
+    void on_widgetImage_mouseMoved(QPoint point);
 
     void on_OpenFolderPushButton_clicked();
 
@@ -81,6 +86,8 @@ private slots:
     void on_checkBoxShowGradient_toggled(bool checked);
 
     void on_pushButtonGetPixelValues_clicked();
+
+    void on_comboBoxRegioNr_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

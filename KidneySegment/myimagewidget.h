@@ -16,8 +16,11 @@ public:
     void paintBitmap(cv::Mat Im);
 
     void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
 signals:
     void on_mousePressed(QPoint point);
+    void on_mouseMove(QPoint point);
+    //void mouseMoveEvent(QMouseEvent *event);
 public slots:
         //void on_mousePressed(QPoint point);
 };

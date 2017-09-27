@@ -45,10 +45,21 @@ MainWindow::MainWindow(QWidget *parent) :
     maxX = 192;
     maxY = 192;
 
+    ui->comboBoxRegioNr->addItem("none");
+    ui->comboBoxRegioNr->addItem("Cortex");
+    ui->comboBoxRegioNr->addItem("Pelvis");
+    ui->comboBoxRegioNr->addItem("Medula");
+    ui->comboBoxRegioNr->setCurrentIndex(0);
+    regionIndex = 0;
+
     minThresh = ui->spinBoxThreshMin->value();
     maxThresh = ui->spinBoxThreshMax->value();
 
     displayFlag = CV_WINDOW_NORMAL;
+
+    Mask2 = Mat::zeros(maxY,maxX,CV_16U);
+
+
     ScaleImages();
     //OnOffImageWindow();
     //setMouseCallback("Input pseudocolor", mouseWrapper, 0);
@@ -114,7 +125,9 @@ void MainWindow::ProcessFile()
         ui->labelMask->setPixmap(QPixmap::fromImage(QIm));
 
     }
-    ui->widgetImage->paintBitmap(ShowImage16PseudoColor(InIm,minShow,maxShow));
+    Mat ImShow = ShowSolidRegionOnImage(Mask2,ShowImage16PseudoColor(InIm,minShow,maxShow));
+
+    ui->widgetImage->paintBitmap(ImShow);
     ui->widgetImage->repaint();
     //ui->widgetImage->Im = ShowImage16PseudoColor(InIm,minShow,maxShow);
     //ui->widgetImage->Dupa(1);
@@ -364,8 +377,42 @@ void MainWindow::on_pushButtonGetPixelValues_clicked()
 
 void MainWindow::on_widgetImage_mousePressed(QPoint point)
 {
-    ui->spinBoxValGradient->setValue(point.x());
-    ui->spinBoxValIntensity->setValue(point.y());
+    //ui->spinBoxValGradient->setValue(point.x());
+    //ui->spinBoxValIntensity->setValue(point.y());
+}
+
+
+void MainWindow::on_widgetImage_mouseMoved(QPoint point)
+{
+    int x = point.x()/imageShowScale;
+    int y = point.y()/imageShowScale;
+
+    ui->spinBoxValGradient->setValue(x);
+    ui->spinBoxValIntensity->setValue(y);
+
+    switch(regionIndex)
+    {
+    case 1:
+        Mask2.at<unsigned short>(y,x) = 1;
+        break;
+    case 2:
+        Mask2.at<unsigned short>(y,x) = 2;
+        break;
+    case 3:
+        Mask2.at<unsigned short>(y,x) = 3;
+        break;
+    default:
+        break;
+    }
+    Mat ImShow = ShowSolidRegionOnImage(Mask2,ShowImage16PseudoColor(InIm,minShow,maxShow));
+
+    ui->widgetImage->paintBitmap(ImShow);
+    ui->widgetImage->repaint();
 }
 
 //########################################################################################
+
+void MainWindow::on_comboBoxRegioNr_currentIndexChanged(int index)
+{
+    regionIndex = index;
+}

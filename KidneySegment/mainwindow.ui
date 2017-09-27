@@ -402,7 +402,7 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>200</number>
+     <number>1000</number>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxValGradient">
@@ -415,7 +415,7 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>200</number>
+     <number>1000</number>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEditPixelIntensity">
@@ -516,6 +516,19 @@
     <property name="cursor">
      <cursorShape>CrossCursor</cursorShape>
     </property>
+    <property name="mouseTracking">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBoxRegioNr">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>90</y>
+      <width>65</width>
+      <height>22</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -547,6 +560,7 @@
    <container>1</container>
    <slots>
     <signal>on_mousePressed(QPoint)</signal>
+    <signal>on_mouseMove(QPoint)</signal>
    </slots>
   </customwidget>
  </customwidgets>
@@ -568,8 +582,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>widgetImage</sender>
+   <signal>on_mouseMove(QPoint)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>on_widgetImage_mouseMoved(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>837</x>
+     <y>99</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>880</x>
+     <y>115</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>on_widgetImage_mousePressed(QPoint)</slot>
+  <slot>on_widgetImage_mouseMoved(QPoint)</slot>
  </slots>
 </ui>
