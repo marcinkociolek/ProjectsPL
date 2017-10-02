@@ -64,6 +64,9 @@ public:
 
     int imageShowScale;
 
+    bool showPelvis;
+    bool showCortex;
+    bool showMedula;
 
     //bool showPseudoColor;
     bool showRegOnImagePC;
@@ -144,6 +147,20 @@ private slots:
     void on_comboBoxShowModeGradient_currentIndexChanged(int index);
 
     void on_pushButtonFillHoles_pressed();
+
+    void on_checkBoxShowPelvis_toggled(bool checked);
+
+    void on_checkBoxShowCortex_toggled(bool checked);
+
+    void on_checkBoxShowMedula_toggled(bool checked);
+
+    void on_pushButtonUp_clicked();
+
+    void on_pushButtonDown_clicked();
+
+    void on_pushButtonRight_clicked();
+
+    void on_pushButtonLeft_clicked();
 
 private:
     Ui::MainWindow *ui;

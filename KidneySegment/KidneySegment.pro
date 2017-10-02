@@ -45,5 +45,3 @@ win32: LIBS += -LC:\Boost\lib
 win32:  LIBS += -lboost_filesystem-vc120-mt-gd-1_62
 win32:  LIBS += -lboost_regex-vc120-mt-gd-1_62
 
-win32: LIBS += -LC:\LibTiff\Bin
-win32: LIBS += -llibtiff_i

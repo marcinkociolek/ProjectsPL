@@ -46,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxShowModeGray->addItem("Image");
     ui->comboBoxShowModeGray->addItem("Image + Region");
     ui->comboBoxShowModeGray->addItem("Image + Contour");
+    ui->comboBoxShowModeGray->addItem("Image + TReg");
+    ui->comboBoxShowModeGray->addItem("Image + TCont");
     ui->comboBoxShowModeGray->setCurrentIndex(1);
     showModeGray = ui->comboBoxShowModeGray->currentIndex();
 
@@ -59,6 +61,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxShowModePseudoColor->addItem("Image");
     ui->comboBoxShowModePseudoColor->addItem("Image + Region");
     ui->comboBoxShowModePseudoColor->addItem("Image + Contour");
+    ui->comboBoxShowModePseudoColor->addItem("Image + TReg");
+    ui->comboBoxShowModePseudoColor->addItem("Image + TCont");
     ui->comboBoxShowModePseudoColor->setCurrentIndex(1);
     showModePseudoColor = ui->comboBoxShowModePseudoColor->currentIndex();
     //showRegionOnPseudoColor = ui->checkBoxShowRegionOnPseudoColor->checkState();
@@ -70,6 +74,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxShowModeGradient->addItem("Image");
     ui->comboBoxShowModeGradient->addItem("Image + Region");
     ui->comboBoxShowModeGradient->addItem("Image + Contour");
+    ui->comboBoxShowModeGradient->addItem("Image + TReg");
+    ui->comboBoxShowModeGradient->addItem("Image + TCont");
     ui->comboBoxShowModeGradient->setCurrentIndex(1);
     showModeGradient = ui->comboBoxShowModeGradient->currentIndex();
     //showRegionOnGradient = ui->checkBoxShowRegionOnGradient->checkState();
@@ -82,9 +88,12 @@ MainWindow::MainWindow(QWidget *parent) :
     maxY = 192;
 
     ui->comboBoxRegioNr->addItem("none");
-    ui->comboBoxRegioNr->addItem("Cortex");
-    ui->comboBoxRegioNr->addItem("Pelvis");
-    ui->comboBoxRegioNr->addItem("Medula");
+    ui->comboBoxRegioNr->addItem("CortexL");
+    ui->comboBoxRegioNr->addItem("PelvisL");
+    ui->comboBoxRegioNr->addItem("MedulaL");
+    ui->comboBoxRegioNr->addItem("CortexP");
+    ui->comboBoxRegioNr->addItem("PelvisP");
+    ui->comboBoxRegioNr->addItem("MedulaP");
     ui->comboBoxRegioNr->setCurrentIndex(0);
     regionIndex = 0;
 
@@ -92,6 +101,10 @@ MainWindow::MainWindow(QWidget *parent) :
     maxThresh = ui->spinBoxThreshMax->value();
 
     //displayFlag = CV_WINDOW_NORMAL;
+
+    showPelvis = ui->checkBoxShowPelvis->checkState();
+    showCortex = ui->checkBoxShowCortex->checkState();
+    showMedula = ui->checkBoxShowMedula->checkState();
 
     Mask2 = Mat::zeros(maxY,maxX,CV_16U);
     MaskCortex1 = Mat::zeros(maxY,maxX,CV_16U);
@@ -170,6 +183,77 @@ void MainWindow::ShowImages()
     if(InIm.empty())
         return;
     Mat ImShow;
+
+    Mask2.release();
+    Mask2 = Mat::zeros(maxY,maxX,CV_16U);
+    int maxXY = maxX*maxY;
+    if(showCortex)
+    {
+        unsigned short *wMask2,*wMask;
+        wMask2 = (unsigned short *)Mask2.data;
+        wMask = (unsigned short *)MaskCortex1.data;
+        for(int i = 0; i < maxXY; i ++)
+        {
+            if(*wMask)
+                *wMask2 = 1;
+            wMask2++;
+            wMask++;
+        }
+        wMask2 = (unsigned short *)Mask2.data;
+        wMask = (unsigned short *)MaskCortex2.data;
+        for(int i = 0; i < maxXY; i ++)
+        {
+            if(*wMask)
+                *wMask2 = 5;
+            wMask2++;
+            wMask++;
+        }
+    }
+    if(showPelvis)
+    {
+        unsigned short *wMask2,*wMask;
+        wMask2 = (unsigned short *)Mask2.data;
+        wMask = (unsigned short *)MaskPelvis1.data;
+        for(int i = 0; i < maxXY; i ++)
+        {
+            if(*wMask)
+                *wMask2 = 2;
+            wMask2++;
+            wMask++;
+        }
+        wMask2 = (unsigned short *)Mask2.data;
+        wMask = (unsigned short *)MaskPelvis2.data;
+        for(int i = 0; i < maxXY; i ++)
+        {
+            if(*wMask)
+                *wMask2 = 6;
+            wMask2++;
+            wMask++;
+        }
+    }
+    if(showMedula)
+    {
+        unsigned short *wMask2,*wMask;
+        wMask2 = (unsigned short *)Mask2.data;
+        wMask = (unsigned short *)MaskMedula1.data;
+        for(int i = 0; i < maxXY; i ++)
+        {
+            if(*wMask)
+                *wMask2 = 4;
+            wMask2++;
+            wMask++;
+        }
+        wMask2 = (unsigned short *)Mask2.data;
+        wMask = (unsigned short *)MaskMedula2.data;
+        for(int i = 0; i < maxXY; i ++)
+        {
+            if(*wMask)
+                *wMask2 = 7;
+            wMask2++;
+            wMask++;
+        }
+    }
+
     if(showGray)
     {
         switch(showModeGray)
@@ -180,8 +264,14 @@ void MainWindow::ShowImages()
         case 2:
             ImShow = ShowSolidRegionOnImage(GetContour5(Mask2),ImShowGray);
             break;
+        case 3:
+            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowGray);
+            break;
+        case 4:
+            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowGray);
+            break;
         default:
-            ImShow = ImShowGray;
+            ImShowGray.copyTo(ImShow);
             break;
         }
         ui->widgetImageGray->paintBitmap(ImShow);
@@ -198,8 +288,14 @@ void MainWindow::ShowImages()
         case 2:
             ImShow = ShowSolidRegionOnImage(GetContour5(Mask2),ImShowPseudoColor);
             break;
+        case 3:
+            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowPseudoColor);
+            break;
+        case 4:
+            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowPseudoColor);
+            break;
         default:
-            ImShow = ImShowPseudoColor;
+            ImShowPseudoColor.copyTo(ImShow);
             break;
         }
         ui->widgetImagePseudoColor->paintBitmap(ImShow);
@@ -215,8 +311,14 @@ void MainWindow::ShowImages()
         case 2:
             ImShow = ShowSolidRegionOnImage(GetContour5(Mask2),ImShowGradient);
             break;
+        case 3:
+            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowGradient);
+            break;
+        case 4:
+            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowGradient);
+            break;
         default:
-            ImShow = ImShowGradient;
+            ImShowGradient.copyTo(ImShow);
             break;
         }
         ui->widgetImageGradient->paintBitmap(ImShow);
@@ -544,37 +646,61 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
     ui->spinBoxValIntensity->setValue(y);
 
     ui->spinBoxButton->setValue(butPressed);
-    switch(regionIndex)
+
+    if(butPressed == 1)
     {
-    case 1:
-        Mask2.at<unsigned short>(y,x) = 1;
-        break;
-    case 2:
-        Mask2.at<unsigned short>(y,x) = 2;
-        break;
-    case 3:
-        Mask2.at<unsigned short>(y,x) = 3;
-        break;
-    default:
-        break;
+        switch(regionIndex)
+        {
+        case 1:
+            MaskCortex1.at<unsigned short>(y,x) = 1;
+            break;
+        case 2:
+            MaskPelvis1.at<unsigned short>(y,x) = 1;
+            break;
+        case 3:
+            MaskMedula1.at<unsigned short>(y,x) = 1;
+            break;
+        case 4:
+            MaskCortex2.at<unsigned short>(y,x) = 1;
+            break;
+        case 5:
+            MaskPelvis2.at<unsigned short>(y,x) = 1;
+            break;
+        case 6:
+            MaskMedula2.at<unsigned short>(y,x) = 1;
+            break;
+
+        default:
+            break;
+        }
     }
-    if(regionIndex>0 && regionIndex<7)
+    if(butPressed == 2)
     {
-        if(butPressed == 1)
-            Mask2.at<unsigned short>(y,x) = regionIndex;
-        if(butPressed == 2)
-            Mask2.at<unsigned short>(y,x) = 0;
-
+        switch(regionIndex)
+        {
+        case 1:
+            MaskCortex1.at<unsigned short>(y,x) = 0;
+            break;
+        case 2:
+            MaskPelvis1.at<unsigned short>(y,x) = 0;
+            break;
+        case 3:
+            MaskMedula1.at<unsigned short>(y,x) = 0;
+            break;
+        case 4:
+            MaskCortex2.at<unsigned short>(y,x) = 0;
+            break;
+        case 5:
+            MaskPelvis2.at<unsigned short>(y,x) = 0;
+            break;
+        case 6:
+            MaskMedula2.at<unsigned short>(y,x) = 0;
+            break;
+        default:
+            break;
+        }
     }
 
-
-
- /*
-    Mat ImShow = ShowSolidRegionOnImage(Mask2,ShowImage16PseudoColor(InIm,minShow,maxShow));
-
-    ui->widgetImage->paintBitmap(ImShow);
-    ui->widgetImage->repaint();
- */
     ShowImages();
 }
 
@@ -649,9 +775,163 @@ void MainWindow::on_comboBoxShowModeGradient_currentIndexChanged(int index)
 
 void MainWindow::on_pushButtonFillHoles_pressed()
 {
-    FillBorderWithValue(Mask2, 0xFFFF);
-    OneRegionFill5Fast1(Mask2,  0xFFFF);
-    FillHoles(Mask2);
-    DeleteRegionFromImage(Mask2, 0xFFFF);
+    switch(regionIndex)
+    {
+    case 1:
+        FillBorderWithValue(MaskCortex1, 0xFFFF);
+        OneRegionFill5Fast1(MaskCortex1,  0xFFFF);
+        FillHoles(MaskCortex1);
+        DeleteRegionFromImage(MaskCortex1, 0xFFFF);
+        break;
+    case 2:
+        FillBorderWithValue(MaskPelvis1, 0xFFFF);
+        OneRegionFill5Fast1(MaskPelvis1,  0xFFFF);
+        FillHoles(MaskPelvis1);
+        DeleteRegionFromImage(MaskPelvis1, 0xFFFF);
+        break;
+    case 3:
+        FillBorderWithValue(MaskMedula1, 0xFFFF);
+        OneRegionFill5Fast1(MaskMedula1,  0xFFFF);
+        FillHoles(MaskMedula1);
+        DeleteRegionFromImage(MaskMedula1, 0xFFFF);
+        break;
+    case 4:
+        FillBorderWithValue(MaskCortex2, 0xFFFF);
+        OneRegionFill5Fast1(MaskCortex2,  0xFFFF);
+        FillHoles(MaskCortex2);
+        DeleteRegionFromImage(MaskCortex2, 0xFFFF);
+        break;
+    case 5:
+        FillBorderWithValue(MaskPelvis2, 0xFFFF);
+        OneRegionFill5Fast1(MaskPelvis2,  0xFFFF);
+        FillHoles(MaskPelvis2);
+        DeleteRegionFromImage(MaskPelvis2, 0xFFFF);
+        break;
+    case 6:
+        FillBorderWithValue(MaskMedula2, 0xFFFF);
+        OneRegionFill5Fast1(MaskMedula2,  0xFFFF);
+        FillHoles(MaskMedula2);
+        DeleteRegionFromImage(MaskMedula2, 0xFFFF);
+        break;
+    default:
+        break;
+    }
+
+    ShowImages();
+}
+
+void MainWindow::on_checkBoxShowPelvis_toggled(bool checked)
+{
+    showPelvis = checked;
+    ShowImages();
+}
+
+void MainWindow::on_checkBoxShowCortex_toggled(bool checked)
+{
+    showCortex = checked;
+    ShowImages();
+}
+
+void MainWindow::on_checkBoxShowMedula_toggled(bool checked)
+{
+    showMedula = checked;
+    ShowImages();
+}
+
+void MainWindow::on_pushButtonUp_clicked()
+{
+    Mat MaskTemp;
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskCortex1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskCortex1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskCortex2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskCortex2);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskPelvis1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskPelvis1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskPelvis2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskPelvis2);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskMedula1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskMedula1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskMedula2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskMedula2);
+    ShowImages();
+}
+
+void MainWindow::on_pushButtonDown_clicked()
+{
+    Mat MaskTemp;
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskCortex1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskCortex1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskCortex2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskCortex2);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskPelvis1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskPelvis1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskPelvis2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskPelvis2);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskMedula1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskMedula1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskMedula2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+    MaskTemp.copyTo(MaskMedula2);
+    ShowImages();
+}
+
+void MainWindow::on_pushButtonRight_clicked()
+{
+    Mat MaskTemp;
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskCortex1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskCortex1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskCortex2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskCortex2);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskPelvis1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskPelvis1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskPelvis2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskPelvis2);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskMedula1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskMedula1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskMedula2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskMedula2);
+
+    ShowImages();
+}
+
+void MainWindow::on_pushButtonLeft_clicked()
+{
+    Mat MaskTemp;
+
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskCortex1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskCortex1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskCortex2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskCortex2);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskPelvis1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskPelvis1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskPelvis2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskPelvis2);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskMedula1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskMedula1);
+    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+    MaskMedula2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+    MaskTemp.copyTo(MaskMedula2);
     ShowImages();
 }

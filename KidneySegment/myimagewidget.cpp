@@ -38,18 +38,15 @@ void MyImageWidget::paintEvent(QPaintEvent *event)
 
 void MyImageWidget::mousePressEvent(QMouseEvent *event)
 {
-    //int x = event->x();
-    //int y = event->y();
     const QPoint point = event->pos();
-    emit on_mousePressed(point);
+    const int butPressed = event->buttons();
+    emit on_mousePressed(point,butPressed);
 }
 
 void MyImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
     const QPoint point = event->pos();
     const int butPressed = event->buttons();
-    //const MouseButton MousButt =  event->button();
-
     emit on_mouseMove(point, butPressed);
 }
 
