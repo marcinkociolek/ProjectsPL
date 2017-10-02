@@ -19,7 +19,7 @@ public:
     void mouseMoveEvent(QMouseEvent *event);
 signals:
     void on_mousePressed(QPoint point);
-    void on_mouseMove(QPoint point);
+    void on_mouseMove(QPoint point, int butPressed);
     //void mouseMoveEvent(QMouseEvent *event);
 public slots:
         //void on_mousePressed(QPoint point);

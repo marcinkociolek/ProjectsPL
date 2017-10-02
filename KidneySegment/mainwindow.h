@@ -23,6 +23,17 @@ public:
     int frameNr;
     std::string CurrentFrame00FileName;
     cv::Mat InIm;
+    cv::Mat ImGradient;
+    cv::Mat ImShowGray;
+    cv::Mat ImShowPseudoColor;
+    cv::Mat ImShowGradient;
+
+    cv::Mat MaskCortex1;
+    cv::Mat MaskPelvis1;
+    cv::Mat MaskMedula1;
+    cv::Mat MaskCortex2;
+    cv::Mat MaskPelvis2;
+    cv::Mat MaskMedula2;
 
     int maxX;
     int maxY;
@@ -30,12 +41,33 @@ public:
     int minShow;
     int maxShow;
 
+    bool showGray;
+    int minShowGray;
+    int maxShowGray;
+    int showModeGray;
+    //bool showRegionOnGray;
+    //bool showContourOnGray;
+
+    bool showPseudoColor;
+    int minShowPseudoColor;
+    int maxShowPseudoColor;
+    int showModePseudoColor;
+    //bool showRegionOnPseudoColor;
+    //bool showContourOnPseudoColor;
+
+    bool showGradient;
+    int minShowGradient;
+    int maxShowGradient;
+    int showModeGradient;
+    //bool showRegionOnGradient;
+    //bool showContourOnGradient;
+
     int imageShowScale;
 
-    bool showGray;
-    bool showPseudoColor;
+
+    //bool showPseudoColor;
     bool showRegOnImagePC;
-    bool showGradient;
+    //bool showGradient;
 
     bool displayFlag;
 
@@ -50,16 +82,18 @@ public:
 
 
 // my functions
-    void MainWindow::ProcessFile();
-    void MainWindow::ScaleImages();
-    void MainWindow::OnOffImageWindow(void);
+    void ProcessFile();
+    void PrepareShowImages();
+    void ShowImages();
+    void ScaleImages();
+    void OnOffImageWindow(void);
     cv::Mat MainWindow::SegmetU16BetweentwoThresholds(cv::Mat Im, unsigned short threshMin, unsigned short threshMax);
 
 //SLOTS------------------------------------------------------------------------------------------------------
 private slots:
     void on_widgetImage_mousePressed(QPoint point);
 
-    void on_widgetImage_mouseMoved(QPoint point);
+    void on_widgetImage_mouseMoved(QPoint point, int butPressed);
 
     void on_OpenFolderPushButton_clicked();
 
@@ -88,6 +122,28 @@ private slots:
     void on_pushButtonGetPixelValues_clicked();
 
     void on_comboBoxRegioNr_currentIndexChanged(int index);
+
+
+
+    void on_spinBoxMinShowGray_valueChanged(int arg1);
+
+    void on_spinBoxMaxShowGray_valueChanged(int arg1);
+
+    void on_spinBoxMinShowPseudoColor_valueChanged(int arg1);
+
+    void on_spinBoxMaxShowPseudoColor_valueChanged(int arg1);
+
+    void on_spinBoxMinShowGradient_valueChanged(int arg1);
+
+    void on_spinBoxMaxShowGradient_valueChanged(int arg1);
+
+    void on_comboBoxShowModeGray_currentIndexChanged(int index);
+
+    void on_comboBoxShowModePseudoColor_currentIndexChanged(int index);
+
+    void on_comboBoxShowModeGradient_currentIndexChanged(int index);
+
+    void on_pushButtonFillHoles_pressed();
 
 private:
     Ui::MainWindow *ui;
