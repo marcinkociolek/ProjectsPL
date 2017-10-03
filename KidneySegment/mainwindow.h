@@ -68,6 +68,7 @@ public:
     bool showCortex;
     bool showMedula;
 
+    int penSize;
     //bool showPseudoColor;
     bool showRegOnImagePC;
     //bool showGradient;
@@ -89,6 +90,8 @@ public:
     void PrepareShowImages();
     void ShowImages();
     void ScaleImages();
+    void PlaceShapeOnImage(cv::Mat Im, int x, int y, int size, unsigned short val);
+
     void OnOffImageWindow(void);
     cv::Mat MainWindow::SegmetU16BetweentwoThresholds(cv::Mat Im, unsigned short threshMin, unsigned short threshMax);
 
@@ -161,6 +164,8 @@ private slots:
     void on_pushButtonRight_clicked();
 
     void on_pushButtonLeft_clicked();
+
+    void on_spinBoxPenSize_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;

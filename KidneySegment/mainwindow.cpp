@@ -81,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //showRegionOnGradient = ui->checkBoxShowRegionOnGradient->checkState();
     //showContourOnGradient = ui->checkBoxShowContourOnGradient->checkState();
 
+    ui->spinBoxPenSize->value();
+
     showRegOnImagePC = ui->checkBoxRegOnPseudoColor->checkState();
 
 
@@ -360,7 +362,23 @@ Mat MainWindow::SegmetU16BetweentwoThresholds(Mat Im, unsigned short threshMin, 
 }
 
 //----------------------------------------------------------------------------------------------------------
-
+void MainWindow::PlaceShapeOnImage(Mat Im, int x, int y, int size,unsigned short val)
+{
+    int maxXm1 = maxX-1;
+    int maxYm1 = maxY-1;
+    Im.at<unsigned short>(y,x) = val;
+    if(size > 1)
+    {
+        if(y>0)
+            Im.at<unsigned short>(y-1,x) = val;
+        if(y < maxYm1)
+            Im.at<unsigned short>(y+1,x) = val;
+        if(x>0)
+            Im.at<unsigned short>(y,x-1) = val;
+        if(x < maxXm1)
+            Im.at<unsigned short>(y,x+1) = val;
+    }
+}
 
 //----------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------
@@ -652,22 +670,23 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
         switch(regionIndex)
         {
         case 1:
-            MaskCortex1.at<unsigned short>(y,x) = 1;
+            PlaceShapeOnImage(MaskCortex1, x, y, penSize,1);
+            //MaskCortex1.at<unsigned short>(y,x) = 1;
             break;
         case 2:
-            MaskPelvis1.at<unsigned short>(y,x) = 1;
+            PlaceShapeOnImage(MaskPelvis1, x, y, penSize,1);
             break;
         case 3:
-            MaskMedula1.at<unsigned short>(y,x) = 1;
+            PlaceShapeOnImage(MaskMedula1, x, y, penSize,1);
             break;
         case 4:
-            MaskCortex2.at<unsigned short>(y,x) = 1;
+            PlaceShapeOnImage(MaskCortex2, x, y, penSize,1);
             break;
         case 5:
-            MaskPelvis2.at<unsigned short>(y,x) = 1;
+            PlaceShapeOnImage(MaskPelvis2, x, y, penSize,1);
             break;
         case 6:
-            MaskMedula2.at<unsigned short>(y,x) = 1;
+            PlaceShapeOnImage(MaskMedula2, x, y, penSize,1);
             break;
 
         default:
@@ -679,23 +698,25 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
         switch(regionIndex)
         {
         case 1:
-            MaskCortex1.at<unsigned short>(y,x) = 0;
+            PlaceShapeOnImage(MaskCortex1, x, y, penSize,0);
+            //MaskCortex1.at<unsigned short>(y,x) = 1;
             break;
         case 2:
-            MaskPelvis1.at<unsigned short>(y,x) = 0;
+            PlaceShapeOnImage(MaskPelvis1, x, y, penSize,0);
             break;
         case 3:
-            MaskMedula1.at<unsigned short>(y,x) = 0;
+            PlaceShapeOnImage(MaskMedula1, x, y, penSize,0);
             break;
         case 4:
-            MaskCortex2.at<unsigned short>(y,x) = 0;
+            PlaceShapeOnImage(MaskCortex2, x, y, penSize,0);
             break;
         case 5:
-            MaskPelvis2.at<unsigned short>(y,x) = 0;
+            PlaceShapeOnImage(MaskPelvis2, x, y, penSize,0);
             break;
         case 6:
-            MaskMedula2.at<unsigned short>(y,x) = 0;
+            PlaceShapeOnImage(MaskMedula2, x, y, penSize,0);
             break;
+
         default:
             break;
         }
@@ -934,4 +955,9 @@ void MainWindow::on_pushButtonLeft_clicked()
     MaskMedula2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
     MaskTemp.copyTo(MaskMedula2);
     ShowImages();
+}
+
+void MainWindow::on_spinBoxPenSize_valueChanged(int arg1)
+{
+   penSize = arg1;
 }
