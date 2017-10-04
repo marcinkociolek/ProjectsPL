@@ -116,6 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
     MaskPelvis2 = Mat::zeros(maxY,maxX,CV_16U);
     MaskMedula2 = Mat::zeros(maxY,maxX,CV_16U);
 
+    transparency = ui->spinBoxTransparency->value();
 
     ScaleImages();
     //OnOffImageWindow();
@@ -267,10 +268,10 @@ void MainWindow::ShowImages()
             ImShow = ShowSolidRegionOnImage(GetContour5(Mask2),ImShowGray);
             break;
         case 3:
-            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowGray);
+            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowGray,transparency);
             break;
         case 4:
-            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowGray);
+            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowGray,transparency);
             break;
         default:
             ImShowGray.copyTo(ImShow);
@@ -291,10 +292,10 @@ void MainWindow::ShowImages()
             ImShow = ShowSolidRegionOnImage(GetContour5(Mask2),ImShowPseudoColor);
             break;
         case 3:
-            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowPseudoColor);
+            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowPseudoColor,transparency);
             break;
         case 4:
-            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowPseudoColor);
+            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowPseudoColor,transparency);
             break;
         default:
             ImShowPseudoColor.copyTo(ImShow);
@@ -314,10 +315,10 @@ void MainWindow::ShowImages()
             ImShow = ShowSolidRegionOnImage(GetContour5(Mask2),ImShowGradient);
             break;
         case 3:
-            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowGradient);
+            ImShow = ShowTransparentRegionOnImage(Mask2,ImShowGradient,transparency);
             break;
         case 4:
-            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowGradient);
+            ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowGradient,transparency);
             break;
         default:
             ImShowGradient.copyTo(ImShow);
@@ -482,9 +483,9 @@ void MainWindow::ScaleImages()
     int scaledY = maxY*imageShowScale;
     int positionX = 30;
     int positionY = 40;
-    positionY += maxY*2;
-    if(positionY<340)
-        positionY = 340;
+    positionY += maxY;
+    if(positionY<250)
+        positionY = 250;
     if(showGray)
     {
         ui->labelMinDispGray->show();
@@ -572,7 +573,7 @@ void MainWindow::ScaleImages()
     else
         ui->labelMask->setGeometry(0,positionY,0,0);
 
-    ui->widgetImage->setGeometry(750,10,maxX*2,maxY*2);
+    ui->widgetImage->setGeometry(900,10,maxX,maxY);
     //ProcessFile();
 
 }
@@ -960,4 +961,10 @@ void MainWindow::on_pushButtonLeft_clicked()
 void MainWindow::on_spinBoxPenSize_valueChanged(int arg1)
 {
    penSize = arg1;
+}
+
+void MainWindow::on_spinBoxTransparency_valueChanged(int arg1)
+{
+    transparency = arg1;
+    ShowImages();
 }

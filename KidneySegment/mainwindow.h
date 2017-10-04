@@ -74,7 +74,7 @@ public:
     //bool showGradient;
 
     bool displayFlag;
-
+    int transparency;
 
     int minThresh;
     int maxThresh;
@@ -166,6 +166,8 @@ private slots:
     void on_pushButtonLeft_clicked();
 
     void on_spinBoxPenSize_valueChanged(int arg1);
+
+    void on_spinBoxTransparency_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;
