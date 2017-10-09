@@ -7,15 +7,10 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "gradient.h"
-
-#define TERAZ_DEBUG
-
-
+//#include "DispLib.h"
 
 #include "mazdaroi.h"
 #include "mazdaroiio.h"
-//#include "../../qmazda/SharedImage/mazdaroi.h"
-//#include "../../qmazda/SharedImage/mazdaroiio.h"
 
 #include "SegmentGrainImage.h"
 
@@ -32,7 +27,6 @@ using namespace cv;
 
 #ifdef TERAZ_DEBUG
 #include "DispLib.h"
-
 #endif
 
 //---------------------------------------------------------------------------------------------
@@ -58,7 +52,6 @@ Mat FindMaskFromGradient(Mat ImIn,int thesholdVal)
     cvtColor(ImIn,ImGray,CV_BGR2GRAY);
 
     Mat ImGradient = GradientDown(ImGray);
-
 
     Mat ImMask = GradientThresh(ImGradient,(float)thesholdVal);
 
@@ -98,76 +91,7 @@ float AverageMaskedPixelsF(Mat Reg, Mat ImF)
 }
 
 //--------------------------------------------------------------------------------------------------
-cv::Mat MK_threshold8bit(cv::Mat Im8Bit, unsigned char threshold)
-{
-    int maxX = Im8Bit.cols;
-    int maxY = Im8Bit.rows;
-    int maxXY = maxX * maxY;
-    if(maxX == 0 || maxY ==0)
-        return Mat::zeros(1,1,CV_16U);
-
-    if(!Im8Bit.isContinuous())
-        return Mat::zeros(1,1,CV_16U);
-
-    Mat Mask = Mat::zeros(maxY,maxX,CV_16U);
-    unsigned short *wMask = (unsigned short *)Mask.data;
-    unsigned char *wIm8bit = (unsigned char *)Im8Bit.data;
-
-    for (int i = 0; i < maxXY; i++)
-    {
-            if(*wIm8bit >= threshold)
-            {
-                *wMask = 1;
-            }
-            wMask++;
-            wIm8bit++;
-    }
-    return Mask;
-
-}
-//--------------------------------------------------------------------------------------------------
-cv::Mat MK_thresholdBRG(cv::Mat ImBGR, int threshold)
-{
-    int maxX = ImBGR.cols;
-    int maxY = ImBGR.rows;
-    int maxXY = maxX * maxY;
-    if(maxX == 0 || maxY ==0)
-        return Mat::zeros(1,1,CV_16U);
-
-    if(!ImBGR.isContinuous())
-        return Mat::zeros(1,1,CV_16U);
-
-    Mat Mask(maxY,maxX,CV_16U);
-    //Mat Mask = Mat::zeros(maxY,maxX,CV_16U);
-    unsigned short *wMask = (unsigned short *)Mask.data;
-    unsigned char *wImBGR = (unsigned char *)ImBGR.data;
-
-    for (int i = 0; i < maxXY; i++)
-    {
-        int brightness ;
-        brightness = (int)*wImBGR * 114;
-        //wImBGR++;
-        brightness += (int)*(wImBGR+1) * 587;
-        //wImBGR++;
-        brightness += (int)*(wImBGR+2) * 299;
-        //wImBGR++;
-        brightness /=1000;
-
-        if(brightness >= threshold)
-        {
-            *wMask = 1;
-        }
-        else
-            *wMask = 0;
-        wMask++;
-        wImBGR+=3;
-
-    }
-    return Mask;
-}
-
-//--------------------------------------------------------------------------------------------------
-void MaskOutsideEllipse(cv::Mat Mask)
+void MaskOutsideEllipseMK(cv::Mat Mask)
 {
     int maxX = Mask.cols;
     int maxY = Mask.rows;
@@ -192,18 +116,358 @@ void MaskOutsideEllipse(cv::Mat Mask)
             wMask++;
         }
     }
-
+}
+//--------------------------------------------------------------------------------------------------
+void MaskOutsideEllipseCV(cv::Mat Mask)
+{
+    int maxX = Mask.cols;
+    int maxY = Mask.rows;
+    int centerX = maxX/2;
+    int centerY = maxY/2;
+    if(!maxX || !maxY)
+        return;
+    Mat Ellipse = Mat::zeros(maxY,maxX,CV_16U);
+    ellipse(Ellipse,Point(centerX,centerY),Size(centerX*8/10,centerY*9/10),0.0, 0.0,360.0,1,-1);
+    Mask = Mask.mul(Ellipse);
+    //imshow("Ellipse",Ellipse*60000);
 }
 
 //--------------------------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------------------
-
-bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf, SegmentParams *params)
+void MorphologyOnTwoMasksMK(cv::Mat Mask1, cv::Mat Mask2, int erosion1, int dilation2, int erosion3)
 {
-    bool minSizeReached = true;
-/*
+    switch (erosion1)
+    {
+    case 1:
+        RegionErosion5(Mask1);
+        RegionErosion5(Mask2);
+        break;
+    case 2:
+        RegionErosion9(Mask1);
+        RegionErosion9(Mask2);
+        break;
+    case 3:
+        RegionErosion13(Mask1);
+        RegionErosion13(Mask2);
+        break;
+    default:
+        break;
+    }
+
+    switch (dilation2)
+    {
+    case 1:
+        RegionDilation5(Mask1);
+        RegionDilation5(Mask2);
+        break;
+    case 2:
+        RegionDilation9(Mask1);
+        RegionDilation9(Mask2);
+        break;
+    case 3:
+        RegionDilation13(Mask1);
+        RegionDilation13(Mask2);
+        break;
+    default:
+        break;
+    }
+
+    switch (erosion3)
+    {
+    case 1:
+        RegionErosion5(Mask1);
+        RegionErosion5(Mask2);
+        break;
+    case 2:
+        RegionErosion9(Mask1);
+        RegionErosion9(Mask2);
+        break;
+    case 3:
+        RegionErosion13(Mask1);
+        RegionErosion13(Mask2);
+        break;
+    default:
+        break;
+    }
+}
+//--------------------------------------------------------------------------------------------------
+void MorphologyOnOneMasksMK(cv::Mat Mask, int erosion1, int dilation2, int erosion3)
+{
+    switch (erosion1)
+    {
+    case 1:
+        RegionErosion5(Mask);
+        break;
+    case 2:
+        RegionErosion9(Mask);
+        break;
+    case 3:
+        RegionErosion13(Mask);
+        break;
+    default:
+        break;
+    }
+
+    switch (dilation2)
+    {
+    case 1:
+        RegionDilation5(Mask);
+        break;
+    case 2:
+        RegionDilation9(Mask);
+        break;
+    case 3:
+        RegionDilation13(Mask);
+        break;
+    default:
+        break;
+    }
+
+    switch (erosion3)
+    {
+    case 1:
+        RegionErosion5(Mask);
+        break;
+    case 2:
+        RegionErosion9(Mask);
+        break;
+    case 3:
+        RegionErosion13(Mask);
+        break;
+    default:
+        break;
+    }
+}
+//--------------------------------------------------------------------------------------------------
+void MorphologyOnTwoMasksCV(cv::Mat Mask1, cv::Mat Mask2, int erosion1, int dilation2, int erosion3)
+{
+    Mat Kernel;
+    if(erosion1)
+    {
+        switch(erosion1)
+        {
+        case 3:
+            Kernel = (cv::Mat_<uchar>(5,5) << 0,0,1,0,0,
+                                              0,1,1,1,0,
+                                              1,1,1,1,1,
+                                              0,1,1,1,0,
+                                              0,0,1,0,0);
+            break;
+        case 2:
+            Kernel = (cv::Mat_<uchar>(3,3) << 1,1,1,
+                                              1,1,1,
+                                              1,1,1);
+            break;
+        default:
+            Kernel = (cv::Mat_<uchar>(3,3) << 0,1,0,
+                                              1,1,1,
+                                              0,1,0);
+            break;
+        }
+        //namedWindow("kernel", WINDOW_NORMAL);
+        //imshow("kernel",Kernel*100);
+        erode(Mask1,Mask1,Kernel);
+        erode(Mask2,Mask2,Kernel);
+    }
+    if(dilation2)
+    {
+        switch(dilation2)
+        {
+        case 3:
+            Kernel = (cv::Mat_<uchar>(5,5) << 0,0,1,0,0,
+                                              0,1,1,1,0,
+                                              1,1,1,1,1,
+                                              0,1,1,1,0,
+                                              0,0,1,0,0);
+            break;
+        case 2:
+            Kernel = (cv::Mat_<uchar>(3,3) << 1,1,1,
+                                              1,1,1,
+                                              1,1,1);
+            break;
+        default:
+            Kernel = (cv::Mat_<uchar>(3,3) << 0,1,0,
+                                              1,1,1,
+                                              0,1,0);
+            break;
+        }
+        //namedWindow("kernel", WINDOW_NORMAL);
+        //imshow("kernel",Kernel*100);
+        dilate(Mask1,Mask1,Kernel);
+        dilate(Mask2,Mask2,Kernel);
+    }
+    if(erosion3)
+    {
+        switch(erosion3)
+        {
+        case 3:
+            Kernel = (cv::Mat_<uchar>(5,5) << 0,0,1,0,0,
+                                              0,1,1,1,0,
+                                              1,1,1,1,1,
+                                              0,1,1,1,0,
+                                              0,0,1,0,0);
+            break;
+        case 2:
+            Kernel = (cv::Mat_<uchar>(3,3) << 1,1,1,
+                                              1,1,1,
+                                              1,1,1);
+            break;
+        default:
+            Kernel = (cv::Mat_<uchar>(3,3) << 0,1,0,
+                                              1,1,1,
+                                              0,1,0);
+            break;
+        }
+        //namedWindow("kernel", WINDOW_NORMAL);
+        //imshow("kernel",Kernel*100);
+        erode(Mask1,Mask1,Kernel);
+        erode(Mask2,Mask2,Kernel);
+    }
+}
+//--------------------------------------------------------------------------------------------------
+void FillHolesOnTwoMasksMK(cv::Mat Mask1, cv::Mat Mask2)
+{
+    FillBorderWithValue(Mask1, 0xFFFF);
+    OneRegionFill5Fast1(Mask1,  0xFFFF);
+    FillHoles(Mask1);
+    DeleteRegionFromImage(Mask1, 0xFFFF);
+
+    FillBorderWithValue(Mask2, 0xFFFF);
+    OneRegionFill5Fast1(Mask2,  0xFFFF);
+    FillHoles(Mask2);
+    DeleteRegionFromImage(Mask2, 0xFFFF);
+}
+//--------------------------------------------------------------------------------------------------
+void FindCentroidAndAreaOnMask(cv::Mat Mask, int *centroidX, int *centroidY, int *area)
+{
+    int maxX = Mask.cols;
+    int maxY = Mask.rows;
+
+    int sumX = 0;
+    int sumY = 0;
+    int sumPix = 0;
+
+    unsigned short *wMask = (unsigned short *)Mask.data;
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMask)
+            {
+                sumX += x;
+                sumY += y;
+                sumPix ++;
+            }
+            wMask++;
+        }
+    }
+
+    *area = sumPix;
+    if(sumPix)
+    {
+        *centroidX = sumX/sumPix;
+        *centroidY = sumY/sumPix;
+    }
+    else
+    {
+        *centroidX = -1;
+        *centroidY = -1;
+    }
+
+}
+
+//---------------------------------------------------------------------------------------------
+RotatedRect FitEllipseToReg(cv::Mat Mask)
+{
+    RotatedRect fittedRect;
+    fittedRect.angle = 0.0;
+    fittedRect.center = Point2f(Mask.cols/2,Mask.rows/2);
+    fittedRect.size = Size2f(100.0,100.0);
+
+    Mat MaskTemp;
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    Mat pointsF;
+
+    Mask.convertTo(MaskTemp,CV_8U);
+    findContours(MaskTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
+    if(contours.size())
+    {
+        int maxSize = 0;
+        int maxContour = 0;
+        for(int i = 0;i<contours.size();i++)
+        {
+            if(maxSize < contours[i].size())
+            {
+                maxSize = contours[i].size();
+                maxContour = i;
+            }
+        }
+        if(maxSize > 10)
+        {
+            Mat(contours[maxContour]).convertTo(pointsF, CV_32F);
+            fittedRect = fitEllipse(pointsF);
+        }
+    }
+
+    contours.clear();
+    hierarchy.clear();
+
+    MaskTemp.release();
+    pointsF.release();
+
+    return fittedRect;
+}
+//--------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+#ifdef TERAZ_DEBUG
+bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
+                     std::vector<TransformacjaZiarna> *transf, SegmentParams *params)
+#else
+bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
+#endif
+{
+#ifdef TERAZ_DEBUG
+    int params_threshVal = params->threshVal;
+    bool params_zeroOutsideEllipse = params->zeroOutsideEllipse;
+    bool params_removeSmallReg = params->removeSmallReg;
+    int params_rawMorphErosion1 = params->rawMorphErosion1;
+    int params_rawMorphDilation2 = params->rawMorphDilation2;
+    int params_rawMorphErosion3 = params->rawMorphErosion3;
+    bool params_fillHoles = params->fillHoles;
+    bool params_divideSeparateReg = params->divideSeparateReg;
+    int params_MinRegSize = params->MinRegSize;
+    int params_regMorphErosion1 = params->regMorphErosion1;
+    int params_regMorphDilation2 = params->regMorphDilation2;
+    int params_regMorphErosion3 = params->regMorphErosion3;
+    bool params_removeBorderRegion = params->removeBorderRegion;
+    bool params_fitEllipseToReg = params->fitEllipseToReg;
+    bool params_rotateImage = params->rotateImage;
+    bool params_croppImage = params->croppImage;
+    bool params_alignGrains = params->alignGrains;
+    bool params_addBlurToSecondImage = params->addBlurToSecondImage;
+    bool params_findValey = params->findValey;
+
+    bool params_temp = params->temp;
+
+
+    const bool params_showContour = params->showContour;
+    const bool params_showInput = params->showInput;
+    const bool params_showThesholded = params->showThesholded;
+    const bool params_show1stMorphology = params->show1stMorphology;
+    const bool params_showHolesRemoved = params->showHolesRemoved;
+    const bool params_showMask = params->showMask;
+    const bool params_showContourOnInput = params->showContourOnInput;
+    const bool params_showFitted = params->showFitted;
+    const bool params_showRotated = params->showRotated;
+    const bool params_showCropped = params->showCropped;
+    const bool params_showAreaForAlign = params->showAreaForAlign;
+    const bool params_showAligned = params->showAligned;
+    const bool params_showGradient = params->showGradient;
+    const bool params_showOutput = params->showOutput;
+#else
     const int params_threshVal = 16;
-    const bool params_removeSmallReg = true;
+    const bool params_zeroOutsideEllipse = true;
+    const bool params_removeSmallReg = false;
     const int params_rawMorphErosion1 = 3;
     const int params_rawMorphDilation2 = 0;
     const int params_rawMorphErosion3 = 0;
@@ -220,375 +484,124 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     const bool params_alignGrains = true;
     const bool params_addBlurToSecondImage = false;
     const bool params_findValey = true;
-*/
 
-/* Vertical split
+    bool params_temp = false;
 
-    const bool params_threshVal = 26;
-    const bool params_removeSmallReg = true;
-    const bool params_rawMorphErosion1 = 3;
-    const bool params_rawMorphDilation2 = 0;
-    const bool params_rawMorphErosion3 = 0;
-    const bool params_fillHoles = true;
-    const bool params_divideSeparateReg = true;
-    const bool params_MinRegSize = 10000;
-    const bool params_regMorphErosion1 = 0;
-    const bool params_regMorphDilation2 = 0;
-    const bool params_regMorphErosion3 = 0;
-    const bool params_removeBorderRegion = true;
-    const bool params_fitEllipseToReg = true;
-    const bool params_rotateImage = true;
-    const bool params_croppImage = true;
-    const bool params_alignGrains = true;
-    const bool params_addBlurToSecondImage = false;
-    const bool params_findValey = true;
-*/
-
-
-#ifdef TERAZ_DEBUG
-/*
-    const bool params_showContour = false;
-    const bool params_showInput = false;
-    const bool params_showThesholded = false;
-    const bool params_show1stMorphology = false;
-    const bool params_showHolesRemoved = false;
-    const bool params_showMask = false;
-    const bool params_showContourOnInput = false;
-    const bool params_showFitted = false;
-    const bool params_showRotated = false;
-    const bool params_showCropped = false;
-    const bool params_showAreaForAlign = false;
-    const bool params_showAligned = false;
-    const bool params_showGradient = false;
-    const bool params_showOutput = false;
-*/
 #endif
-  
+
     Mat ImIn1, ImIn2;
 
 //pms zbedne kopiowanie
-// mk bez tego kopiowania rozmywam obydwa obrazy wejściowe obracam i przycinam
+//mk bez tego kopiowania rozmywam obydwa obrazy wejściowe obracam i przycinam
     (*ImInVect->at(0)).copyTo(ImIn1);
     (*ImInVect->at(1)).copyTo(ImIn2);
 
+    if(!ImIn1.rows || !ImIn1.cols || !ImIn1.isContinuous() || ImIn1.empty())
+        return false;
+    if(!ImIn2.rows || !ImIn2.cols || !ImIn2.isContinuous() || ImIn2.empty())
+        return false;
 
 #ifdef TERAZ_DEBUG
-    ShowImageCombination(params->showInput,"Input image",ImIn1, ImIn2);
-
+    ShowImageCombination(params_showInput,"Input image",ImIn1, ImIn2);
 #endif
 
     int maxX = ImIn1.cols;
     int maxY = ImIn1.rows;
 
-    Mat Mask1;
-    Mat Mask2;
-
+    Mat Mask1, Mask2;
 
     // thresholding
-    Mask1 = FindMaskFromGray(ImIn1,params->threshVal);
-    Mask2 = FindMaskFromGray(ImIn2,params->threshVal);
-    //Mask1 = MK_thresholdBRG(ImIn1,params->threshVal);
-    //Mask2 = MK_thresholdBRG(ImIn2,params->threshVal);
-    if(params->zeroOutsideEllipse)
+    Mask1 = FindMaskFromGray(ImIn1,params_threshVal);
+    Mask2 = FindMaskFromGray(ImIn2,params_threshVal);
+    if(!Mask1.cols || !Mask1.rows || !Mask1.isContinuous() || Mask1.empty())
+        return false;
+    if(!Mask2.cols || !Mask2.rows || !Mask2.isContinuous() || Mask1.empty())
+        return false;
+
+    if(params_zeroOutsideEllipse)
     {
-        MaskOutsideEllipse(Mask1);
-        MaskOutsideEllipse(Mask2);
+        MaskOutsideEllipseMK(Mask1);   //MK version faster than CV
+        MaskOutsideEllipseMK(Mask2);
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params->showThesholded, params->showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params_showThesholded, params_showContour, "Thresholded", ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // remove regions of size 1 pix
-    if(params->removeSmallReg)
+    // useles when 1st erosion applied
+    if(params_removeSmallReg && !params_rawMorphErosion1)
     {
         Mask1 = RemovingTinyReg9(Mask1);
         Mask2 = RemovingTinyReg9(Mask2);
     }
-
+// !!!!!!!!!!!!!!!!!!!Under Test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // morphology on thresholded image
-    switch (params->rawMorphErosion1)
-    {
-    case 1:
-        RegionErosion5(Mask1);
-        RegionErosion5(Mask2);
-        break;
-    case 2:
-        RegionErosion9(Mask1);
-        RegionErosion9(Mask2);
-        break;
-    case 3:
-        RegionErosion13(Mask1);
-        RegionErosion13(Mask2);
-        break;
-    default:
-        break;
-    }
-
-    switch (params->rawMorphDilation2)
-    {
-    case 1:
-        RegionDilation5(Mask1);
-        RegionDilation5(Mask2);
-        break;
-    case 2:
-        RegionDilation9(Mask1);
-        RegionDilation9(Mask2);
-        break;
-    case 3:
-        RegionDilation13(Mask1);
-        RegionDilation13(Mask2);
-        break;
-    default:
-        break;
-    }
-
-    switch (params->rawMorphErosion3)
-    {
-    case 1:
-        RegionErosion5(Mask1);
-        RegionErosion5(Mask2);
-        break;
-    case 2:
-        RegionErosion9(Mask1);
-        RegionErosion9(Mask2);
-        break;
-    case 3:
-        RegionErosion13(Mask1);
-        RegionErosion13(Mask2);
-        break;
-    default:
-        break;
-    }
+    if(params_temp)
+        MorphologyOnTwoMasksMK(Mask1, Mask2, params_rawMorphErosion1, params_rawMorphDilation2,params_rawMorphErosion1);
+    else
+        MorphologyOnTwoMasksCV(Mask1, Mask2, params_rawMorphErosion1, params_rawMorphDilation2,params_rawMorphErosion1);
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params->show1stMorphology, params->showContour, "Morphology1", ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params_show1stMorphology, params_showContour, "Morphology1", ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // procedure for removing choles inside object, obligatory for gradient thesholded image, usefull in other case
-    if(params->fillHoles)
-    {
-        FillBorderWithValue(Mask1, 0xFFFF);
-        OneRegionFill5Fast1(Mask1,  0xFFFF);
-        FillHoles(Mask1);
-        DeleteRegionFromImage(Mask1, 0xFFFF);
+    if(params_fillHoles)
+        FillHolesOnTwoMasksMK(Mask1, Mask2);
 
-        FillBorderWithValue(Mask2, 0xFFFF);
-        OneRegionFill5Fast1(Mask2,  0xFFFF);
-        FillHoles(Mask2);
-        DeleteRegionFromImage(Mask2, 0xFFFF);
-    }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params->showHolesRemoved, params->showContour, "WithoutHoles", ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params_showHolesRemoved, params_showContour, "WithoutHoles", ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // labelling
-    if(params->divideSeparateReg)
+    if(params_divideSeparateReg)
     {
-        DivideSeparateRegions(Mask1, params->MinRegSize);
-        DivideSeparateRegions(Mask2, params->MinRegSize);
+        DivideSeparateRegions(Mask1, params_MinRegSize);
+        DivideSeparateRegions(Mask2, params_MinRegSize);
     }
 
     //morphology after labelling
-    switch (params->regMorphErosion1)
-    {
-    case 1:
-        RegionErosion5(Mask1);
-        RegionErosion5(Mask2);
-        break;
-    case 2:
-        RegionErosion9(Mask1);
-        RegionErosion9(Mask2);
-        break;
-    case 3:
-        RegionErosion13(Mask1);
-        RegionErosion13(Mask2);
-        break;
-    default:
-        break;
-    }
-
-    switch (params->regMorphDilation2)
-    {
-    case 1:
-        RegionDilation5(Mask1);
-        RegionDilation5(Mask2);
-        break;
-    case 2:
-        RegionDilation9(Mask1);
-        RegionDilation9(Mask2);
-        break;
-    case 3:
-        RegionDilation13(Mask1);
-        RegionDilation13(Mask2);
-        break;
-    default:
-        break;
-    }
-
-    switch (params->regMorphErosion3)
-    {
-    case 1:
-        RegionErosion5(Mask1);
-        RegionErosion5(Mask2);
-        break;
-    case 2:
-        RegionErosion9(Mask1);
-        RegionErosion9(Mask2);
-        break;
-    case 3:
-        RegionErosion13(Mask1);
-        RegionErosion13(Mask2);
-        break;
-    default:
-        break;
-    }
+    // removed because never was used
 
     // removal of regions touchig image border
-    if(params->removeBorderRegion)
+    if(params_removeBorderRegion && !params_zeroOutsideEllipse)
     {
         DeleteRegTouchingBorder(Mask1);
         DeleteRegTouchingBorder(Mask2);
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params->showMask, params->showContour, "Mask", ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params_showMask, params_showContour, "Mask", ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // find centroids
-    int centerX1 = maxX;
-    int centerY1 = maxY;
-    int centerX2 = maxX;
-    int centerY2 = maxY;
-    unsigned short *wMask1;
-    unsigned short *wMask;
+    int centerX1, centerY1, area1;
+    int centerX2, centerY2, area2;
 
-    maxX = Mask1.cols;
-    maxY = Mask1.rows;
+    FindCentroidAndAreaOnMask(Mask1, &centerX1, &centerY1, &area1);
+    FindCentroidAndAreaOnMask(Mask1, &centerX2, &centerY2, &area2);
 
-    int sumX = 0;
-    int sumY = 0;
-    int sumPix = 0;
-
-    wMask = (unsigned short *)Mask1.data;
-    for(int y = 0; y < maxY; y++)
-    {
-        for(int x = 0; x < maxX; x++)
-        {
-            if(*wMask)
-            {
-                sumX += x;
-                sumY += y;
-                sumPix ++;
-            }
-            wMask++;
-        }
-    }
-
-    if (sumPix < params->MinRegSize)
-    {
-        Mask1.release();
-        Mask2.release();
+    if (area1 < params_MinRegSize || area2 < params_MinRegSize)
         return 0;
-    }
 
-    centerX1 = sumX/sumPix;
-    centerY1 = sumY/sumPix;
-
-    maxX = Mask2.cols;
-    maxY = Mask2.rows;
-    sumX = 0;
-    sumY = 0;
-    sumPix = 0;
-
-    wMask = (unsigned short *)Mask2.data;
-    for(int y = 0; y < maxY; y++)
-    {
-        for(int x = 0; x < maxX; x++)
-        {
-            if(*wMask)
-            {
-                sumX += x;
-                sumY += y;
-                sumPix ++;
-            }
-            wMask++;
-        }
-    }
-    if (sumPix < params->MinRegSize)
-    {
-        Mask1.release();
-        Mask2.release();
-        return 0;
-    }
-
-    centerX2 = sumX/sumPix;
-    centerY2 = sumY/sumPix;
-
-    //fit ellipse
+     //fit ellipse
     RotatedRect fittedRect1,fittedRect2 ;
-    fittedRect1.angle = 0.0;
-    fittedRect1.center = Point2f((float)(ImIn1.cols)/2,(float)(ImIn1.rows)/2);
-    fittedRect1.size = Size2f(100.0,100.0);
 
+    fittedRect1.angle = 0.0;
+    fittedRect1.center = Point2f(ImIn1.cols/2,ImIn1.rows/2);
+    fittedRect1.size = Size2f(100.0,100.0);
     fittedRect2 = fittedRect1;
 
-    if(params->fitEllipseToReg)
+    if(params_fitEllipseToReg)
     {
-        Mat ImTemp;
-        vector<vector<Point> > contours;
-        vector<Vec4i> hierarchy;
-        Mat pointsF;
-
-        Mask1.convertTo(ImTemp,CV_8U);
-        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
-        if(contours.size())
-        {
-            int maxSize = 0;
-            int maxContour = 0;
-            for(int i = 0;i<contours.size();i++)
-            {
-                if(maxSize < contours[i].size())
-                {
-                    maxSize = contours[i].size();
-                    maxContour = i;
-                }
-            }
-            if(maxSize > 10)
-            {
-                Mat(contours[maxContour]).convertTo(pointsF, CV_32F);
-                fittedRect1 = fitEllipse(pointsF);
-            }
-        }
-
-        contours.clear();
-        hierarchy.clear();
-
-        Mask2.convertTo(ImTemp,CV_8U);
-        findContours(ImTemp,contours,hierarchy,CV_RETR_LIST,CHAIN_APPROX_NONE);
-        if(contours.size())
-        {
-            int maxSize = 0;
-            int maxContour = 0;
-            for(int i = 0;i<contours.size();i++)
-            {
-                if(maxSize < contours[i].size())
-                {
-                    maxSize = contours[i].size();
-                    maxContour = i;
-                }
-            }
-            if(maxSize > 10)
-            {
-                Mat(contours[maxContour]).convertTo(pointsF, CV_32F);
-                fittedRect2 = fitEllipse(pointsF);
-            }
-        }
+        fittedRect1 = FitEllipseToReg(Mask1);
+        fittedRect2 = FitEllipseToReg(Mask2);
     }
 
 #ifdef TERAZ_DEBUG
-    if(params->showFitted)
+    if(params_showFitted)
     {
         Point2f vertices[4];
         Mat ImToShow1,ImToShow2;
@@ -609,17 +622,16 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 #endif
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Tu skończyłem!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // rotate images
     RotatedRect alignedRect1 = fittedRect1;
     alignedRect1.angle = 0.0;
     RotatedRect alignedRect2 = fittedRect2;
     alignedRect2.angle = 0.0;
 
-    if(params->rotateImage)
+    if(params_rotateImage)
     {
         Mat RotationMatrix1,RotationMatrix2;
-
-        RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
 
         RotationMatrix1 = getRotationMatrix2D(fittedRect1.center,fittedRect1.angle,1.0);
         RotationMatrix2 = getRotationMatrix2D(fittedRect2.center,-fittedRect1.angle,1.0);
@@ -645,10 +657,12 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params->showRotated, params->showContour, "Rotated" , ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params_showRotated, params_showContour, "Rotated" , ImIn1, ImIn2, Mask1, Mask2);
 #endif
-
-    if(params->croppImage)
+    unsigned short *wMask1;
+    unsigned short *wMask;
+    bool minSizeReached = true;
+    if(params_croppImage)
     {
         int croppX1Min = Mask1.cols;
         int croppX1Max = 0;
@@ -717,9 +731,9 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         int croppY1 = croppY1Min;
 
         if (croppHeight1 <= 200)
-            minSizeReached = false; //return 0;
+            minSizeReached = false;;
         if (croppWidth1 <= 50)
-            minSizeReached = false; //return 0;
+            minSizeReached = false;;
 
 
         Mat ImCropped1, ImCropped2, MaskCropped1, MaskCropped2;
@@ -733,9 +747,9 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         int croppY2 = croppY2Min;
 
         if (croppHeight2 <= 200)
-            minSizeReached = false; //return 0;
+            minSizeReached = false;;
         if (croppWidth2 <= 50)
-            minSizeReached = false; //return 0;
+            minSizeReached = false;;
 
         ImIn2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(ImCropped2);
         Mask2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(MaskCropped2);
@@ -753,7 +767,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     }
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params->showCropped, params->showContour, "Cropped" , ImIn1, ImIn2, Mask1, Mask2);
+    ShowImageRegionCombination(params_showCropped, params_showContour, "Cropped" , ImIn1, ImIn2, Mask1, Mask2);
 #endif
 
     // allign Grains
@@ -763,7 +777,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     int minPosX = maxX-1;
 
     int maxXY = maxX*maxY;
-    if(params->alignGrains && minSizeReached)
+    if(params_alignGrains && minSizeReached)
     {
         wMask1 = (unsigned short*)Mask1.data;
         for(int i = 0; i < maxXY; i++)
@@ -807,19 +821,12 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         lStartLine = 0;
         lStopLine = lStartLine + linesToCount;
     }
-#ifdef TERAZ_DEBUG
-    //ShowHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
-    ShowRegBetweenHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2, Mask1, Mask2, 200);
-//    ShowImageRegionCombination(params->showAligned, params->showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
-#endif
 
     bool flipped = false;
-    int uRegPixelCount = 0;
-    int lRegPixelCount = 0;
-    if(params->alignGrains && minSizeReached)
+    if(params_alignGrains&& minSizeReached)
     {
         wMask1 = (unsigned short*)Mask1.data + maxX * uStartLine;//(imCenterY - linesToCount - offsetToCount);
-
+        int uRegPixelCount = 0;
         for(int i = 0; i < pixelCount; i++)
         {
             if(*wMask1)
@@ -829,7 +836,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         }
 
         wMask1 = (unsigned short*)Mask1.data + maxX * lStartLine;//(imCenterY + offsetToCount);
-
+        int lRegPixelCount = 0;
         for(int i = 0; i< pixelCount; i++)
         {
             if(*wMask1)
@@ -846,13 +853,13 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
             flip(Mask2,Mask2, -1);
             flipped = true;
         }
-
     }
 
 #ifdef TERAZ_DEBUG
-//    ShowHLinesOnImage(params->showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
-    ShowImageRegionCombination(params->showAligned, params->showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
+    //ShowHLinesOnImage(params_showAreaForAlign, "AreaForAlign", ImIn1, ImIn2,uStartLine,uStopLine, lStartLine, lStopLine);// - offsetToCount, imCenterY + offsetToCount, imCenterY + offsetToCount + linesToCount);
+    ShowImageRegionCombination(params_showAligned, params_showContour, "Aligned", ImIn1,ImIn2, Mask1, Mask2);
 #endif
+
     Mat Mask1a = Mat::zeros(Mask1.rows ,Mask1.cols ,Mask1.type());
     Mat Mask2a = Mat::zeros(Mask2.rows ,Mask2.cols ,Mask2.type());
 
@@ -872,93 +879,46 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     cvtColor(ImIn1,ImGray1,CV_BGR2GRAY);
     cvtColor(ImIn2,ImGray2,CV_BGR2GRAY);
 
-    if(params->addBlurToSecondImage)
+    if(params_addBlurToSecondImage)
         blur(ImGray2,ImGray2,Size(5,5));
 
     Mat ImGradient1 = HorizontalGradientDown(ImGray1);
     Mat ImGradient2 = HorizontalGradientDown(ImGray2);
 
 #ifdef TERAZ_DEBUG
-    ShowImageRegionCombination(params->showGradient, params->showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
+    ShowImageRegionCombination(params_showGradient, params_showContour, "Gradient", ShowImageF32PseudoColor(ImGradient1, 0.0, 100.0),ShowImageF32PseudoColor(ImGradient2, 0.0, 100.0), Mask1a, Mask2a);
 #endif
 
-    bool switchImages = 0;
+    bool switchImages;
     Mat *ImOut1 = new Mat;
     Mat *ImOut2= new Mat;
-    if(params->findValey)
+    if(params_findValey)
     {
         float sum1 = AverageMaskedPixelsF(Mask1a, ImGradient1);
         float sum2 = AverageMaskedPixelsF(Mask2a, ImGradient2);
 
         if(sum1 < sum2)
         {
+            Mask1 = Mask1 * 2;
             switchImages = 1;
-        }
-    }
-
-#ifdef TERAZ_DEBUG
-    if(switchImages)
-    {
-        ShowImageRegionCombination(params->showOutput, params->showContour, "Output", ImIn2, ImIn1, Mask2, Mask1);
-    }
-    else
-    {
-        ShowImageRegionCombination(params->showOutput, params->showContour, "Output", ImIn1, ImIn2, Mask1, Mask2);
-    }
-#endif
-
-    //subsegmentation
-    Mat Mask1b,Mask2b;
-    Mask1.copyTo(Mask1b);
-    Mask2.copyTo(Mask2b);
-    if(params->subsegment)
-    {
-        FindLefLowerEdge2(Mask1b);
-        FindRightLowerEdge2(Mask1b);
-        FindTop(Mask1b);
-
-        FindLefLowerEdge2(Mask2b);
-        FindRightLowerEdge2(Mask2b);
-        FindTop(Mask2b);
-
-        if(switchImages)
-        {
-            MarkEllipse(Mask1b,0.65,0.25,0.3);
-            MarkEllipse(Mask2b,0.7,0.2,0.25);
         }
         else
         {
-            MarkEllipse(Mask1b,0.7,0.2,0.25);
-            MarkEllipse(Mask2b,0.65,0.25,0.3);
+            Mask2 = Mask2 * 2;
+            switchImages = 0;
         }
     }
 
-    if(params->subsegment)
-    {
-
-
-    }
-/*
-    if(switchImages)
-    {
-        AddValToRegNr(Mask1, 5);
-    }
-    else
-    {
-        AddValToRegNr(Mask2, 5);
-    }
-*/
 #ifdef TERAZ_DEBUG
     if(switchImages)
     {
-        ShowImageRegionCombination(params->showOutput2, params->showContour, "Output2", ImIn2, ImIn1, Mask2b, Mask1b);
+        ShowImageRegionCombination(params_showOutput, params_showContour, "Output", ImIn2, ImIn1, Mask2, Mask1);
     }
     else
     {
-        ShowImageRegionCombination(params->showOutput2, params->showContour, "Output2", ImIn1, ImIn2, Mask1b, Mask2b);
+        ShowImageRegionCombination(params_showOutput, params_showContour, "Output", ImIn1, ImIn2, Mask1, Mask2);
     }
 #endif
-
 
     *ImOut1 = ImIn1;
     *ImOut2 = ImIn2;
@@ -983,90 +943,18 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
        wMask++;
     }
 
-    MR2DType* roi11;
-    roi11 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator11(roi11);
-    wMask = (unsigned short*)Mask1b.data;
-    while(! iterator11.IsBehind())
-    {
-        if (*wMask==2)
-            iterator11.SetPixel();
-        ++iterator11;
-       wMask++;
-    }
-
-    MR2DType* roi12;
-    roi12 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator12(roi12);
-    wMask = (unsigned short*)Mask1b.data;
-    while(! iterator12.IsBehind())
-    {
-        if (*wMask==3)
-            iterator12.SetPixel();
-        ++iterator12;
-       wMask++;
-    }
-
-    MR2DType* roi13;
-    roi13 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator13(roi13);
-    wMask = (unsigned short*)Mask1b.data;
-    while(! iterator13.IsBehind())
-    {
-        if (*wMask==4)
-            iterator13.SetPixel();
-        ++iterator13;
-       wMask++;
-    }
-
-    MR2DType* roi14;
-    roi14 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator14(roi14);
-    wMask = (unsigned short*)Mask1b.data;
-    while(! iterator14.IsBehind())
-    {
-        if (*wMask==5)
-            iterator14.SetPixel();
-        ++iterator14;
-       wMask++;
-    }
-
-
-
     if(switchImages)
     {
         roi1->SetName("D");
         roi1->SetColor(0x00ff00);
-        roi11->SetName("D1");
-        roi11->SetColor(0x00ff00);
-        roi12->SetName("D2");
-        roi12->SetColor(0x00ff00);
-        roi13->SetName("D3");
-        roi13->SetColor(0x00ff00);
-        roi14->SetName("D4");
-        roi14->SetColor(0x00ff00);
     }
     else
     {
         roi1->SetName("V");
         roi1->SetColor(0xff0000);
-        roi11->SetName("V1");
-        roi11->SetColor(0xff0000);
-        roi12->SetName("V2");
-        roi12->SetColor(0xff0000);
-        roi13->SetName("V3");
-        roi13->SetColor(0xff0000);
-        roi14->SetName("V4");
-        roi14->SetColor(0xff0000);
-
-
     }
 
     outRoi->push_back(roi1);
-    outRoi->push_back(roi11);
-    outRoi->push_back(roi12);
-    outRoi->push_back(roi13);
-    outRoi->push_back(roi14);
 
     // Mask 2
     begin[0] = 0;
@@ -1084,96 +972,27 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         ++iterator2;
        wMask++;
     }
-    MR2DType* roi21;
-    roi21 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator21(roi21);
-    wMask = (unsigned short*)Mask2b.data;
-    while(! iterator21.IsBehind())
-    {
-        if (*wMask==2)
-            iterator21.SetPixel();
-        ++iterator21;
-       wMask++;
-    }
-
-    MR2DType* roi22;
-    roi22 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator22(roi22);
-    wMask = (unsigned short*)Mask2b.data;
-    while(! iterator22.IsBehind())
-    {
-        if (*wMask==3)
-            iterator22.SetPixel();
-        ++iterator22;
-       wMask++;
-    }
-
-    MR2DType* roi23;
-    roi23 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator23(roi23);
-    wMask = (unsigned short*)Mask2b.data;
-    while(! iterator23.IsBehind())
-    {
-        if (*wMask==4)
-            iterator23.SetPixel();
-        ++iterator23;
-       wMask++;
-    }
-
-    MR2DType* roi24;
-    roi24 = new MR2DType(begin, end);
-    MazdaRoiIterator<MR2DType> iterator24(roi24);
-    wMask = (unsigned short*)Mask2b.data;
-    while(! iterator24.IsBehind())
-    {
-        if (*wMask==5)
-            iterator24.SetPixel();
-        ++iterator24;
-       wMask++;
-    }
-
-
-
-
     if(switchImages)
     {
         roi2->SetName("V");
         roi2->SetColor(0xff0000);
-        roi21->SetName("V1");
-        roi21->SetColor(0xff0000);
-        roi22->SetName("V2");
-        roi22->SetColor(0xff0000);
-        roi23->SetName("V3");
-        roi23->SetColor(0xff0000);
-        roi24->SetName("V4");
-        roi24->SetColor(0xff0000);
     }
     else
     {
         roi2->SetName("D");
         roi2->SetColor(0x00ff00);
-        roi21->SetName("D1");
-        roi21->SetColor(0x00ff00);
-        roi22->SetName("D2");
-        roi22->SetColor(0x00ff00);
-        roi23->SetName("D3");
-        roi23->SetColor(0x00ff00);
-        roi24->SetName("D4");
-        roi24->SetColor(0x00ff00);
     }
 
     outRoi->push_back(roi2);
-    outRoi->push_back(roi21);
-    outRoi->push_back(roi22);
-    outRoi->push_back(roi23);
-    outRoi->push_back(roi24);
 
     ImOutVect->push_back(ImOut1);
     ImOutVect->push_back(ImOut2);
 
     TransformacjaZiarna transformacja;// = new TransformacjaZiarna;
-    transformacja.x = centerX1;
+    transformacja.x = fittedRect1.center.x;// centerX1;
     transformacja.y = centerY1;
+
+
     if(flipped)
         transformacja.angle = fittedRect1.angle + 180.0;
     else
@@ -1194,8 +1013,6 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     Mask2.release();
     Mask1a.release();
     Mask2a.release();
-    Mask1b.release();
-    Mask2b.release();
 
     ImGradient1.release();
     ImGradient2.release();
@@ -1203,13 +1020,5 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
     ImGray1.release();
 
     return 1;
-
 }
 //--------------------------------------------------------------------------------------------------
-
-bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
-{
-    SegmentParams segParams;
-    segParams.default3Images();
-    return SegmentGrainImg(ImInVect, ImOutVect,  outRoi, transf, &segParams);
-}

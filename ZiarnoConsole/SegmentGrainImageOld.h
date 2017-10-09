@@ -9,12 +9,12 @@
 //#include "../../qmazda/SharedImage/mazdaroi.h"
 //#include "../../qmazda/SharedImage/mazdaroiio.h"
 
-#define TERAZ_DEBUG
+//#define TERAZ_DEBUG
 
 
 typedef MazdaRoi<unsigned int, 2> MR2DType;
 
-// using namespace cv;
+
 
 struct TransformacjaZiarna
 {
@@ -24,7 +24,7 @@ struct TransformacjaZiarna
 };
 
 
-#ifdef TERAZ_DEBUG
+
 class SegmentParams
 {
 public:
@@ -47,9 +47,9 @@ public:
     bool alignGrains;
     bool addBlurToSecondImage;
     bool findValey;
+    bool subsegment;
 
-    bool temp;
-
+    //bool showThird;
     bool showContour;
     bool showInput;
     bool showThesholded;
@@ -64,11 +64,13 @@ public:
     bool showAligned;
     bool showGradient;
     bool showOutput;
+    bool showOutput2;
 
 
     void defaultHorizontal(void)
     {
         threshVal = 16;
+        zeroOutsideEllipse = false;
         removeSmallReg = true;
         rawMorphErosion1 = 3;
         rawMorphDilation2 = 0;
@@ -89,6 +91,8 @@ public:
         addBlurToSecondImage = false;
         findValey = true;
 
+        subsegment = true;
+
         showContour = false;
         showInput = false;
         showThesholded = false;
@@ -103,11 +107,13 @@ public:
         showAligned = false;
         showGradient = false;
         showOutput = false;
+        showOutput2 = false;
     }
 
     void defaultVertical(void)
     {
         threshVal = 26;
+        zeroOutsideEllipse = false;
         removeSmallReg = true;
         rawMorphErosion1 = 3;
         rawMorphDilation2 = 0;
@@ -125,6 +131,9 @@ public:
         alignGrains = true;
         addBlurToSecondImage = false;
         findValey = true;
+
+        subsegment = true;
+
         showContour = false;
         showInput = false;
         showThesholded = false;
@@ -139,16 +148,55 @@ public:
         showAligned = false;
         showGradient = false;
         showOutput = false;
+        showOutput2 = false;
+    }
+
+    void default3Images(void)
+    {
+        threshVal = 16;
+        zeroOutsideEllipse = true;
+        removeSmallReg = true;
+        rawMorphErosion1 = 3;
+        rawMorphDilation2 = 0;
+        rawMorphErosion3 = 0;
+        fillHoles = true;
+        divideSeparateReg = true;
+        MinRegSize = 10000;
+        regMorphErosion1 = 0;
+        regMorphDilation2 = 0;
+        regMorphErosion3 = 0;
+        removeBorderRegion = true;
+        fitEllipseToReg = true;
+        rotateImage = true;
+        croppImage = true;
+        alignGrains = true;
+        addBlurToSecondImage = false;
+        findValey = true;
+
+        subsegment = true;
+
+        showContour = false;
+        showInput = false;
+        showThesholded = false;
+        show1stMorphology = false;
+        showHolesRemoved = false;
+        showMask = false;
+        showContourOnInput = false;
+        showFitted = false;
+        showRotated = false;
+        showCropped = false;
+        showAreaForAlign = false;
+        showAligned = false;
+        showGradient = false;
+        showOutput = false;
+        showOutput2 = false;
     }
 };
-bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
-                     std::vector<TransformacjaZiarna> *transf, SegmentParams *params);
-#else
-bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
-                      std::vector<TransformacjaZiarna> *transf);
-#endif
 
+cv::Mat MK_threshold8bit(cv::Mat Im8bit, unsigned char threshold);
+cv::Mat MK_thresholdBRG(cv::Mat ImBGR, int threshold);
 
-
+bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf, SegmentParams *params);
+bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf);
 
 #endif

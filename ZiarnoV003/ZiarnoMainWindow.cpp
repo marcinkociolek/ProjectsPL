@@ -26,7 +26,7 @@
 #include "gradient.h"
 #include "DispLib.h"
 //#include "SegmentGrainImage.h"
-#include "SegmentGrainImageS.h"
+#include "SegmentGrainImage.h"
 #include "heightfromsideimage.h"
 
 #include "mazdaroi.h"
@@ -48,7 +48,7 @@ using namespace std::chrono;
 // global variables
 QStringList Files;
 
-#define TERAZ_DEBUG
+//#define TERAZ_DEBUG
 
 //---------------------------------------------------------------------------------------------------
 // main program
@@ -409,6 +409,49 @@ void MainWindow::ProcessImage(void)
     done = SegmentGrainImgS(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &segParams);
 #else
     done = SegmentGrainImgS(&ImInVect, &ImOutVect, &RoiVect, &TransfVect);//, &segParams);
+    if(done)
+    {
+        ShowImageCombination(showInput,"Input image",*ImInVect.at(0), *ImInVect.at(1));
+        //ShowImageCombination(showOutput,"Output",*ImOutVect.at(0), *ImOutVect.at(1));
+        Mat MaskTemp1 = Mat::zeros((*ImOutVect.at(0)).rows,(*ImOutVect.at(0)).cols,CV_16U);
+        MazdaRoiIterator<MR2DType> iterator1(RoiVect.at(0));
+        unsigned short *wMaskTemp1 = (unsigned short*)MaskTemp1.data;
+        int reg1 = 3;
+        if((RoiVect.at(0))->GetName() == "V")
+            reg1 = 1;
+        if((RoiVect.at(0))->GetName() == "D")
+            reg1 = 2;
+
+
+        while(! iterator1.IsBehind())
+        {
+            if (iterator1.GetPixel())
+                *wMaskTemp1 = reg1;
+            ++iterator1;
+           wMaskTemp1++;
+        }
+
+        Mat MaskTemp2 = Mat::zeros((*ImOutVect.at(1)).rows,(*ImOutVect.at(1)).cols,CV_16U);
+        MazdaRoiIterator<MR2DType> iterator2(RoiVect.at(1));
+        unsigned short *wMaskTemp2 = (unsigned short*)MaskTemp2.data;
+        int reg2 = 3;
+        if((RoiVect.at(1))->GetName() == "V")
+            reg2 = 1;
+        if((RoiVect.at(1))->GetName() == "D")
+            reg2 = 2;
+        while(! iterator2.IsBehind())
+        {
+            if (iterator2.GetPixel())
+                *wMaskTemp2 = reg2;
+            ++iterator2;
+           wMaskTemp2++;
+        }
+        ShowImageRegionCombination(showOutput, showContour, "Output", *ImOutVect.at(0), *ImOutVect.at(1), MaskTemp1, MaskTemp2);
+
+    }
+    else
+        ui->MesageTextEdit->append((CurrentFileName + "\n").c_str());
+
 #endif
     //steady_clock::time_point t2 = steady_clock::now();
     //duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
@@ -426,6 +469,8 @@ void MainWindow::ProcessImage(void)
     int firstLine = FindGrainHeighOnGray(ImIn3);
     int stopTime = getTickCount();
     ui->DurationLineEdit->setText(  QString::number((double)(stopTime - startTime)/1000.0));
+
+
     if(showThirdImage)
     {
         Mat ImShow = ImIn3;
@@ -477,10 +522,14 @@ void MainWindow::ShowImageCombination(bool show, string WinName, Mat Im1, Mat Im
         return;
     int imMaxX, imMaxY;
     imMaxX = Im1.cols;
+    if (imMaxX < Im2.cols)
+        imMaxX = Im2.cols;
     imMaxY = Im1.rows;
+    if (imMaxY < Im2.rows)
+        imMaxY = Im2.rows;
     Mat Im = Mat::zeros(Size(imMaxX *2,imMaxY) ,Im1.type());
-    Im1.copyTo(Im(Rect(0, 0, imMaxX, imMaxY)));
-    Im2.copyTo(Im(Rect(imMaxX, 0, imMaxX, imMaxY)));
+    Im1.copyTo(Im(Rect(0, 0, Im1.cols , Im1.rows)));
+    Im2.copyTo(Im(Rect(imMaxX, 0, Im2.cols , Im2.rows)));
     imshow(WinName.c_str(), Im);
 
 }
@@ -970,7 +1019,7 @@ void MainWindow::on_pushButtonConvertAll_clicked()
 
         if (!exists(FileToOpen))
             continue;
-        ImIn = imread(FileToOpen.string().c_str());
+        ImIn1 = imread(FileToOpen.string().c_str());
         if (ImIn.empty())
             continue;
         maxX = ImIn.cols/2;

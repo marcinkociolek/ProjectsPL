@@ -127,7 +127,7 @@ void MaskOutsideEllipseCV(cv::Mat Mask)
     if(!maxX || !maxY)
         return;
     Mat Ellipse = Mat::zeros(maxY,maxX,CV_16U);
-    ellipse(Ellipse,Point(centerX,centerY),Size(centerX*0.8,centerY*0.9),0.0, 0.0,360.0,1,-1);
+    ellipse(Ellipse,Point(centerX,centerY),Size(centerX*8/10,centerY*9/10),0.0, 0.0,360.0,1,-1);
     Mask = Mask.mul(Ellipse);
     //imshow("Ellipse",Ellipse*60000);
 }
@@ -467,7 +467,7 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
 #else
     const int params_threshVal = 16;
     const bool params_zeroOutsideEllipse = true;
-    const bool params_removeSmallReg = true;
+    const bool params_removeSmallReg = false;
     const int params_rawMorphErosion1 = 3;
     const int params_rawMorphDilation2 = 0;
     const int params_rawMorphErosion3 = 0;
