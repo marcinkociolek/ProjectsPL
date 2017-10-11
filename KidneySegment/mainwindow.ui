@@ -908,8 +908,8 @@
    <widget class="QSpinBox" name="spinBoxPenSize">
     <property name="geometry">
      <rect>
-      <x>840</x>
-      <y>130</y>
+      <x>630</x>
+      <y>180</y>
       <width>42</width>
       <height>22</height>
      </rect>
@@ -1048,6 +1048,24 @@
       <width>51</width>
       <height>21</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>180</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Pen size</string>
     </property>
    </widget>
   </widget>

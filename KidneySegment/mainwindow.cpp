@@ -81,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //showRegionOnGradient = ui->checkBoxShowRegionOnGradient->checkState();
     //showContourOnGradient = ui->checkBoxShowContourOnGradient->checkState();
 
-    ui->spinBoxPenSize->value();
+    penSize = ui->spinBoxPenSize->value();
 
     showRegOnImagePC = ui->checkBoxRegOnPseudoColor->checkState();
 
