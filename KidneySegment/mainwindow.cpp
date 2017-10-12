@@ -17,6 +17,13 @@
 #include "StringFcLib.h"
 #include "gradient.h"
 
+#include "tiffio.h"
+
+#include "mazdaroi.h"
+#include "mazdaroiio.h"
+
+typedef MazdaRoi<unsigned int, 2> MR2DType;
+
 using namespace std;
 using namespace boost::filesystem;
 using namespace boost;
@@ -967,4 +974,172 @@ void MainWindow::on_spinBoxTransparency_valueChanged(int arg1)
 {
     transparency = arg1;
     ShowImages();
+}
+
+void MainWindow::on_pushButtonSaveRoiCommon_clicked()
+{
+    path OutputFilename = InputDirectory;
+    OutputFilename.append("/ROI/common.tif");
+    unsigned short *wMask;
+
+    vector <MR2DType*> ROIVect;
+
+    int begin[MR2DType::Dimensions];
+    int end[MR2DType::Dimensions];
+
+    //Mask 1
+    begin[0] = 0;
+    begin[1] = 0;
+    end[0] = MaskCortex1.cols-1;
+    end[1] = MaskCortex1.rows-1;
+
+    MR2DType *ROICortexL;
+    ROICortexL = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorCL(ROICortexL);
+    wMask = (unsigned short*)MaskCortex1.data;
+    while(! iteratorCL.IsBehind())
+    {
+        if (*wMask)
+            iteratorCL.SetPixel();
+        ++iteratorCL;
+       wMask++;
+    }
+
+    ROICortexL->SetName("CortexL");
+    ROICortexL->SetColor(0xff0000);
+
+    ROIVect.push_back(ROICortexL);
+
+
+    MR2DType *ROIMedulaL;
+    ROIMedulaL = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorML(ROIMedulaL);
+    wMask = (unsigned short*)MaskMedula1.data;
+    while(! iteratorML.IsBehind())
+    {
+        if (*wMask)
+            iteratorML.SetPixel();
+        ++iteratorML;
+       wMask++;
+    }
+
+    ROIMedulaL->SetName("MedulaL");
+    ROIMedulaL->SetColor(0x00ff00);
+
+    ROIVect.push_back(ROIMedulaL);
+
+
+    MR2DType *ROIPelvisL;
+    ROIPelvisL = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorPL(ROIPelvisL);
+    wMask = (unsigned short*)MaskPelvis1.data;
+    while(! iteratorPL.IsBehind())
+    {
+        if (*wMask)
+            iteratorPL.SetPixel();
+        ++iteratorPL;
+       wMask++;
+    }
+
+    ROIPelvisL->SetName("PelvisL");
+    ROIPelvisL->SetColor(0x0000ff);
+
+    ROIVect.push_back(ROIPelvisL);
+
+
+    MR2DType *ROICortexP;
+    ROICortexP = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorCP(ROICortexP);
+    wMask = (unsigned short*)MaskCortex2.data;
+    while(! iteratorCP.IsBehind())
+    {
+        if (*wMask)
+            iteratorCP.SetPixel();
+        ++iteratorCP;
+       wMask++;
+    }
+
+    ROICortexP->SetName("CortexP");
+    ROICortexP->SetColor(0xffff00);
+
+    ROIVect.push_back(ROICortexP);
+
+
+    MR2DType *ROIMedulaP;
+    ROIMedulaP = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorMP(ROIMedulaP);
+    wMask = (unsigned short*)MaskMedula2.data;
+    while(! iteratorMP.IsBehind())
+    {
+        if (*wMask)
+            iteratorMP.SetPixel();
+        ++iteratorMP;
+       wMask++;
+    }
+
+    ROIMedulaP->SetName("MedulaP");
+    ROIMedulaP->SetColor(0x00ffff);
+
+    ROIVect.push_back(ROIMedulaP);
+
+
+    MR2DType *ROIPelvisP;
+    ROIPelvisP = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorPP(ROIPelvisP);
+    wMask = (unsigned short*)MaskPelvis2.data;
+    while(! iteratorPP.IsBehind())
+    {
+        if (*wMask)
+            iteratorPP.SetPixel();
+        ++iteratorPP;
+       wMask++;
+    }
+
+    ROIPelvisP->SetName("PelvisP");
+    ROIPelvisP->SetColor(0xff00ff);
+
+    ROIVect.push_back(ROIPelvisP);
+
+
+    MazdaRoiIO<MR2DType>::Write(OutputFilename.string(), &ROIVect, NULL);
+    //MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"GrzbietROI.tif").c_str(), &RoiVect, NULL);
+
+    while(ROIVect.size() > 0)
+    {
+         delete ROIVect.back();
+         ROIVect.pop_back();
+    }
+
+}
+
+void MainWindow::on_pushButtonLoadRoiCommon_clicked()
+{
+    path InputFileName = InputDirectory;
+    InputFileName.append("/ROI/common.tif");
+    unsigned short *wMask;
+    vector <MR2DType*> ROIVect;
+
+    ROIVect = MazdaRoiIO<MR2DType>::Read(InputFileName.string());
+
+    MazdaRoiIterator<MR2DType> iteratorCL(ROIVect.at(0));
+    wMask = (unsigned short*)MaskCortex1.data;
+    while(! iteratorCL.IsBehind())
+    {
+        if (iteratorCL.GetPixel())
+            *wMask = 1;
+        ++iteratorCL;
+        wMask++;
+    }
+
+    while(ROIVect.size() > 0)
+    {
+         delete ROIVect.back();
+         ROIVect.pop_back();
+    }
 }

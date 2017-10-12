@@ -169,6 +169,10 @@ private slots:
 
     void on_spinBoxTransparency_valueChanged(int arg1);
 
+    void on_pushButtonSaveRoiCommon_clicked();
+
+    void on_pushButtonLoadRoiCommon_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
