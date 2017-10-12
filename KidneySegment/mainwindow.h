@@ -95,6 +95,9 @@ public:
     void OnOffImageWindow(void);
     cv::Mat MainWindow::SegmetU16BetweentwoThresholds(cv::Mat Im, unsigned short threshMin, unsigned short threshMax);
 
+    void MainWindow::LoadROI(boost::filesystem::path InputFile);
+    void MainWindow::SaveROI(boost::filesystem::path OutputFile);
+
 //SLOTS------------------------------------------------------------------------------------------------------
 private slots:
     void on_widgetImage_mousePressed(QPoint point);
@@ -172,6 +175,14 @@ private slots:
     void on_pushButtonSaveRoiCommon_clicked();
 
     void on_pushButtonLoadRoiCommon_clicked();
+
+    void on_pushButtonDeleteReg_clicked();
+
+    void on_pushButtonLoadCommonP_clicked();
+
+    void on_pushButtonLoadCommonM_clicked(bool checked);
+
+    void on_pushButtonDeleteAll_clicked();
 
 private:
     Ui::MainWindow *ui;
