@@ -1284,7 +1284,7 @@ void MainWindow::on_pushButtonLoadCommonP_clicked()
 void MainWindow::on_pushButtonLoadCommonM_clicked(bool checked)
 {
     path InputFile = InputDirectory;
-    int newFrameNr = frameNr + 1;
+    int newFrameNr = frameNr - 1;
     if (newFrameNr < 0)
         newFrameNr = 0;
     InputFile.append("/ROI/common"+ItoStrLZ(newFrameNr,2)+".tif");
