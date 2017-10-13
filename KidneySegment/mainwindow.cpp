@@ -90,9 +90,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     penSize = ui->spinBoxPenSize->value();
 
-    showRegOnImagePC = ui->checkBoxRegOnPseudoColor->checkState();
-
-
     maxX = 192;
     maxY = 192;
 
@@ -105,9 +102,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxRegioNr->addItem("MedulaP");
     ui->comboBoxRegioNr->setCurrentIndex(0);
     regionIndex = 0;
-
-    minThresh = ui->spinBoxThreshMin->value();
-    maxThresh = ui->spinBoxThreshMax->value();
 
     //displayFlag = CV_WINDOW_NORMAL;
 
@@ -124,6 +118,8 @@ MainWindow::MainWindow(QWidget *parent) :
     MaskMedula2 = Mat::zeros(maxY,maxX,CV_16U);
 
     transparency = ui->spinBoxTransparency->value();
+
+    moveAll = ui->checkBoxMoveAll->checkState();
 
     ScaleImages();
     //OnOffImageWindow();
@@ -157,21 +153,19 @@ void MainWindow::ProcessFile()
 
     maxX = InIm.cols;
     maxY = InIm.rows;
-/*
-    if(showRegOnImagePC)
-    {
-        Mat ImShow = ShowSolidRegionOnImageInGray(Mask, ShowImage16PseudoColor(InIm,minShow,maxShow), 255);
-        cvtColor(ImShow,ImShow,CV_BGR2RGB);
-        QImage QIm((unsigned char*)ImShow.data, ImShow.cols, ImShow.rows, QImage::Format_RGB888);
-        ui->labelMask->setPixmap(QPixmap::fromImage(QIm));
-
-    }
-    Mat ImShow = ShowSolidRegionOnImage(Mask2,ShowImage16PseudoColor(InIm,minShow,maxShow));
-*/
-
     if(InIm.empty())
         return;
     ImGradient = GradientDown(InIm);
+
+    ROIFile = InputDirectory;
+    ROIFile.append("/ROI/" + FileToOpen.stem().string() +".roi");
+    if(exists(ROIFile))
+    {
+        LoadROI(ROIFile);
+        ui->lineEditInfo->setText("Valid Roi");
+    }
+    else
+        ui->lineEditInfo->setText("No Roi For The Frame");
     PrepareShowImages();
     ShowImages();
 
@@ -572,13 +566,7 @@ void MainWindow::ScaleImages()
         ui->comboBoxShowModeGradient->hide();
         ui->widgetImageGradient->hide();
     }
-    if(showRegOnImagePC)
-    {
-        ui->labelMask->setGeometry(positionX,positionY,scaledX,scaledY);
-        positionX += 10 + scaledX;
-    }
-    else
-        ui->labelMask->setGeometry(0,positionY,0,0);
+
 
     ui->widgetImage->setGeometry(900,10,maxX,maxY);
     //ProcessFile();
@@ -872,27 +860,6 @@ void MainWindow::on_checkBoxShowPseudoColor_toggled(bool checked)
     ScaleImages();
 }
 
-void MainWindow::on_spinBoxThreshMin_valueChanged(int arg1)
-{
-    minThresh = arg1;
-    ProcessFile();
-    ProcessFile();
-}
-
-void MainWindow::on_spinBoxThreshMax_valueChanged(int arg1)
-{
-    maxThresh = arg1;
-    ProcessFile();
-    ProcessFile();
-}
-
-void MainWindow::on_checkBoxRegOnPseudoColor_toggled(bool checked)
-{
-    showRegOnImagePC = checked;
-    ScaleImages();
-    //ProcessFile();
-}
-
 void MainWindow::on_checkBoxShowGradient_toggled(bool checked)
 {
     showGradient = checked;
@@ -1119,73 +1086,126 @@ void MainWindow::on_checkBoxShowMedula_toggled(bool checked)
 void MainWindow::on_pushButtonUp_clicked()
 {
     Mat MaskTemp;
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskCortex1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskCortex2);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskPelvis1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskPelvis1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskPelvis2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskPelvis2);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskMedula1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskMedula1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskMedula2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskMedula2);
+    if(regionIndex == 1 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskCortex1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskCortex1);
+    }
+    if(regionIndex == 4 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskCortex2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskCortex2);
+    }
+    if(regionIndex == 2 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskPelvis1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskPelvis1);
+    }
+    if(regionIndex == 5 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskPelvis2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskPelvis2);
+    }
+    if(regionIndex == 3 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskMedula1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskMedula1);
+    }
+    if(regionIndex == 6 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskMedula2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskMedula2);
+    }
     ShowImages();
 }
 
 void MainWindow::on_pushButtonDown_clicked()
 {
     Mat MaskTemp;
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskCortex1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskCortex2);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskPelvis1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskPelvis1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskPelvis2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskPelvis2);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskMedula1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskMedula1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskMedula2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
-    MaskTemp.copyTo(MaskMedula2);
+    if(regionIndex == 1 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskCortex1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskCortex1);
+    }
+    if(regionIndex == 4 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskCortex2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskCortex2);
+    }
+    if(regionIndex == 2 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskPelvis1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskPelvis1);
+    }
+    if(regionIndex == 5 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskPelvis2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskPelvis2);
+    }
+    if(regionIndex == 3 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskMedula1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskMedula1);
+    }
+    if(regionIndex == 6 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskMedula2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskMedula2);
+    }
     ShowImages();
 }
 
 void MainWindow::on_pushButtonRight_clicked()
 {
     Mat MaskTemp;
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskCortex1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskCortex2);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskPelvis1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskPelvis1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskPelvis2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskPelvis2);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskMedula1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskMedula1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskMedula2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskMedula2);
-
+    if(regionIndex == 1 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskCortex1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskCortex1);
+    }
+    if(regionIndex == 4 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskCortex2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskCortex2);
+    }
+    if(regionIndex == 2 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskPelvis1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskPelvis1);
+    }
+    if(regionIndex == 5 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskPelvis2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskPelvis2);
+    }
+    if(regionIndex == 3 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskMedula1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskMedula1);
+    }
+    if(regionIndex == 6 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskMedula2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskMedula2);
+    }
     ShowImages();
 }
 
@@ -1193,24 +1213,42 @@ void MainWindow::on_pushButtonLeft_clicked()
 {
     Mat MaskTemp;
 
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskCortex1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskCortex2);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskPelvis1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskPelvis1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskPelvis2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskPelvis2);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskMedula1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskMedula1);
-    MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-    MaskMedula2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
-    MaskTemp.copyTo(MaskMedula2);
+    if(regionIndex == 1 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskCortex1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskCortex1);
+    }
+    if(regionIndex == 4 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskCortex2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskCortex2);
+    }
+    if(regionIndex == 2 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskPelvis1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskPelvis1);
+    }
+    if(regionIndex == 5 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskPelvis2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskPelvis2);
+    }
+    if(regionIndex == 3 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskMedula1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskMedula1);
+    }
+    if(regionIndex == 6 || moveAll)
+    {
+        MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
+        MaskMedula2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskMedula2);
+    }
     ShowImages();
 }
 
@@ -1301,4 +1339,14 @@ void MainWindow::on_pushButtonDeleteAll_clicked()
     DeleteRegionFromImage(MaskPelvis2, 1);
     DeleteRegionFromImage(MaskMedula2, 1);
     ShowImages();
+}
+
+void MainWindow::on_pushButtonSaveRoi_clicked()
+{
+     SaveROI(ROIFile);
+}
+
+void MainWindow::on_checkBoxMoveAll_toggled(bool checked)
+{
+    moveAll = checked;
 }

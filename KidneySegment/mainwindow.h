@@ -20,6 +20,7 @@ public:
     ~MainWindow();
 // my definitions--------------------------------------------------------------------------------------------
     boost::filesystem::path InputDirectory;
+    boost::filesystem::path ROIFile;
     int frameNr;
     std::string CurrentFrame00FileName;
     cv::Mat InIm;
@@ -69,9 +70,6 @@ public:
     bool showMedula;
 
     int penSize;
-    //bool showPseudoColor;
-    bool showRegOnImagePC;
-    //bool showGradient;
 
     bool displayFlag;
     int transparency;
@@ -84,6 +82,8 @@ public:
     cv::Mat Mask2;
     int regionIndex;
 
+
+    bool moveAll;
 
 // my functions
     void ProcessFile();
@@ -119,12 +119,6 @@ private slots:
     void on_checkBoxShowGray_toggled(bool checked);
 
     void on_checkBoxShowPseudoColor_toggled(bool checked);
-
-    void on_spinBoxThreshMin_valueChanged(int arg1);
-
-    void on_spinBoxThreshMax_valueChanged(int arg1);
-
-    void on_checkBoxRegOnPseudoColor_toggled(bool checked);
 
     void on_checkBoxShowGradient_toggled(bool checked);
 
@@ -183,6 +177,10 @@ private slots:
     void on_pushButtonLoadCommonM_clicked(bool checked);
 
     void on_pushButtonDeleteAll_clicked();
+
+    void on_pushButtonSaveRoi_clicked();
+
+    void on_checkBoxMoveAll_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
