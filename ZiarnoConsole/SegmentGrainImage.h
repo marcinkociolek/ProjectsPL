@@ -141,11 +141,11 @@ public:
         showOutput = false;
     }
 };
-bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
-                     std::vector<TransformacjaZiarna> *transf, SegmentParams *params);
+bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
+                     std::vector<TransformacjaZiarna> *transf, int* orientation, SegmentParams *params);
 #else
-bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
-                      std::vector<TransformacjaZiarna> *transf);
+bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
+                      std::vector<TransformacjaZiarna> *transf, int* orientation);
 #endif
 
 

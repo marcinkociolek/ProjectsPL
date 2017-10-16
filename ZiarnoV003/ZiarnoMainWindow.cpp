@@ -402,13 +402,13 @@ void MainWindow::ProcessImage(void)
     //steady_clock::time_point t1 = steady_clock::now();
     //int startTime = getTickCount();
 
-
+    int orientation;
     bool done;
 #ifdef TERAZ_DEBUG
 
-    done = SegmentGrainImgS(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &segParams);
+    done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation, &segParams);
 #else
-    done = SegmentGrainImgS(&ImInVect, &ImOutVect, &RoiVect, &TransfVect);//, &segParams);
+    done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation);//, &segParams);
     if(done)
     {
         ShowImageCombination(showInput,"Input image",*ImInVect.at(0), *ImInVect.at(1));

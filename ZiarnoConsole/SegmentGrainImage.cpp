@@ -420,10 +420,10 @@ RotatedRect FitEllipseToReg(cv::Mat Mask)
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 #ifdef TERAZ_DEBUG
-bool SegmentGrainImgS(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
-                     std::vector<TransformacjaZiarna> *transf, SegmentParams *params)
+bool SegmentGrainImg(const std::vector<cv::Mat*> *ImInVect, std::vector<cv::Mat*> *ImOutVect, std::vector <MR2DType*> * outRoi,
+                     std::vector<TransformacjaZiarna> *transf, int* orientation SegmentParams *params)
 #else
-bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf)
+bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOutVect, vector <MR2DType*> * outRoi, std::vector<TransformacjaZiarna> *transf, int* orientation)
 #endif
 {
 #ifdef TERAZ_DEBUG
@@ -470,13 +470,10 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
     const bool params_removeSmallReg = false;
     const int params_rawMorphErosion1 = 3;
     const int params_rawMorphDilation2 = 0;
-    const int params_rawMorphErosion3 = 0;
+    //const int params_rawMorphErosion3 = 0;
     const bool params_fillHoles = true;
     const bool params_divideSeparateReg = true;
     const int params_MinRegSize = 10000;
-    const int params_regMorphErosion1 = 0;
-    const int params_regMorphDilation2 = 0;
-    const int params_regMorphErosion3 = 0;
     const bool params_removeBorderRegion = false;
     const bool params_fitEllipseToReg = true;
     const bool params_rotateImage = true;
@@ -731,10 +728,20 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
         int croppY1 = croppY1Min;
 
         if (croppHeight1 <= 200)
-            minSizeReached = false;;
+        {
+            minSizeReached = false;
+            croppHeight1 = 200;
+        }
         if (croppWidth1 <= 50)
-            minSizeReached = false;;
+        {
+            minSizeReached = false;
+            croppWidth1 <= 50;
+        }
 
+        if(croppX1 + croppWidth1 >= Mask1.cols)
+            croppX1 = Mask1.cols - croppWidth1 - 1;
+        if(croppY1 + croppHeight1 >= Mask1.rows)
+            croppY1 = Mask1.rows - croppHeight1 - 1;
 
         Mat ImCropped1, ImCropped2, MaskCropped1, MaskCropped2;
 
@@ -747,9 +754,19 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
         int croppY2 = croppY2Min;
 
         if (croppHeight2 <= 200)
-            minSizeReached = false;;
+        {
+            minSizeReached = false;
+            croppHeight2 = 200;
+        }
         if (croppWidth2 <= 50)
-            minSizeReached = false;;
+        {
+            minSizeReached = false;
+            croppWidth2 <= 50;
+        }
+        if(croppX2 + croppWidth2 >= Mask2.cols)
+            croppX2 = Mask2.cols - croppWidth2 - 1;
+        if(croppY2 + croppHeight2 >= Mask2.rows)
+            croppY2 = Mask2.rows - croppHeight2 - 1;
 
         ImIn2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(ImCropped2);
         Mask2(Rect(croppX2,croppY2,croppWidth2,croppHeight2)).copyTo(MaskCropped2);
@@ -989,8 +1006,8 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
     ImOutVect->push_back(ImOut2);
 
     TransformacjaZiarna transformacja;// = new TransformacjaZiarna;
-    transformacja.x = fittedRect1.center.x;// centerX1;
-    transformacja.y = centerY1;
+    transformacja.x = fittedRect1.center.x - (*ImInVect)[0]->cols/2.0;
+    transformacja.y = fittedRect1.center.y - (*ImInVect)[0]->rows/2.0;
 
 
     if(flipped)
@@ -1000,14 +1017,16 @@ bool SegmentGrainImgS(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOu
 
     transf->push_back(transformacja);
 
-    transformacja.x = centerX2;
-    transformacja.y = centerY2;
+    transformacja.x = fittedRect2.center.x - (*ImInVect)[1]->cols/2.0;
+    transformacja.y = fittedRect2.center.y - (*ImInVect)[1]->rows/2.0;
     if(flipped)
         transformacja.angle = -fittedRect1.angle + 180;
     else
         transformacja.angle = -fittedRect1.angle;
 
     transf->push_back(transformacja);
+
+    *orientation = (int)switchImages;
 
     Mask1.release();
     Mask2.release();
