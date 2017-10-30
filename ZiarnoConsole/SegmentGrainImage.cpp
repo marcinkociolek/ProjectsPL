@@ -735,7 +735,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         if (croppWidth1 <= 50)
         {
             minSizeReached = false;
-            croppWidth1 <= 50;
+            croppWidth1 = 50;
         }
 
         if(croppX1 + croppWidth1 >= Mask1.cols)
@@ -761,7 +761,7 @@ bool SegmentGrainImg(const std::vector<Mat*> *ImInVect, std::vector<Mat*> *ImOut
         if (croppWidth2 <= 50)
         {
             minSizeReached = false;
-            croppWidth2 <= 50;
+            croppWidth2 = 50;
         }
         if(croppX2 + croppWidth2 >= Mask2.cols)
             croppX2 = Mask2.cols - croppWidth2 - 1;

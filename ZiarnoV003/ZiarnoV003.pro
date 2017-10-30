@@ -16,9 +16,9 @@ SOURCES += main.cpp\
         ZiarnoMainWindow.cpp \
     processimage.cpp \
     ../../ProjectsLib/LibMarcin/DispLib.cpp \
-    ../ZiarnoConsole/gradient.cpp \
-    ../ZiarnoConsole/heightfromsideimage.cpp \
-    ../ZiarnoConsole/SegmentGrainImage.cpp
+    ../../ProjectsGitLab/ZiarnoModuleTemp/Segmentacja/gradient.cpp \
+    ../../ProjectsGitLab/ZiarnoModuleTemp/Segmentacja/heightfromsideimage.cpp \
+    ../../ProjectsGitLab/ZiarnoModuleTemp/Segmentacja/SegmentGrainImage.cpp
 
 HEADERS  += ZiarnoMainWindow.h \
     processimage.h \
@@ -26,9 +26,9 @@ HEADERS  += ZiarnoMainWindow.h \
     ../../ProjectsLibForein/LibPMS/mazdadummy.h \
     ../../ProjectsLibForein/LibPMS/mazdaroi.h \
     ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
-    ../ZiarnoConsole/gradient.h \
-    ../ZiarnoConsole/heightfromsideimage.h \
-    ../ZiarnoConsole/SegmentGrainImage.h
+    ../../ProjectsGitLab/ZiarnoModuleTemp/Segmentacja/gradient.h \
+    ../../ProjectsGitLab/ZiarnoModuleTemp/Segmentacja/heightfromsideimage.h \
+    ../../ProjectsGitLab/ZiarnoModuleTemp/Segmentacja/SegmentGrainImage.h
 
 FORMS    += ZiarnoMainWindow.ui
 
@@ -38,7 +38,9 @@ win32: INCLUDEPATH += C:\Boost\include\boost-1_62\
 win32: INCLUDEPATH += C:\LibTiff\Include\
 win32: INCLUDEPATH += ../../ProjectsLib\LibMarcin\
 win32: INCLUDEPATH += ../../ProjectsLibForein/LibPMS/
-win32: INCLUDEPATH += ../ZiarnoConsole/
+win32: INCLUDEPATH += ../../ProjectsLibForein/LibPMS/
+
+win32: INCLUDEPATH += ../../ProjectsGitLab/ZiarnoModuleTemp/Segmentacja/
 
 win32: LIBS += -LC:/opencv/build/x64/vc12/lib
 win32: LIBS += -lopencv_contrib2413d

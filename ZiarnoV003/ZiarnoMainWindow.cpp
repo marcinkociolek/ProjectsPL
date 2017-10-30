@@ -25,7 +25,6 @@
 //#include "processimage.h"
 #include "gradient.h"
 #include "DispLib.h"
-//#include "SegmentGrainImage.h"
 #include "SegmentGrainImage.h"
 #include "heightfromsideimage.h"
 
@@ -466,7 +465,7 @@ void MainWindow::ProcessImage(void)
     //int firstLine = FindGrainHeighOnBRG(ImIn3);
     cvtColor(ImIn3,ImIn3, CV_BGR2GRAY);
     int startTime = getTickCount();
-    int firstLine = FindGrainHeighOnGray(ImIn3);
+    int firstLine = FindGrainHeigh(ImIn3);
     int stopTime = getTickCount();
     ui->DurationLineEdit->setText(  QString::number((double)(stopTime - startTime)/1000.0));
 
