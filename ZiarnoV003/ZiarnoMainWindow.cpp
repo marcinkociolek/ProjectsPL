@@ -1111,9 +1111,9 @@ void MainWindow::on_TempCheckBox_toggled(bool checked)
 
 void MainWindow::on_pushButtonGetBackground_clicked()
 {
-    Mat **ImStack = 0;
     int imCount = 0;
-    int channelCount = 0;
+    int channelCount = 3;
+
     if (!exists(InputDirectory))
     {
         QMessageBox msgBox;
@@ -1130,16 +1130,20 @@ void MainWindow::on_pushButtonGetBackground_clicked()
     }
     //Files.clear();
 
+
+    vector<Mat*> ImTVect;
+    vector<Mat*> ImBVect;
+    vector<Mat*> ImSVect;
+
     for (directory_entry& FileToProcess : directory_iterator(InputDirectory))
     {
         if (FileToProcess.path().extension() != ".bmp" && FileToProcess.path().extension() != ".png" )
             continue;
-        path PathLocal = FileToProcess.path();
-
         regex FilePattern(".+_T.+");
         if ((inputType == 2) && (!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
             continue;
 
+        path PathLocal = FileToProcess.path();
         if (!exists(PathLocal))
         {
             //Files << PathLocal.filename().string() << " File not exists" << "\n";
@@ -1148,6 +1152,34 @@ void MainWindow::on_pushButtonGetBackground_clicked()
             msgBox.exec();
             break;
         }
-        ui->FileListWidget->addItem(PathLocal.filename().string().c_str());
+
+        string FileNameTop = PathLocal.filename().string();
+        string FileNameBottom = regex_replace(FileNameTop,regex("_T"),"_B");
+        string FileNameSide = regex_replace(FileNameTop,regex("_T"),"_S");
+
+        Mat ImT = imread(FileNameTop);
+
+        Mat ImB = imread(FileNameBottom);
+
+        Mat ImS = imread(FileNameSide);
+
+        if (ImIn1.empty()||ImIn2.empty()||ImIn3.empty())
+        {
+            continue;
+        }
+
+        ImTVect.push_back(&ImT);
+        ImBVect.push_back(&ImB);
+        ImSVect.push_back(&ImS);
+        imCount++;
+    }
+    Mat **ImStack = new Mat[imCount][channelCount];
+
+
+    for(int i = 0; i < imCount; i++)
+    {
+        ImTVect.at(0)).copyTo(ImStack[i][0]);
+
+
     }
 }
