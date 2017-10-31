@@ -215,6 +215,8 @@ private slots:
 
     void on_TempCheckBox_toggled(bool checked);
 
+    void on_pushButtonGetBackground_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

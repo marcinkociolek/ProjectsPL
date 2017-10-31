@@ -408,9 +408,10 @@ void MainWindow::ProcessImage(void)
     done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation, &segParams);
 #else
     done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation);//, &segParams);
+    ShowImageCombination(showInput,"Input image",*ImInVect.at(0), *ImInVect.at(1));
     if(done)
     {
-        ShowImageCombination(showInput,"Input image",*ImInVect.at(0), *ImInVect.at(1));
+
         //ShowImageCombination(showOutput,"Output",*ImOutVect.at(0), *ImOutVect.at(1));
         Mat MaskTemp1 = Mat::zeros((*ImOutVect.at(0)).rows,(*ImOutVect.at(0)).cols,CV_16U);
         MazdaRoiIterator<MR2DType> iterator1(RoiVect.at(0));
@@ -1106,4 +1107,47 @@ void MainWindow::on_TempCheckBox_toggled(bool checked)
 {
     temp = checked;
     ProcessImage();
+}
+
+void MainWindow::on_pushButtonGetBackground_clicked()
+{
+    Mat **ImStack = 0;
+    int imCount = 0;
+    int channelCount = 0;
+    if (!exists(InputDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((InputDirectory.string()+ " not exists ").c_str());
+        msgBox.exec();
+        InputDirectory = "c:\\";
+    }
+    if (!is_directory(InputDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((InputDirectory.string()+ " This is not a directory path ").c_str());
+        msgBox.exec();
+        InputDirectory = "c:\\";
+    }
+    //Files.clear();
+
+    for (directory_entry& FileToProcess : directory_iterator(InputDirectory))
+    {
+        if (FileToProcess.path().extension() != ".bmp" && FileToProcess.path().extension() != ".png" )
+            continue;
+        path PathLocal = FileToProcess.path();
+
+        regex FilePattern(".+_T.+");
+        if ((inputType == 2) && (!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
+            continue;
+
+        if (!exists(PathLocal))
+        {
+            //Files << PathLocal.filename().string() << " File not exists" << "\n";
+            QMessageBox msgBox;
+            msgBox.setText((PathLocal.filename().string() + " File not exists" ).c_str());
+            msgBox.exec();
+            break;
+        }
+        ui->FileListWidget->addItem(PathLocal.filename().string().c_str());
+    }
 }
