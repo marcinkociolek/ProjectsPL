@@ -99,6 +99,9 @@ public:
     bool showOutput;
     bool showOutput2;
 
+    cv::Mat **ImStack ;
+    int imStackCount;
+    int channelCount;
 
 
     void ProcessImage(void);
@@ -216,6 +219,10 @@ private slots:
     void on_TempCheckBox_toggled(bool checked);
 
     void on_pushButtonGetBackground_clicked();
+
+    void on_spinBoxStackIndex_valueChanged(int arg1);
+
+    void on_spinBoxImIndex_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;

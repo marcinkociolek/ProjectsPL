@@ -173,6 +173,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     InputDirectory = "C:\\Data\\Ziarno\\2017.08.30\\";
     OutputDirectory = "c:\\";
+
+    ImStack = 0;
+    imStackCount = 0;
+    channelCount = 0;
+
     OnOffImageWindow();
 }
 
@@ -1111,8 +1116,14 @@ void MainWindow::on_TempCheckBox_toggled(bool checked)
 
 void MainWindow::on_pushButtonGetBackground_clicked()
 {
-    int imCount = 0;
-    int channelCount = 3;
+    for (int i = 0; i< imStackCount; i++)
+    {
+        delete[] ImStack[i];
+    }
+    delete[] ImStack;
+    imStackCount = 0;
+    channelCount = 3;
+
 
     if (!exists(InputDirectory))
     {
@@ -1131,9 +1142,9 @@ void MainWindow::on_pushButtonGetBackground_clicked()
     //Files.clear();
 
 
-    vector<Mat*> ImTVect;
-    vector<Mat*> ImBVect;
-    vector<Mat*> ImSVect;
+    vector<Mat> ImTVect;
+    vector<Mat> ImBVect;
+    vector<Mat> ImSVect;
 
     for (directory_entry& FileToProcess : directory_iterator(InputDirectory))
     {
@@ -1153,7 +1164,7 @@ void MainWindow::on_pushButtonGetBackground_clicked()
             break;
         }
 
-        string FileNameTop = PathLocal.filename().string();
+        string FileNameTop = PathLocal.string();
         string FileNameBottom = regex_replace(FileNameTop,regex("_T"),"_B");
         string FileNameSide = regex_replace(FileNameTop,regex("_T"),"_S");
 
@@ -1163,23 +1174,50 @@ void MainWindow::on_pushButtonGetBackground_clicked()
 
         Mat ImS = imread(FileNameSide);
 
-        if (ImIn1.empty()||ImIn2.empty()||ImIn3.empty())
+        if (ImT.empty()||ImB.empty()||ImB.empty())
         {
             continue;
         }
 
-        ImTVect.push_back(&ImT);
-        ImBVect.push_back(&ImB);
-        ImSVect.push_back(&ImS);
-        imCount++;
+        ImTVect.push_back(ImT);
+        ImBVect.push_back(ImB);
+        ImSVect.push_back(ImS);
+        imStackCount++;
     }
-    Mat **ImStack = new Mat[imCount][channelCount];
-
-
-    for(int i = 0; i < imCount; i++)
+    if(!imStackCount)
     {
-        ImTVect.at(0)).copyTo(ImStack[i][0]);
-
-
+        return;
     }
+
+    ImStack = new Mat*[imStackCount];
+
+    //int *Liczby = new int[3];
+    //int **Liczby2D = new int*[6];
+
+    for(int i = 0; i < imStackCount; i++)
+    {
+        Mat *GrainImStack = new Mat[channelCount];
+        ImTVect.at(i).copyTo(GrainImStack[0]);
+        ImBVect.at(i).copyTo(GrainImStack[1]);
+        ImSVect.at(i).copyTo(GrainImStack[2]);
+        ImStack[i] = GrainImStack;
+    }
+    ImTVect.empty();
+    ImBVect.empty();
+    ImSVect.empty();
+    imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value()][ui->spinBoxImIndex->value()]);
+
+    GetBacgroundImage(ImStack, imStackCount, channelCount);
+}
+
+void MainWindow::on_spinBoxStackIndex_valueChanged(int arg1)
+{
+    if (arg1<imStackCount)
+        imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value()][ui->spinBoxImIndex->value()]);
+}
+
+void MainWindow::on_spinBoxImIndex_valueChanged(int arg1)
+{
+    if (arg1<3)
+        imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value()][ui->spinBoxImIndex->value()]);
 }
