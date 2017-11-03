@@ -202,6 +202,9 @@
     <property name="text">
      <string>Show input image</string>
     </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QCheckBox" name="ShowThresholdedImgeCheckBox">
     <property name="geometry">
@@ -216,7 +219,7 @@
      <string>Show Thresholded image</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QCheckBox" name="ShowWithoutHolesCheckBox">
@@ -778,7 +781,7 @@
      <string>Zero mask outside ellipse</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QCheckBox" name="TempCheckBox">

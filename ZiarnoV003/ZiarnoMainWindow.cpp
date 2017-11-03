@@ -1207,7 +1207,9 @@ void MainWindow::on_pushButtonGetBackground_clicked()
     ImSVect.empty();
     imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value()][ui->spinBoxImIndex->value()]);
 
-    GetBacgroundImage(ImStack, imStackCount, channelCount);
+    int dirtyPixelsPerImage = GetBacgroundImage(ImStack, imStackCount, channelCount);
+    string Message = "dirty pixels per image = " + to_string(dirtyPixelsPerImage)+ "\n";
+    ui->MesageTextEdit->append( Message.c_str());
 }
 
 void MainWindow::on_spinBoxStackIndex_valueChanged(int arg1)
