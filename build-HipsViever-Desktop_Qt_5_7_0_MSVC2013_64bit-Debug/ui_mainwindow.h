@@ -52,6 +52,7 @@ public:
     QLabel *labelMinDispGradient;
     QSpinBox *spinBoxMaxShowGradient;
     QCheckBox *CheckBoxShowGradient;
+    QCheckBox *CheckBoxShowMask;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -75,7 +76,7 @@ public:
         ListWidgetFiles->setGeometry(QRect(10, 40, 371, 251));
         CheckBoxShowInputImageGray = new QCheckBox(centralWidget);
         CheckBoxShowInputImageGray->setObjectName(QStringLiteral("CheckBoxShowInputImageGray"));
-        CheckBoxShowInputImageGray->setGeometry(QRect(400, 40, 151, 17));
+        CheckBoxShowInputImageGray->setGeometry(QRect(400, 10, 151, 17));
         CheckBoxShowInputImageGray->setChecked(true);
         comboBoxShowModeGray = new QComboBox(centralWidget);
         comboBoxShowModeGray->setObjectName(QStringLiteral("comboBoxShowModeGray"));
@@ -110,7 +111,7 @@ public:
         labelMinDispGray->setMouseTracking(true);
         CheckBoxShowInputImagePC = new QCheckBox(centralWidget);
         CheckBoxShowInputImagePC->setObjectName(QStringLiteral("CheckBoxShowInputImagePC"));
-        CheckBoxShowInputImagePC->setGeometry(QRect(400, 60, 151, 17));
+        CheckBoxShowInputImagePC->setGeometry(QRect(400, 30, 151, 17));
         CheckBoxShowInputImagePC->setChecked(true);
         labelMaxDispPseudoColor = new QLabel(centralWidget);
         labelMaxDispPseudoColor->setObjectName(QStringLiteral("labelMaxDispPseudoColor"));
@@ -164,8 +165,12 @@ public:
         spinBoxMaxShowGradient->setValue(128);
         CheckBoxShowGradient = new QCheckBox(centralWidget);
         CheckBoxShowGradient->setObjectName(QStringLiteral("CheckBoxShowGradient"));
-        CheckBoxShowGradient->setGeometry(QRect(400, 80, 151, 17));
+        CheckBoxShowGradient->setGeometry(QRect(400, 50, 151, 17));
         CheckBoxShowGradient->setChecked(true);
+        CheckBoxShowMask = new QCheckBox(centralWidget);
+        CheckBoxShowMask->setObjectName(QStringLiteral("CheckBoxShowMask"));
+        CheckBoxShowMask->setGeometry(QRect(400, 70, 151, 17));
+        CheckBoxShowMask->setChecked(true);
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -196,6 +201,7 @@ public:
         labelMaxDispGradient->setText(QApplication::translate("MainWindow", "Max disp", 0));
         labelMinDispGradient->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Min disp</p></body></html>", 0));
         CheckBoxShowGradient->setText(QApplication::translate("MainWindow", "Show Gradient", 0));
+        CheckBoxShowMask->setText(QApplication::translate("MainWindow", "Show Mask", 0));
     } // retranslateUi
 
 };

@@ -30,17 +30,35 @@ void MainWindow::ProcessImage(void)
     if(ImIn.empty())
         return;
 
+    cvtColor(ImIn,ImGray,CV_BGR2GRAY);
+
+    threshold(ImGray, ImMask, thesholdVal ,1,THRESH_BINARY);
+    ImMask.convertTo(ImMask, CV_16U);
     //ImShowPseudoColor = ShowImage16PseudoColor(InIm,minShowPseudoColor,maxShowPseudoColor);
     //ImShowGradient = ShowImageF32PseudoColor(ImGradient,minShowGradient,maxShowGradient);
 
+}
+
+//--------------------------------------------------------------------------------------------------
+void MainWindow::ShowImages(void)
+{
+    if(ImIn.empty())
+        return;
+    Mat ImShowGray;
+    if(showInputGray)
+        ImShowGray = ShowImage16Gray(ImIn,minShowGray,maxShowGray);
+
     if(showInputGray)
     {
-        Mat ImShowGray = ShowImage16Gray(ImIn,minShowGray,maxShowGray);
+
         imshow("Gray", ImShowGray);
     }
+    Mat ImShowPseudocolor;
+    if(showInputPseudocolor||showMask)
+        ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
     if(showInputPseudocolor)
     {
-        Mat ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
+
         imshow("Pseudocolor", ImShowPseudocolor);
     }
     if(showGradient)
@@ -48,11 +66,15 @@ void MainWindow::ProcessImage(void)
         Mat ImShowGradient = ShowImageF32PseudoColor(ImGradient,minShowGradient,maxShowGradient);
         imshow("Gradient", ImShowGradient);
     }
+    if(showMask)
+    {
+        Mat ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
+        imshow("Mask", ImShowMask);
+    }
+
 }
 
 //--------------------------------------------------------------------------------------------------
-
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -115,7 +137,7 @@ void MainWindow::on_pushButtonSelectInFolder_clicked()
             continue;
         path PathLocal = FileToProcess.path();
 
-        regex FilePattern(".+");
+        regex FilePattern("crop.+");
         if ((!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
             continue;
 

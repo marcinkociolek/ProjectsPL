@@ -28,6 +28,7 @@ public:
     //cv::Mat ImShow;
     cv::Mat ImIn;
     cv::Mat ImGradient;
+    cv::Mat Mask;
 
     int minShowGray;
     int maxShowGray;
