@@ -29,14 +29,35 @@ void MainWindow::ProcessImage(void)
 {
     if(ImIn.empty())
         return;
+    //unsigned short *wImIn = (unsigned short*)ImIn.data;
+    //float *wImGradient = (float*)ImGradient.data;
+    unsigned short *wImConv = (unsigned short*)ImConv.data;
 
-    cvtColor(ImIn,ImGray,CV_BGR2GRAY);
+    int maxX = ImIn.cols;
+    int maxY = ImIn.rows;
+    int maxXY = maxX * maxY;
+    Mask = Mat::zeros(maxY, maxX, CV_16U);
+    unsigned short *wMask = (unsigned short*)Mask.data;
 
-    threshold(ImGray, ImMask, thesholdVal ,1,THRESH_BINARY);
-    ImMask.convertTo(ImMask, CV_16U);
+    for(int i = 0; i < maxXY; i++)
+    {
+        //if(*wImIn > thresholdImOrg)
+        //    *wMask = 1;
+        //wImIn++;
+
+        //if(*wImGradient > thresholdImOrg)
+        //    *wMask = 1;
+        //wImGradient++;
+
+        if(*wImConv < thresholdImOrg)
+            *wMask = 1;
+        wImConv++;
+        wMask++;
+    }
+
     //ImShowPseudoColor = ShowImage16PseudoColor(InIm,minShowPseudoColor,maxShowPseudoColor);
     //ImShowGradient = ShowImageF32PseudoColor(ImGradient,minShowGradient,maxShowGradient);
-
+    ShowImages();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -71,6 +92,11 @@ void MainWindow::ShowImages(void)
         Mat ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
         imshow("Mask", ImShowMask);
     }
+    if(showConv && !ImConv.empty())
+    {
+        Mat ImShowConverted = ShowImage16PseudoColor(ImConv,minShowConv,maxShowConv);
+        imshow("Converted", ImShowConverted);
+    }
 
 }
 
@@ -84,6 +110,7 @@ MainWindow::MainWindow(QWidget *parent) :
     showInputPseudocolor = ui->CheckBoxShowInputImagePC->checkState();
     showInputGray = ui->CheckBoxShowInputImageGray->checkState();
     showGradient = ui->CheckBoxShowGradient->checkState();
+    showMask = ui->CheckBoxShowMask->checkState();
 
     minShowGray = ui->spinBoxMinShowGray->value();
     maxShowGray = ui->spinBoxMaxShowGray->value();
@@ -92,6 +119,10 @@ MainWindow::MainWindow(QWidget *parent) :
     minShowGradient = ui->spinBoxMinShowGradient->value();
     maxShowGradient = ui->spinBoxMaxShowGradient->value();
 
+    minShowConv = ui->spinBoxMinShowConv->value();
+    maxShowConv = ui->spinBoxMaxShowConv->value();
+
+    thresholdImOrg = ui->spinBoxThresholdOryginalImage->value();
 }
 
 MainWindow::~MainWindow()
@@ -137,7 +168,7 @@ void MainWindow::on_pushButtonSelectInFolder_clicked()
             continue;
         path PathLocal = FileToProcess.path();
 
-        regex FilePattern("crop.+");
+        regex FilePattern(".+crop.+");
         if ((!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
             continue;
 
@@ -162,7 +193,14 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
     FileToOpen.append(FileName);
     ImIn = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
     ImGradient = GradientDown(ImIn);
+
+    FileName = regex_replace(FileName,regex("_crop"),"_SDA");
+    path FileToOpen2 = InputDirectory;
+    FileToOpen2.append(FileName);
+    ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
     ProcessImage();
+
 }
 
 
@@ -170,53 +208,85 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
 void MainWindow::on_spinBoxMinShowGray_valueChanged(int arg1)
 {
     minShowGray = arg1;
-    ProcessImage();
+    ShowImages();
 }
 
 void MainWindow::on_spinBoxMaxShowGray_valueChanged(int arg1)
 {
     maxShowGray = arg1;
-    ProcessImage();
+    ShowImages();
 }
 
 void MainWindow::on_CheckBoxShowInputImageGray_toggled(bool checked)
 {
     showInputGray = checked;
-    ProcessImage();
+    ShowImages();
 }
 
 void MainWindow::on_CheckBoxShowInputImagePC_toggled(bool checked)
 {
     showInputPseudocolor = checked;
-    ProcessImage();
+    ShowImages();
 }
 
 void MainWindow::on_spinBoxMinShowPseudoColor_valueChanged(int arg1)
 {
     minShowPseudocolor = arg1;
-    ProcessImage();
+    ShowImages();
 }
 
 void MainWindow::on_spinBoxMaxShowPseudoColor_valueChanged(int arg1)
 {
     maxShowPseudocolor = arg1;
-    ProcessImage();
+    ShowImages();
 }
 
 void MainWindow::on_spinBoxMinShowGradient_valueChanged(int arg1)
 {
     minShowGradient = arg1;
-    ProcessImage();
+    ShowImages();
 }
 
 void MainWindow::on_spinBoxMaxShowGradient_valueChanged(int arg1)
 {
     maxShowGradient = arg1;
-    ProcessImage();
+    ShowImages();
 }
 
 void MainWindow::on_CheckBoxShowGradient_toggled(bool checked)
 {
     showGradient = checked;
+    ShowImages();
+}
+
+
+
+void MainWindow::on_spinBoxThresholdOryginalImage_valueChanged(int arg1)
+{
+    thresholdImOrg = (unsigned short)arg1;
     ProcessImage();
+}
+
+void MainWindow::on_CheckBoxShowMask_toggled(bool checked)
+{
+    showMask = checked;
+    ShowImages();
+}
+
+void MainWindow::on_CheckBoxShowConv_toggled(bool checked)
+{
+    showConv = checked;
+    ShowImages();
+}
+
+void MainWindow::on_spinBoxMinShowConv_valueChanged(int arg1)
+{
+    minShowConv = arg1;
+    ShowImages();
+}
+
+void MainWindow::on_spinBoxMaxShowConv_valueChanged(int arg1)
+{
+    maxShowConv = arg1;
+    ShowImages();
 }

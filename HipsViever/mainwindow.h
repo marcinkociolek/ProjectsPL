@@ -27,6 +27,7 @@ public:
 
     //cv::Mat ImShow;
     cv::Mat ImIn;
+    cv::Mat ImConv;
     cv::Mat ImGradient;
     cv::Mat Mask;
 
@@ -38,14 +39,21 @@ public:
     int minShowGradient;
     int maxShowGradient;
 
+    int minShowConv;
+    int maxShowConv;
+
+    unsigned short thresholdImOrg;
+
     bool showInputGray;
     bool showInputPseudocolor;
 
     bool showGradient;
-
+    bool showConv;
     bool showMask;
 
+
     void MainWindow::ProcessImage(void);
+    void MainWindow::ShowImages(void);
 
 private slots:
     void on_pushButtonSelectInFolder_clicked();
@@ -69,6 +77,16 @@ private slots:
     void on_spinBoxMaxShowGradient_valueChanged(int arg1);
 
     void on_CheckBoxShowGradient_toggled(bool checked);
+
+    void on_spinBoxThresholdOryginalImage_valueChanged(int arg1);
+
+    void on_CheckBoxShowMask_toggled(bool checked);
+
+    void on_CheckBoxShowConv_toggled(bool checked);
+
+    void on_spinBoxMinShowConv_valueChanged(int arg1);
+
+    void on_spinBoxMaxShowConv_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;
