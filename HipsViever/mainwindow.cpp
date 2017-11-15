@@ -16,6 +16,7 @@
 
 #include "DispLib.h"
 #include "gradient.h"
+#include "RegionU16Lib.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -25,17 +26,99 @@ using namespace cv;
 //--------------------------------------------------------------------------------------------------
 //          My functions
 //--------------------------------------------------------------------------------------------------
+void MainWindow::CalculateTransform(void)
+{
+    if(ImIn.empty())
+        return;
+    //unsigned short *wImIn = (unsigned short*)ImIn.data;
+    //float *wImGradient = (float*)ImGradient.data;
+
+    int maxX = ImIn.cols;
+    int maxY = ImIn.rows;
+    int maxXY = maxX * maxY;
+
+    int diameter = 100;
+    Mat RoiSmall = CreateRoi16(2, diameter, diameter);
+
+    ImConv2 = Mat::zeros(maxY, maxX, CV_16U);
+    unsigned short *wImConv2 = (unsigned short*)ImConv2.data;
+    unsigned short *wImIn = (unsigned short*)ImIn.data;
+
+    int xLimMin = diameter/2 +1;
+    int xLimMax = maxX - diameter/2;
+    int yLimMin = diameter/2 + 1;
+    int yLimMax = maxY - diameter/2;
+    int maxXYSmall = diameter *diameter;
+
+
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(x > xLimMin && x < xLimMax && y > yLimMin && y < yLimMax )
+            {
+                Mat ImSmall;
+                unsigned short pixVal = *wImIn;
+                int sum = 0;
+                ImIn(Rect(x - diameter/2, y - diameter/2, diameter,diameter)).copyTo(ImSmall);
+                unsigned short *wImSmall = (unsigned short*)ImSmall.data;
+                unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
+                for(int i = 0; i < maxXYSmall; i++)
+                {
+                    if(*wImSmall >= pixVal && *wRoiSmall)
+                    {
+                       sum++;
+                    }
+                    wImSmall++;
+                    wRoiSmall++;
+                }
+                *wImConv2 = sum;
+            }
+
+            wImIn++;
+            wImConv2++;
+        }
+    }
+
+
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::MaskImage(void)
+{
+    if(ImIn.empty())
+        return;
+    int maxX = ImIn.cols;
+    int maxY = ImIn.rows;
+    int maxXY = maxX * maxY;
+
+
+    Mat MaskForFlood = Mat::zeros(maxY +2, maxX +2, CV_8U);
+
+    Point seedPoint;
+    seedPoint.x = 240;
+    seedPoint.y = 340;
+    Mat ImInF;
+    ImIn.convertTo(ImInF, CV_32F);
+    floodFill(ImInF,MaskForFlood,seedPoint, 255, 0, Scalar(0),Scalar(256),4 + (255 << 8) + FLOODFILL_MASK_ONLY) ;
+    imshow ("flood", MaskForFlood);
+}
+//--------------------------------------------------------------------------------------------------
 void MainWindow::ProcessImage(void)
 {
     if(ImIn.empty())
         return;
     //unsigned short *wImIn = (unsigned short*)ImIn.data;
     //float *wImGradient = (float*)ImGradient.data;
-    unsigned short *wImConv = (unsigned short*)ImConv.data;
 
     int maxX = ImIn.cols;
     int maxY = ImIn.rows;
     int maxXY = maxX * maxY;
+
+    if(ImConv2.empty())
+        return;
+
+    unsigned short *wImConv = (unsigned short*)ImConv2.data;
+
     Mask = Mat::zeros(maxY, maxX, CV_16U);
     unsigned short *wMask = (unsigned short*)Mask.data;
 
@@ -49,14 +132,15 @@ void MainWindow::ProcessImage(void)
         //    *wMask = 1;
         //wImGradient++;
 
-        if(*wImConv < thresholdImOrg)
+        if(*wImConv > thresholdImOrg)
             *wMask = 1;
         wImConv++;
         wMask++;
     }
 
-    //ImShowPseudoColor = ShowImage16PseudoColor(InIm,minShowPseudoColor,maxShowPseudoColor);
-    //ImShowGradient = ShowImageF32PseudoColor(ImGradient,minShowGradient,maxShowGradient);
+
+
+
     ShowImages();
 }
 
@@ -92,12 +176,16 @@ void MainWindow::ShowImages(void)
         Mat ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
         imshow("Mask", ImShowMask);
     }
+    if(showConv && !ImConv2.empty())
+    {
+        Mat ImShowConverted = ShowImage16PseudoColor(ImConv2,minShowConv,maxShowConv);
+        imshow("Converted 2", ImShowConverted);
+    }
     if(showConv && !ImConv.empty())
     {
         Mat ImShowConverted = ShowImage16PseudoColor(ImConv,minShowConv,maxShowConv);
         imshow("Converted", ImShowConverted);
     }
-
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -111,6 +199,7 @@ MainWindow::MainWindow(QWidget *parent) :
     showInputGray = ui->CheckBoxShowInputImageGray->checkState();
     showGradient = ui->CheckBoxShowGradient->checkState();
     showMask = ui->CheckBoxShowMask->checkState();
+    showConv = ui->CheckBoxShowConv->checkState();
 
     minShowGray = ui->spinBoxMinShowGray->value();
     maxShowGray = ui->spinBoxMaxShowGray->value();
@@ -199,6 +288,8 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
     FileToOpen2.append(FileName);
     ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
 
+    //CalculateTransform();
+    MaskImage();
     ProcessImage();
 
 }

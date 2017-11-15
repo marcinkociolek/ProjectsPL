@@ -28,6 +28,7 @@ public:
     //cv::Mat ImShow;
     cv::Mat ImIn;
     cv::Mat ImConv;
+    cv::Mat ImConv2;
     cv::Mat ImGradient;
     cv::Mat Mask;
 
@@ -51,7 +52,8 @@ public:
     bool showConv;
     bool showMask;
 
-
+    void MainWindow::CalculateTransform(void);
+    void MainWindow::MaskImage(void);
     void MainWindow::ProcessImage(void);
     void MainWindow::ShowImages(void);
 
