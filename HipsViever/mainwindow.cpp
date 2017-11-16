@@ -249,7 +249,11 @@ void MainWindow::ShowImages(void)
     }
     if(showMask)
     {
-        Mat ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor);
+        Mat ImShowMask;
+        if(showContour)
+            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor);
+        else
+            ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
         imshow("Mask", ImShowMask);
     }
     if(showConv && !ImSDA.empty())
@@ -259,7 +263,10 @@ void MainWindow::ShowImages(void)
         ImShowConverted = ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA);
         if(!MaskSDA.empty()&& thresholdSDA)
         {
-            ImShowConverted = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowConverted);
+            if(showContour)
+                ImShowConverted = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowConverted);
+            else
+                ImShowConverted = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowConverted);
         }
 
 
@@ -322,6 +329,7 @@ MainWindow::MainWindow(QWidget *parent) :
     maxShowPseudocolor = ui->spinBoxMaxShowPseudoColor->value();
     minShowGradient = ui->spinBoxMinShowGradient->value();
     maxShowGradient = ui->spinBoxMaxShowGradient->value();
+    showContour = ui->CheckBoxContour->checkState();
 
     minShowSDA = ui->spinBoxMinShowConv->value();
     maxShowSDA = ui->spinBoxMaxShowConv->value();
@@ -642,4 +650,10 @@ void MainWindow::on_pushButtonSaveOut_clicked()
     path FileToSave = InputDirectory;
     FileToSave.append(FileName);
     imwrite(FileToSave.string(),ImOut);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+}
+
+void MainWindow::on_CheckBoxContour_toggled(bool checked)
+{
+    showContour = checked;
+    ShowImages();
 }

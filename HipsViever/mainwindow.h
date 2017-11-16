@@ -58,6 +58,8 @@ public:
     bool showConv;
     bool showMask;
 
+    bool showContour;
+
     bool fillHoles;
     bool divideSeparateRegions;
 
@@ -154,6 +156,8 @@ private slots:
     void on_spinBoxTransparency_valueChanged(int arg1);
 
     void on_pushButtonSaveOut_clicked();
+
+    void on_CheckBoxContour_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
