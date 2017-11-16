@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>945</width>
-    <height>512</height>
+    <height>694</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,7 +70,7 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>110</y>
+      <y>150</y>
       <width>140</width>
       <height>30</height>
      </rect>
@@ -84,8 +84,8 @@
    <widget class="QSpinBox" name="spinBoxMaxShowGray">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>180</y>
+      <x>540</x>
+      <y>220</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -111,8 +111,8 @@
    <widget class="QSpinBox" name="spinBoxMinShowGray">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>150</y>
+      <x>540</x>
+      <y>190</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -139,8 +139,8 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>180</y>
-      <width>70</width>
+      <y>220</y>
+      <width>131</width>
       <height>30</height>
      </rect>
     </property>
@@ -150,15 +150,15 @@
      </font>
     </property>
     <property name="text">
-     <string>Max disp</string>
+     <string>Max disp Gray</string>
     </property>
    </widget>
    <widget class="QLabel" name="labelMinDispGray">
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>150</y>
-      <width>60</width>
+      <y>190</y>
+      <width>121</width>
       <height>24</height>
      </rect>
     </property>
@@ -171,7 +171,7 @@
      <bool>true</bool>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp Gray&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="CheckBoxShowInputImagePC">
@@ -194,8 +194,8 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>270</y>
-      <width>60</width>
+      <y>310</y>
+      <width>121</width>
       <height>24</height>
      </rect>
     </property>
@@ -205,15 +205,15 @@
      </font>
     </property>
     <property name="text">
-     <string>Max disp</string>
+     <string>Max disp PC</string>
     </property>
    </widget>
    <widget class="QLabel" name="labelMinDispPseudoColor">
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>240</y>
-      <width>60</width>
+      <y>280</y>
+      <width>121</width>
       <height>24</height>
      </rect>
     </property>
@@ -226,14 +226,14 @@
      <bool>true</bool>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp PC&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxMaxShowPseudoColor">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>270</y>
+      <x>540</x>
+      <y>310</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -259,8 +259,8 @@
    <widget class="QSpinBox" name="spinBoxMinShowPseudoColor">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>240</y>
+      <x>540</x>
+      <y>280</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -287,8 +287,8 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>330</y>
-      <width>60</width>
+      <y>370</y>
+      <width>141</width>
       <height>24</height>
      </rect>
     </property>
@@ -298,14 +298,14 @@
      </font>
     </property>
     <property name="text">
-     <string>Max disp</string>
+     <string>Max disp gradient</string>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxMinShowGradient">
     <property name="geometry">
      <rect>
-      <x>469</x>
-      <y>300</y>
+      <x>540</x>
+      <y>340</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -332,8 +332,8 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>300</y>
-      <width>60</width>
+      <y>340</y>
+      <width>141</width>
       <height>24</height>
      </rect>
     </property>
@@ -346,14 +346,14 @@
      <bool>true</bool>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp gradient&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxMaxShowGradient">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>330</y>
+      <x>540</x>
+      <y>370</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -373,7 +373,7 @@
      <number>2</number>
     </property>
     <property name="value">
-     <number>128</number>
+     <number>800</number>
     </property>
    </widget>
    <widget class="QCheckBox" name="CheckBoxShowGradient">
@@ -411,8 +411,8 @@
    <widget class="QSpinBox" name="spinBoxThresholdOryginalImage">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>360</y>
+      <x>211</x>
+      <y>310</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -432,15 +432,15 @@
      <number>1</number>
     </property>
     <property name="value">
-     <number>128</number>
+     <number>3500</number>
     </property>
    </widget>
    <widget class="QLabel" name="labelMaxDispGradient_2">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>360</y>
-      <width>60</width>
+      <x>80</x>
+      <y>310</y>
+      <width>121</width>
       <height>24</height>
      </rect>
     </property>
@@ -472,8 +472,8 @@
    <widget class="QSpinBox" name="spinBoxMaxShowConv">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>190</y>
+      <x>751</x>
+      <y>230</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -493,14 +493,14 @@
      <number>32</number>
     </property>
     <property name="value">
-     <number>4095</number>
+     <number>8095</number>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxMinShowConv">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>160</y>
+      <x>751</x>
+      <y>200</y>
       <width>71</width>
       <height>24</height>
      </rect>
@@ -526,9 +526,9 @@
    <widget class="QLabel" name="labelMinDispPseudoColor_2">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>160</y>
-      <width>60</width>
+      <x>650</x>
+      <y>200</y>
+      <width>91</width>
       <height>24</height>
      </rect>
     </property>
@@ -541,15 +541,15 @@
      <bool>true</bool>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min disp SDA&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QLabel" name="labelMaxDispPseudoColor_2">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>190</y>
-      <width>60</width>
+      <x>650</x>
+      <y>230</y>
+      <width>91</width>
       <height>24</height>
      </rect>
     </property>
@@ -559,7 +559,580 @@
      </font>
     </property>
     <property name="text">
-     <string>Max disp</string>
+     <string>Max disp SDA</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxMinFlood">
+    <property name="geometry">
+     <rect>
+      <x>751</x>
+      <y>340</y>
+      <width>71</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="minimum">
+     <number>-65536</number>
+    </property>
+    <property name="maximum">
+     <number>65535</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>50</number>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxMaxFlood">
+    <property name="geometry">
+     <rect>
+      <x>751</x>
+      <y>370</y>
+      <width>71</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="minimum">
+     <number>-65535</number>
+    </property>
+    <property name="maximum">
+     <number>65535</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>50</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMaxDispPseudoColor_3">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>370</y>
+      <width>81</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Max flood</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMinDispPseudoColor_3">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>340</y>
+      <width>81</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min flood&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMaxDispGradient_3">
+    <property name="geometry">
+     <rect>
+      <x>79</x>
+      <y>340</y>
+      <width>121</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Threshold Gradient</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxThresholdGradient">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>340</y>
+      <width>71</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="maximum">
+     <number>65535</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>500</number>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxAllowResize">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>130</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Allow resize</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxFillHoles">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>370</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Fill holes</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxDivideseparateregions">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>390</y>
+      <width>171</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Divide separate Regions</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMaxDispGradient_4">
+    <property name="geometry">
+     <rect>
+      <x>79</x>
+      <y>410</y>
+      <width>131</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Min Region Size</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxMinRegionSize">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>410</y>
+      <width>81</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="minimum">
+     <number>10000</number>
+    </property>
+    <property name="maximum">
+     <number>200000</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>10000</number>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxExpansionSize">
+    <property name="geometry">
+     <rect>
+      <x>211</x>
+      <y>460</y>
+      <width>81</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="minimum">
+     <number>3</number>
+    </property>
+    <property name="maximum">
+     <number>200</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>60</number>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxExpandMask">
+    <property name="geometry">
+     <rect>
+      <x>81</x>
+      <y>440</y>
+      <width>171</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Expand Mask</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMaxDispGradient_5">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>460</y>
+      <width>131</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Expansion size</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxCroppMask">
+    <property name="geometry">
+     <rect>
+      <x>81</x>
+      <y>490</y>
+      <width>171</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Cropp Mask</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxCroppSize">
+    <property name="geometry">
+     <rect>
+      <x>211</x>
+      <y>510</y>
+      <width>81</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>1000</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>500</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMaxDispGradient_6">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>510</y>
+      <width>131</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Cropp size</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMaxDispGradient_7">
+    <property name="geometry">
+     <rect>
+      <x>399</x>
+      <y>430</y>
+      <width>131</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>SDA Kernel size</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxSDAKernelSize">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>430</y>
+      <width>81</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxCalculateSDA">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>410</y>
+      <width>171</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CalculateSDA</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxThresholdSDA">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>540</y>
+      <width>171</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Threshold SDA Image</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMaxDispGradient_8">
+    <property name="geometry">
+     <rect>
+      <x>79</x>
+      <y>560</y>
+      <width>131</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Threshold SDA</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxThresholdSDA">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>560</y>
+      <width>81</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>10000</number>
+    </property>
+    <property name="singleStep">
+     <number>25</number>
+    </property>
+    <property name="value">
+     <number>5000</number>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxShowOutput">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>110</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Output</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxTransparency">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>480</y>
+      <width>81</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMaxDispGradient_9">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>480</y>
+      <width>131</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Output Transparency</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonSaveOut">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>520</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SaveOut</string>
     </property>
    </widget>
   </widget>
@@ -569,7 +1142,7 @@
      <x>0</x>
      <y>0</y>
      <width>945</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

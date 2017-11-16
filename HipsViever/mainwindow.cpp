@@ -26,22 +26,26 @@ using namespace cv;
 //--------------------------------------------------------------------------------------------------
 //          My functions
 //--------------------------------------------------------------------------------------------------
-void MainWindow::CalculateTransform(void)
+void MainWindow::CalculateSDA(void)
 {
+    if(!calculateSDA)
+        return;
     if(ImIn.empty())
         return;
+
     //unsigned short *wImIn = (unsigned short*)ImIn.data;
     //float *wImGradient = (float*)ImGradient.data;
 
     int maxX = ImIn.cols;
     int maxY = ImIn.rows;
-    int maxXY = maxX * maxY;
+    //int maxXY = maxX * maxY;
 
-    int diameter = 100;
+    int diameter = kernelSizeSDA;
     Mat RoiSmall = CreateRoi16(2, diameter, diameter);
 
-    ImConv2 = Mat::zeros(maxY, maxX, CV_16U);
-    unsigned short *wImConv2 = (unsigned short*)ImConv2.data;
+    ImSDA = Mat::zeros(maxY, maxX, CV_16U);
+
+    unsigned short *wImSDA = (unsigned short*)ImSDA.data;
     unsigned short *wImIn = (unsigned short*)ImIn.data;
 
     int xLimMin = diameter/2 +1;
@@ -72,11 +76,11 @@ void MainWindow::CalculateTransform(void)
                     wImSmall++;
                     wRoiSmall++;
                 }
-                *wImConv2 = sum;
+                *wImSDA = sum;
             }
 
             wImIn++;
-            wImConv2++;
+            wImSDA++;
         }
     }
 
@@ -91,7 +95,7 @@ void MainWindow::MaskImage(void)
     int maxY = ImIn.rows;
     int maxXY = maxX * maxY;
 
-
+/*
     Mat MaskForFlood = Mat::zeros(maxY +2, maxX +2, CV_8U);
 
     Point seedPoint;
@@ -99,14 +103,92 @@ void MainWindow::MaskImage(void)
     seedPoint.y = 340;
     Mat ImInF;
     ImIn.convertTo(ImInF, CV_32F);
-    floodFill(ImInF,MaskForFlood,seedPoint, 255, 0, Scalar(0),Scalar(256),4 + (255 << 8) + FLOODFILL_MASK_ONLY) ;
-    imshow ("flood", MaskForFlood);
+    //floodFill(ImInF,MaskForFlood,seedPoint, 255, 0, Scalar(0),Scalar(8000)) ;
+    //floodFill(ImInF,seedPoint, 5000,0,minFlood,maxFlood) ;
+    imshow ("flood", ShowImageF32PseudoColor(ImInF, minShowGray,maxShowGray));
+*/
+    Mask = Threshold16(ImIn, thresholdImOrg);
+
+    Threshold16(ImGradient, Mask, thresholdGradient);
+
+    if(fillHoles)
+    {
+        FillBorderWithValue(Mask, 0xFFFF);
+        OneRegionFill5Fast1(Mask,  0xFFFF);
+        FillHoles(Mask);
+        DeleteRegionFromImage(Mask, 0xFFFF);
+    }
+
+    if(divideSeparateRegions)
+    {
+        DivideSeparateRegions(Mask, minRegionSize);
+    }
+
+    if(expandMask)
+    {
+        Mat Kernel = Mat::ones(1,expansionSize,CV_8U);
+        Mat MaskTemp;
+        dilate(Mask,MaskTemp,Kernel);
+
+        Mask = MaskTemp-Mask;
+
+    }
+    if(croppMask)
+    {
+        unsigned short *wMask = (unsigned short *)Mask.data;
+        for(int y = 0; y < croppSize; y++)
+        {
+            for(int y = 0; y < maxX; y++)
+            {
+                *wMask = 0;
+                wMask++;
+            }
+        }
+    }
+
+    if(thresholdSDA && !ImSDA.empty())
+    {
+        unsigned short *wImSDA = (unsigned short*)ImSDA.data;
+
+        MaskSDA = Mat::zeros(maxY, maxX, CV_16U);
+        unsigned short *wMaskSDA;
+
+        wMaskSDA = (unsigned short*)MaskSDA.data;
+
+        for(int i = 0; i < maxXY; i++)
+        {
+
+            if(*wImSDA > thresholdImSDA)
+                *wMaskSDA = 1;
+            wImSDA++;
+            wMaskSDA++;
+        }
+
+        wMaskSDA = (unsigned short*)MaskSDA.data;
+        unsigned short *wMask = (unsigned short*)Mask.data;
+
+        for(int i = 0; i < maxXY; i++)
+        {
+
+            if(!*wMaskSDA)
+                *wMask = 0;
+            wMask++;
+            wMaskSDA++;
+        }
+
+        RegionErosion13(Mask);
+        RegionDilation13(Mask);
+
+        //Mask = Mask * MaskSDA;
+    }
+    ShowImages();
 }
 //--------------------------------------------------------------------------------------------------
 void MainWindow::ProcessImage(void)
 {
     if(ImIn.empty())
         return;
+
     //unsigned short *wImIn = (unsigned short*)ImIn.data;
     //float *wImGradient = (float*)ImGradient.data;
 
@@ -114,25 +196,18 @@ void MainWindow::ProcessImage(void)
     int maxY = ImIn.rows;
     int maxXY = maxX * maxY;
 
-    if(ImConv2.empty())
+    if(ImSDA.empty())
         return;
 
-    unsigned short *wImConv = (unsigned short*)ImConv2.data;
+    unsigned short *wImConv = (unsigned short*)ImSDA.data;
 
     Mask = Mat::zeros(maxY, maxX, CV_16U);
     unsigned short *wMask = (unsigned short*)Mask.data;
 
     for(int i = 0; i < maxXY; i++)
     {
-        //if(*wImIn > thresholdImOrg)
-        //    *wMask = 1;
-        //wImIn++;
 
-        //if(*wImGradient > thresholdImOrg)
-        //    *wMask = 1;
-        //wImGradient++;
-
-        if(*wImConv > thresholdImOrg)
+        if(*wImConv > thresholdImSDA)
             *wMask = 1;
         wImConv++;
         wMask++;
@@ -150,7 +225,7 @@ void MainWindow::ShowImages(void)
     if(ImIn.empty())
         return;
     Mat ImShowGray;
-    if(showInputGray)
+    //if(showInputGray)
         ImShowGray = ShowImage16Gray(ImIn,minShowGray,maxShowGray);
 
     if(showInputGray)
@@ -168,32 +243,72 @@ void MainWindow::ShowImages(void)
     }
     if(showGradient)
     {
-        Mat ImShowGradient = ShowImageF32PseudoColor(ImGradient,minShowGradient,maxShowGradient);
+        //Mat ImShowGradient = ShowImageF32PseudoColor(ImGradient,minShowGradient,maxShowGradient);
+        Mat ImShowGradient = ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient);
         imshow("Gradient", ImShowGradient);
     }
     if(showMask)
     {
-        Mat ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
+        Mat ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor);
         imshow("Mask", ImShowMask);
     }
-    if(showConv && !ImConv2.empty())
+    if(showConv && !ImSDA.empty())
     {
-        Mat ImShowConverted = ShowImage16PseudoColor(ImConv2,minShowConv,maxShowConv);
-        imshow("Converted 2", ImShowConverted);
-    }
-    if(showConv && !ImConv.empty())
-    {
-        Mat ImShowConverted = ShowImage16PseudoColor(ImConv,minShowConv,maxShowConv);
-        imshow("Converted", ImShowConverted);
-    }
-}
+        Mat ImShowConverted;
 
+        ImShowConverted = ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA);
+        if(!MaskSDA.empty()&& thresholdSDA)
+        {
+            ImShowConverted = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowConverted);
+        }
+
+
+        imshow("SDA", ImShowConverted);
+    }
+    ImOut = ShowTransparentRegionOnImage(Mask,ImShowGray,transparency);
+    if(showOutput)
+    {
+        imshow("Output", ImOut);
+    }
+
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::OnOffImageWindow(void)
+{
+    destroyAllWindows();
+
+    if(showInputGray)
+        namedWindow("Gray", displayFlag);
+
+    if(showInputPseudocolor)
+        namedWindow("Pseudocolor", displayFlag);
+
+    if(showGradient)
+        namedWindow("Gradient", displayFlag);
+
+    if(showConv)
+        namedWindow("SDA", displayFlag);
+
+    if(showMask)
+        namedWindow("Mask", displayFlag);
+
+    if(showOutput)
+        namedWindow("Output", displayFlag);
+
+
+
+}
 //--------------------------------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    if(ui->CheckBoxAllowResize->checkState())
+        displayFlag = WINDOW_NORMAL;
+    else
+        displayFlag = WINDOW_AUTOSIZE;
 
     showInputPseudocolor = ui->CheckBoxShowInputImagePC->checkState();
     showInputGray = ui->CheckBoxShowInputImageGray->checkState();
@@ -208,10 +323,36 @@ MainWindow::MainWindow(QWidget *parent) :
     minShowGradient = ui->spinBoxMinShowGradient->value();
     maxShowGradient = ui->spinBoxMaxShowGradient->value();
 
-    minShowConv = ui->spinBoxMinShowConv->value();
-    maxShowConv = ui->spinBoxMaxShowConv->value();
+    minShowSDA = ui->spinBoxMinShowConv->value();
+    maxShowSDA = ui->spinBoxMaxShowConv->value();
+
+    minFlood = ui->spinBoxMinFlood->value();
+    maxFlood = ui->spinBoxMaxFlood->value();
+
 
     thresholdImOrg = ui->spinBoxThresholdOryginalImage->value();
+    thresholdGradient = ui->spinBoxThresholdGradient->value();
+
+    fillHoles = ui->CheckBoxFillHoles->checkState();
+    divideSeparateRegions = ui->CheckBoxDivideseparateregions->checkState();
+    minRegionSize = ui->spinBoxMinRegionSize->value();
+
+    expandMask = ui->CheckBoxExpandMask->checkState();
+    expansionSize = ui->spinBoxExpansionSize->value();
+
+    croppMask = ui->CheckBoxCroppMask->checkState();
+    croppSize = ui->spinBoxCroppSize->value();
+
+    calculateSDA = ui->CheckBoxCalculateSDA->checkState();
+    kernelSizeSDA = ui->spinBoxSDAKernelSize->value();
+
+    thresholdSDA = ui->CheckBoxThresholdSDA->checkState();
+    thresholdImSDA  = ui->spinBoxThresholdSDA->value();
+
+    showOutput = ui->CheckBoxShowOutput->checkState();
+    transparency = ui->spinBoxTransparency->value();
+
+    OnOffImageWindow();
 }
 
 MainWindow::~MainWindow()
@@ -281,16 +422,18 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
     FileToOpen = InputDirectory;
     FileToOpen.append(FileName);
     ImIn = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
-    ImGradient = GradientDown(ImIn);
+    //ImGradient = GradientDown(ImIn);
+    ImGradient = GradientMorph(ImIn, 4);
 
-    FileName = regex_replace(FileName,regex("_crop"),"_SDA");
-    path FileToOpen2 = InputDirectory;
-    FileToOpen2.append(FileName);
-    ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
 
-    //CalculateTransform();
+    //FileName = regex_replace(FileName,regex("_crop"),"_SDA");
+    //path FileToOpen2 = InputDirectory;
+    //FileToOpen2.append(FileName);
+    //ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
+    CalculateSDA();
     MaskImage();
-    ProcessImage();
+    //ProcessImage();
 
 }
 
@@ -355,7 +498,8 @@ void MainWindow::on_CheckBoxShowGradient_toggled(bool checked)
 void MainWindow::on_spinBoxThresholdOryginalImage_valueChanged(int arg1)
 {
     thresholdImOrg = (unsigned short)arg1;
-    ProcessImage();
+    MaskImage();
+    //ProcessImage();
 }
 
 void MainWindow::on_CheckBoxShowMask_toggled(bool checked)
@@ -372,12 +516,130 @@ void MainWindow::on_CheckBoxShowConv_toggled(bool checked)
 
 void MainWindow::on_spinBoxMinShowConv_valueChanged(int arg1)
 {
-    minShowConv = arg1;
+    minShowSDA = arg1;
     ShowImages();
 }
 
 void MainWindow::on_spinBoxMaxShowConv_valueChanged(int arg1)
 {
-    maxShowConv = arg1;
+    maxShowSDA = arg1;
     ShowImages();
+}
+
+void MainWindow::on_spinBoxMinFlood_valueChanged(int arg1)
+{
+    minFlood = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxMaxFlood_valueChanged(int arg1)
+{
+    maxFlood = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxAllowResize_toggled(bool checked)
+{
+    if(ui->CheckBoxAllowResize->checkState())
+        displayFlag = WINDOW_NORMAL;
+    else
+        displayFlag = WINDOW_AUTOSIZE;
+
+    OnOffImageWindow();
+    ShowImages();
+
+}
+
+void MainWindow::on_spinBoxThresholdGradient_valueChanged(int arg1)
+{
+    thresholdGradient = (unsigned short)arg1;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxFillHoles_toggled(bool checked)
+{
+    fillHoles = checked;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxDivideseparateregions_toggled(bool checked)
+{
+    divideSeparateRegions = checked;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxMinRegionSize_valueChanged(int arg1)
+{
+    minRegionSize = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxExpandMask_toggled(bool checked)
+{
+    expandMask = checked;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxExpansionSize_valueChanged(int arg1)
+{
+    expansionSize = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxCroppMask_toggled(bool checked)
+{
+    croppMask = checked;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxCroppSize_valueChanged(int arg1)
+{
+    croppSize = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxThresholdSDA_toggled(bool checked)
+{
+    thresholdSDA = checked;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxThresholdSDA_valueChanged(int arg1)
+{
+    thresholdImSDA = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxCalculateSDA_toggled(bool checked)
+{
+    calculateSDA = checked;
+    CalculateSDA();
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxSDAKernelSize_valueChanged(int arg1)
+{
+    kernelSizeSDA = arg1;
+}
+
+void MainWindow::on_CheckBoxShowOutput_toggled(bool checked)
+{
+    showOutput = checked;
+     ShowImages();
+}
+
+void MainWindow::on_spinBoxTransparency_valueChanged(int arg1)
+{
+    transparency = arg1;
+     ShowImages();
+}
+
+void MainWindow::on_pushButtonSaveOut_clicked()
+{
+    string FileName(CurrentFileName);
+
+     FileName = regex_replace(FileName,regex("_crop.tif"),"_out.bmp");
+    path FileToSave = InputDirectory;
+    FileToSave.append(FileName);
+    imwrite(FileToSave.string(),ImOut);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
 }

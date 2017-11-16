@@ -28,9 +28,11 @@ public:
     //cv::Mat ImShow;
     cv::Mat ImIn;
     cv::Mat ImConv;
-    cv::Mat ImConv2;
+    cv::Mat ImSDA;
     cv::Mat ImGradient;
     cv::Mat Mask;
+    cv::Mat MaskSDA;
+    cv::Mat ImOut;
 
     int minShowGray;
     int maxShowGray;
@@ -40,10 +42,14 @@ public:
     int minShowGradient;
     int maxShowGradient;
 
-    int minShowConv;
-    int maxShowConv;
+    int minShowSDA;
+    int maxShowSDA;
+
+    int minFlood;
+    int maxFlood;
 
     unsigned short thresholdImOrg;
+    unsigned short thresholdGradient;
 
     bool showInputGray;
     bool showInputPseudocolor;
@@ -52,10 +58,33 @@ public:
     bool showConv;
     bool showMask;
 
-    void MainWindow::CalculateTransform(void);
+    bool fillHoles;
+    bool divideSeparateRegions;
+
+    int minRegionSize;
+
+    bool expandMask;
+    int expansionSize;
+
+    bool croppMask;
+    int croppSize;
+
+    bool calculateSDA;
+    int kernelSizeSDA;
+
+    bool thresholdSDA;
+    int thresholdImSDA;
+
+    bool showOutput;
+    int transparency;
+
+    bool displayFlag;
+
+    void MainWindow::CalculateSDA(void);
     void MainWindow::MaskImage(void);
     void MainWindow::ProcessImage(void);
     void MainWindow::ShowImages(void);
+    void MainWindow::OnOffImageWindow(void);
 
 private slots:
     void on_pushButtonSelectInFolder_clicked();
@@ -89,6 +118,42 @@ private slots:
     void on_spinBoxMinShowConv_valueChanged(int arg1);
 
     void on_spinBoxMaxShowConv_valueChanged(int arg1);
+
+    void on_spinBoxMinFlood_valueChanged(int arg1);
+
+    void on_spinBoxMaxFlood_valueChanged(int arg1);
+
+    void on_CheckBoxAllowResize_toggled(bool checked);
+
+    void on_spinBoxThresholdGradient_valueChanged(int arg1);
+
+    void on_CheckBoxFillHoles_toggled(bool checked);
+
+    void on_CheckBoxDivideseparateregions_toggled(bool checked);
+
+    void on_spinBoxMinRegionSize_valueChanged(int arg1);
+
+    void on_CheckBoxExpandMask_toggled(bool checked);
+
+    void on_spinBoxExpansionSize_valueChanged(int arg1);
+
+    void on_CheckBoxCroppMask_toggled(bool checked);
+
+    void on_spinBoxCroppSize_valueChanged(int arg1);
+
+    void on_CheckBoxThresholdSDA_toggled(bool checked);
+
+    void on_spinBoxThresholdSDA_valueChanged(int arg1);
+
+    void on_CheckBoxCalculateSDA_toggled(bool checked);
+
+    void on_spinBoxSDAKernelSize_valueChanged(int arg1);
+
+    void on_CheckBoxShowOutput_toggled(bool checked);
+
+    void on_spinBoxTransparency_valueChanged(int arg1);
+
+    void on_pushButtonSaveOut_clicked();
 
 private:
     Ui::MainWindow *ui;
