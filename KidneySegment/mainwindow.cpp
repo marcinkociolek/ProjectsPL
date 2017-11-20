@@ -603,7 +603,7 @@ void MainWindow::LoadROI(boost::filesystem::path InputFile)
     imSize[1] = MaskKidney1.cols;
 
     MazdaRoiResizer<MR2DType> resizer;
-
+/*
     MR2DType *ROICortexL = resizer.Upsize(ROIVect.at(0),imSize);
     MazdaRoiIterator<MR2DType> iteratorCL(ROICortexL);
     wMask = (unsigned short*)MaskKidney1.data;
@@ -617,6 +617,20 @@ void MainWindow::LoadROI(boost::filesystem::path InputFile)
         wMask++;
     }
     delete ROICortexL;
+*/
+    MR2DType *ROIKidneyL = resizer.Upsize(ROIVect.at(0),imSize);
+    MazdaRoiIterator<MR2DType> iteratorKL(ROIKidneyL);
+    wMask = (unsigned short*)MaskKidney1.data;
+    while(! iteratorKL.IsBehind())
+    {
+        if (iteratorKL.GetPixel())
+            *wMask = 1;
+        else
+            *wMask = 0;
+        ++iteratorKL;
+        wMask++;
+    }
+    delete ROIKidneyL;
 
     MR2DType *ROIMedulaL = resizer.Upsize(ROIVect.at(1),imSize);
     MazdaRoiIterator<MR2DType> iteratorML(ROIMedulaL);
@@ -646,19 +660,19 @@ void MainWindow::LoadROI(boost::filesystem::path InputFile)
     }
     delete ROIPelvisL;
 
-    MR2DType *ROICortexP = resizer.Upsize(ROIVect.at(3),imSize);
-    MazdaRoiIterator<MR2DType> iteratorCP(ROICortexP);
+    MR2DType *ROIKidneyP = resizer.Upsize(ROIVect.at(3),imSize);
+    MazdaRoiIterator<MR2DType> iteratorKP(ROIKidneyP);
     wMask = (unsigned short*)MaskKidney2.data;
-    while(! iteratorCP.IsBehind())
+    while(! iteratorKP.IsBehind())
     {
-        if (iteratorCP.GetPixel())
+        if (iteratorKP.GetPixel())
             *wMask = 1;
         else
             *wMask = 0;
-        ++iteratorCP;
+        ++iteratorKP;
         wMask++;
     }
-    delete ROICortexP;
+    delete ROIKidneyP;
 
     MR2DType *ROIMedulaP = resizer.Upsize(ROIVect.at(4),imSize);
     MazdaRoiIterator<MR2DType> iteratorMP(ROIMedulaP);
@@ -712,7 +726,7 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
     begin[1] = 0;
     end[0] = MaskKidney1.cols-1;
     end[1] = MaskKidney1.rows-1;
-
+/*
     MR2DType *ROICortexL;
     ROICortexL = new MR2DType(begin, end);
 
@@ -726,10 +740,28 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
        wMask++;
     }
 
-    ROICortexL->SetName("CortexL");
+    ROICortexL->SetName("KidneyL");
     ROICortexL->SetColor(0xff0000);
 
     ROIVect.push_back(ROICortexL);
+*/
+    MR2DType *ROIKidneyL;
+    ROIKidneyL = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorKL(ROIKidneyL);
+    wMask = (unsigned short*)MaskKidney1.data;
+    while(! iteratorKL.IsBehind())
+    {
+        if (*wMask)
+            iteratorKL.SetPixel();
+        ++iteratorKL;
+        wMask++;
+    }
+
+    ROIKidneyL->SetName("KidneyL");
+    ROIKidneyL->SetColor(0xff0000);
+
+    ROIVect.push_back(ROIKidneyL);
 
 
     MR2DType *ROIMedulaL;
@@ -742,7 +774,7 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
         if (*wMask)
             iteratorML.SetPixel();
         ++iteratorML;
-       wMask++;
+        wMask++;
     }
 
     ROIMedulaL->SetName("MedulaL");
@@ -761,7 +793,7 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
         if (*wMask)
             iteratorPL.SetPixel();
         ++iteratorPL;
-       wMask++;
+        wMask++;
     }
 
     ROIPelvisL->SetName("PelvisL");
@@ -769,7 +801,7 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
 
     ROIVect.push_back(ROIPelvisL);
 
-
+/*
     MR2DType *ROICortexP;
     ROICortexP = new MR2DType(begin, end);
 
@@ -783,49 +815,114 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
        wMask++;
     }
 
-    ROICortexP->SetName("CortexP");
+    ROICortexP->SetName("KidneyP");
     ROICortexP->SetColor(0xffff00);
 
     ROIVect.push_back(ROICortexP);
+*/
+    MR2DType *ROIKidneyR;
+    ROIKidneyR = new MR2DType(begin, end);
 
+    MazdaRoiIterator<MR2DType> iteratorKR(ROIKidneyR);
+    wMask = (unsigned short*)MaskKidney2.data;
+    while(! iteratorKR.IsBehind())
+    {
+        if (*wMask)
+            iteratorKR.SetPixel();
+        ++iteratorKR;
+        wMask++;
+    }
 
-    MR2DType *ROIMedulaP;
-    ROIMedulaP = new MR2DType(begin, end);
+    ROIKidneyR->SetName("KidneyR");
+    ROIKidneyR->SetColor(0xffff00);
 
-    MazdaRoiIterator<MR2DType> iteratorMP(ROIMedulaP);
+    ROIVect.push_back(ROIKidneyR);
+
+    MR2DType *ROIMedulaR;
+    ROIMedulaR = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorMR(ROIMedulaR);
     wMask = (unsigned short*)MaskMedula2.data;
-    while(! iteratorMP.IsBehind())
+    while(! iteratorMR.IsBehind())
     {
         if (*wMask)
-            iteratorMP.SetPixel();
-        ++iteratorMP;
-       wMask++;
+            iteratorMR.SetPixel();
+        ++iteratorMR;
+        wMask++;
     }
 
-    ROIMedulaP->SetName("MedulaP");
-    ROIMedulaP->SetColor(0x00ffff);
+    ROIMedulaR->SetName("MedulaR");
+    ROIMedulaR->SetColor(0x00ffff);
 
-    ROIVect.push_back(ROIMedulaP);
+    ROIVect.push_back(ROIMedulaR);
 
 
-    MR2DType *ROIPelvisP;
-    ROIPelvisP = new MR2DType(begin, end);
+    MR2DType *ROIPelvisR;
+    ROIPelvisR = new MR2DType(begin, end);
 
-    MazdaRoiIterator<MR2DType> iteratorPP(ROIPelvisP);
+    MazdaRoiIterator<MR2DType> iteratorPR(ROIPelvisR);
     wMask = (unsigned short*)MaskPelvis2.data;
-    while(! iteratorPP.IsBehind())
+    while(! iteratorPR.IsBehind())
     {
         if (*wMask)
-            iteratorPP.SetPixel();
-        ++iteratorPP;
-       wMask++;
+            iteratorPR.SetPixel();
+        ++iteratorPR;
+        wMask++;
     }
 
-    ROIPelvisP->SetName("PelvisP");
-    ROIPelvisP->SetColor(0xff00ff);
+    ROIPelvisR->SetName("PelvisR");
+    ROIPelvisR->SetColor(0xff00ff);
 
-    ROIVect.push_back(ROIPelvisP);
+    ROIVect.push_back(ROIPelvisR);
 
+
+    MR2DType *ROICortexL;
+    ROICortexL = new MR2DType(begin, end);
+
+    unsigned short* wMaskM;
+    unsigned short* wMaskP;
+
+    MazdaRoiIterator<MR2DType> iteratorCL(ROICortexL);
+    wMask = (unsigned short*)MaskKidney1.data;
+    wMaskM = (unsigned short*)MaskMedula1.data;
+    wMaskP = (unsigned short*)MaskPelvis1.data;
+    while(! iteratorCL.IsBehind())
+    {
+        if (*wMask && !*wMaskM && !*wMaskP)
+            iteratorCL.SetPixel();
+        ++iteratorCL;
+        wMask++;
+        wMaskM++;
+        wMaskP++;
+    }
+
+    ROICortexL->SetName("KidneyL");
+    ROICortexL->SetColor(0x8F0000);
+
+    ROIVect.push_back(ROICortexL);
+
+
+    MR2DType *ROICortexR;
+    ROICortexR = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorCR(ROICortexR);
+    wMask = (unsigned short*)MaskKidney2.data;
+    wMaskM = (unsigned short*)MaskMedula2.data;
+    wMaskP = (unsigned short*)MaskPelvis2.data;
+    while(! iteratorCR.IsBehind())
+    {
+        if (*wMask && !*wMaskM && !*wMaskP)
+            iteratorCR.SetPixel();
+        ++iteratorCR;
+        wMask++;
+        wMaskM++;
+        wMaskP++;
+    }
+
+    ROICortexR->SetName("KidneyR");
+    ROICortexR->SetColor(0x8f8f00);
+
+    ROIVect.push_back(ROICortexR);
 
     MazdaRoiIO<MR2DType>::Write(OutputFile.string(), &ROIVect, NULL);
     //MazdaRoiIO<MR2DType>::Write((FileToSave.string() +"GrzbietROI.tif").c_str(), &RoiVect, NULL);
@@ -933,7 +1030,7 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
             break;
         }
     }
-    if(butPressed == 2)
+    if(butPressed & 0x2)
     {
         switch(regionIndex)
         {
