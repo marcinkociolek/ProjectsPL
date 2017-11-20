@@ -29,9 +29,11 @@ public:
     cv::Mat ImShowPseudoColor;
     cv::Mat ImShowGradient;
 
+    cv::Mat MaskKidney1;
     cv::Mat MaskCortex1;
     cv::Mat MaskPelvis1;
     cv::Mat MaskMedula1;
+    cv::Mat MaskKidney2;
     cv::Mat MaskCortex2;
     cv::Mat MaskPelvis2;
     cv::Mat MaskMedula2;

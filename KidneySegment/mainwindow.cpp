@@ -95,10 +95,10 @@ MainWindow::MainWindow(QWidget *parent) :
     maxY = 192;
 
     ui->comboBoxRegioNr->addItem("none");
-    ui->comboBoxRegioNr->addItem("CortexL");
+    ui->comboBoxRegioNr->addItem("KidneyL");
     ui->comboBoxRegioNr->addItem("PelvisL");
     ui->comboBoxRegioNr->addItem("MedulaL");
-    ui->comboBoxRegioNr->addItem("CortexP");
+    ui->comboBoxRegioNr->addItem("KidneyP");
     ui->comboBoxRegioNr->addItem("PelvisP");
     ui->comboBoxRegioNr->addItem("MedulaP");
     ui->comboBoxRegioNr->setCurrentIndex(0);
@@ -111,10 +111,10 @@ MainWindow::MainWindow(QWidget *parent) :
     showMedula = ui->checkBoxShowMedula->checkState();
 
     Mask2 = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex1 = Mat::zeros(maxY,maxX,CV_16U);
+    MaskKidney1 = Mat::zeros(maxY,maxX,CV_16U);
     MaskPelvis1 = Mat::zeros(maxY,maxX,CV_16U);
     MaskMedula1 = Mat::zeros(maxY,maxX,CV_16U);
-    MaskCortex2 = Mat::zeros(maxY,maxX,CV_16U);
+    MaskKidney2 = Mat::zeros(maxY,maxX,CV_16U);
     MaskPelvis2 = Mat::zeros(maxY,maxX,CV_16U);
     MaskMedula2 = Mat::zeros(maxY,maxX,CV_16U);
 
@@ -196,7 +196,7 @@ void MainWindow::ShowImages()
     {
         unsigned short *wMask2,*wMask;
         wMask2 = (unsigned short *)Mask2.data;
-        wMask = (unsigned short *)MaskCortex1.data;
+        wMask = (unsigned short *)MaskKidney1.data;
         for(int i = 0; i < maxXY; i ++)
         {
             if(*wMask)
@@ -205,7 +205,7 @@ void MainWindow::ShowImages()
             wMask++;
         }
         wMask2 = (unsigned short *)Mask2.data;
-        wMask = (unsigned short *)MaskCortex2.data;
+        wMask = (unsigned short *)MaskKidney2.data;
         for(int i = 0; i < maxXY; i ++)
         {
             if(*wMask)
@@ -369,7 +369,7 @@ void MainWindow::PlaceShapeOnImage(Mat Im, int x, int y, int size,unsigned short
 {
     int maxXm1 = maxX-1;
     int maxYm1 = maxY-1;
-    if(y >= 0 || y < maxY || x >= 0 || x < maxY)
+    if(y >= 0 && y < maxY && x >= 0 && x < maxY)
         Im.at<unsigned short>(y,x) = val;
     if(size > 1)
     {
@@ -384,13 +384,13 @@ void MainWindow::PlaceShapeOnImage(Mat Im, int x, int y, int size,unsigned short
     }
     if(size > 2)
     {
-        if(y > 0 || x > 0)
+        if(y > 0 && x > 0)
             Im.at<unsigned short>(y-1,x-1) = val;
-        if(y > 0 || x < maxXm1)
+        if(y > 0 && x < maxXm1)
             Im.at<unsigned short>(y-1,x+1) = val;
-        if(y < maxYm1 || x > 0)
+        if(y < maxYm1 && x > 0)
             Im.at<unsigned short>(y+1,x-1) = val;
-        if(y < maxYm1 || x < maxXm1)
+        if(y < maxYm1 && x < maxXm1)
             Im.at<unsigned short>(y+1,x+1) = val;
     }
 }
@@ -599,14 +599,14 @@ void MainWindow::LoadROI(boost::filesystem::path InputFile)
     ROIVect = MazdaRoiIO<MR2DType>::Read(InputFile.string());
 
     unsigned int imSize[2];
-    imSize[0] = MaskCortex1.rows;
-    imSize[1] = MaskCortex1.cols;
+    imSize[0] = MaskKidney1.rows;
+    imSize[1] = MaskKidney1.cols;
 
     MazdaRoiResizer<MR2DType> resizer;
 
     MR2DType *ROICortexL = resizer.Upsize(ROIVect.at(0),imSize);
     MazdaRoiIterator<MR2DType> iteratorCL(ROICortexL);
-    wMask = (unsigned short*)MaskCortex1.data;
+    wMask = (unsigned short*)MaskKidney1.data;
     while(! iteratorCL.IsBehind())
     {
         if (iteratorCL.GetPixel())
@@ -648,7 +648,7 @@ void MainWindow::LoadROI(boost::filesystem::path InputFile)
 
     MR2DType *ROICortexP = resizer.Upsize(ROIVect.at(3),imSize);
     MazdaRoiIterator<MR2DType> iteratorCP(ROICortexP);
-    wMask = (unsigned short*)MaskCortex2.data;
+    wMask = (unsigned short*)MaskKidney2.data;
     while(! iteratorCP.IsBehind())
     {
         if (iteratorCP.GetPixel())
@@ -710,14 +710,14 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
     //Mask 1
     begin[0] = 0;
     begin[1] = 0;
-    end[0] = MaskCortex1.cols-1;
-    end[1] = MaskCortex1.rows-1;
+    end[0] = MaskKidney1.cols-1;
+    end[1] = MaskKidney1.rows-1;
 
     MR2DType *ROICortexL;
     ROICortexL = new MR2DType(begin, end);
 
     MazdaRoiIterator<MR2DType> iteratorCL(ROICortexL);
-    wMask = (unsigned short*)MaskCortex1.data;
+    wMask = (unsigned short*)MaskKidney1.data;
     while(! iteratorCL.IsBehind())
     {
         if (*wMask)
@@ -774,7 +774,7 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
     ROICortexP = new MR2DType(begin, end);
 
     MazdaRoiIterator<MR2DType> iteratorCP(ROICortexP);
-    wMask = (unsigned short*)MaskCortex2.data;
+    wMask = (unsigned short*)MaskKidney2.data;
     while(! iteratorCP.IsBehind())
     {
         if (*wMask)
@@ -910,8 +910,8 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
         switch(regionIndex)
         {
         case 1:
-            PlaceShapeOnImage(MaskCortex1, x, y, penSize,1);
-            //MaskCortex1.at<unsigned short>(y,x) = 1;
+            PlaceShapeOnImage(MaskKidney1, x, y, penSize,1);
+            //MaskKidney1.at<unsigned short>(y,x) = 1;
             break;
         case 2:
             PlaceShapeOnImage(MaskPelvis1, x, y, penSize,1);
@@ -920,7 +920,7 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
             PlaceShapeOnImage(MaskMedula1, x, y, penSize,1);
             break;
         case 4:
-            PlaceShapeOnImage(MaskCortex2, x, y, penSize,1);
+            PlaceShapeOnImage(MaskKidney2, x, y, penSize,1);
             break;
         case 5:
             PlaceShapeOnImage(MaskPelvis2, x, y, penSize,1);
@@ -938,8 +938,8 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
         switch(regionIndex)
         {
         case 1:
-            PlaceShapeOnImage(MaskCortex1, x, y, penSize,0);
-            //MaskCortex1.at<unsigned short>(y,x) = 1;
+            PlaceShapeOnImage(MaskKidney1, x, y, penSize,0);
+            //MaskKidney1.at<unsigned short>(y,x) = 1;
             break;
         case 2:
             PlaceShapeOnImage(MaskPelvis1, x, y, penSize,0);
@@ -948,7 +948,7 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
             PlaceShapeOnImage(MaskMedula1, x, y, penSize,0);
             break;
         case 4:
-            PlaceShapeOnImage(MaskCortex2, x, y, penSize,0);
+            PlaceShapeOnImage(MaskKidney2, x, y, penSize,0);
             break;
         case 5:
             PlaceShapeOnImage(MaskPelvis2, x, y, penSize,0);
@@ -1039,10 +1039,10 @@ void MainWindow::on_pushButtonFillHoles_pressed()
     switch(regionIndex)
     {
     case 1:
-        FillBorderWithValue(MaskCortex1, 0xFFFF);
-        OneRegionFill5Fast1(MaskCortex1,  0xFFFF);
-        FillHoles(MaskCortex1);
-        DeleteRegionFromImage(MaskCortex1, 0xFFFF);
+        FillBorderWithValue(MaskKidney1, 0xFFFF);
+        OneRegionFill5Fast1(MaskKidney1,  0xFFFF);
+        FillHoles(MaskKidney1);
+        DeleteRegionFromImage(MaskKidney1, 0xFFFF);
         break;
     case 2:
         FillBorderWithValue(MaskPelvis1, 0xFFFF);
@@ -1057,10 +1057,10 @@ void MainWindow::on_pushButtonFillHoles_pressed()
         DeleteRegionFromImage(MaskMedula1, 0xFFFF);
         break;
     case 4:
-        FillBorderWithValue(MaskCortex2, 0xFFFF);
-        OneRegionFill5Fast1(MaskCortex2,  0xFFFF);
-        FillHoles(MaskCortex2);
-        DeleteRegionFromImage(MaskCortex2, 0xFFFF);
+        FillBorderWithValue(MaskKidney2, 0xFFFF);
+        OneRegionFill5Fast1(MaskKidney2,  0xFFFF);
+        FillHoles(MaskKidney2);
+        DeleteRegionFromImage(MaskKidney2, 0xFFFF);
         break;
     case 5:
         FillBorderWithValue(MaskPelvis2, 0xFFFF);
@@ -1105,14 +1105,14 @@ void MainWindow::on_pushButtonUp_clicked()
     if(regionIndex == 1 || moveAll)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-        MaskCortex1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
-        MaskTemp.copyTo(MaskCortex1);
+        MaskKidney1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskKidney1);
     }
     if(regionIndex == 4 || moveAll)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-        MaskCortex2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
-        MaskTemp.copyTo(MaskCortex2);
+        MaskKidney2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskKidney2);
     }
     if(regionIndex == 2 || moveAll)
     {
@@ -1147,14 +1147,14 @@ void MainWindow::on_pushButtonDown_clicked()
     if(regionIndex == 1 || moveAll)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-        MaskCortex1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
-        MaskTemp.copyTo(MaskCortex1);
+        MaskKidney1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskKidney1);
     }
     if(regionIndex == 4 || moveAll)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-        MaskCortex2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
-        MaskTemp.copyTo(MaskCortex2);
+        MaskKidney2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
+        MaskTemp.copyTo(MaskKidney2);
     }
     if(regionIndex == 2 || moveAll)
     {
@@ -1189,14 +1189,14 @@ void MainWindow::on_pushButtonRight_clicked()
     if(regionIndex == 1 || moveAll)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-        MaskCortex1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
-        MaskTemp.copyTo(MaskCortex1);
+        MaskKidney1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskKidney1);
     }
     if(regionIndex == 4 || moveAll)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-        MaskCortex2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
-        MaskTemp.copyTo(MaskCortex2);
+        MaskKidney2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskKidney2);
     }
     if(regionIndex == 2 || moveAll)
     {
@@ -1232,14 +1232,14 @@ void MainWindow::on_pushButtonLeft_clicked()
     if(regionIndex == 1 || moveAll)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-        MaskCortex1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
-        MaskTemp.copyTo(MaskCortex1);
+        MaskKidney1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskKidney1);
     }
     if(regionIndex == 4 || moveAll)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
-        MaskCortex2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
-        MaskTemp.copyTo(MaskCortex2);
+        MaskKidney2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
+        MaskTemp.copyTo(MaskKidney2);
     }
     if(regionIndex == 2 || moveAll)
     {
@@ -1300,7 +1300,7 @@ void MainWindow::on_pushButtonDeleteReg_clicked()
     switch(regionIndex)
     {
     case 1:
-        DeleteRegionFromImage(MaskCortex1, 1);
+        DeleteRegionFromImage(MaskKidney1, 1);
         break;
     case 2:
         DeleteRegionFromImage(MaskPelvis1, 1);
@@ -1309,7 +1309,7 @@ void MainWindow::on_pushButtonDeleteReg_clicked()
         DeleteRegionFromImage(MaskMedula1, 1);
         break;
     case 4:
-        DeleteRegionFromImage(MaskCortex2, 1);
+        DeleteRegionFromImage(MaskKidney2, 1);
         break;
     case 5:
         DeleteRegionFromImage(MaskPelvis2, 1);
@@ -1348,10 +1348,10 @@ void MainWindow::on_pushButtonLoadCommonM_clicked(bool checked)
 
 void MainWindow::on_pushButtonDeleteAll_clicked()
 {
-    DeleteRegionFromImage(MaskCortex1, 1);
+    DeleteRegionFromImage(MaskKidney1, 1);
     DeleteRegionFromImage(MaskPelvis1, 1);
     DeleteRegionFromImage(MaskMedula1, 1);
-    DeleteRegionFromImage(MaskCortex2, 1);
+    DeleteRegionFromImage(MaskKidney2, 1);
     DeleteRegionFromImage(MaskPelvis2, 1);
     DeleteRegionFromImage(MaskMedula2, 1);
     ShowImages();
