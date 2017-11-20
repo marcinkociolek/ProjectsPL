@@ -16,6 +16,7 @@
 #include "DispLib.h"
 #include "StringFcLib.h"
 #include "gradient.h"
+#include "RegionU16Lib.h"
 
 #include "tiffio.h"
 
@@ -368,7 +369,8 @@ void MainWindow::PlaceShapeOnImage(Mat Im, int x, int y, int size,unsigned short
 {
     int maxXm1 = maxX-1;
     int maxYm1 = maxY-1;
-    Im.at<unsigned short>(y,x) = val;
+    if(y >= 0 || y < maxY || x >= 0 || x < maxY)
+        Im.at<unsigned short>(y,x) = val;
     if(size > 1)
     {
         if(y>0)
@@ -379,6 +381,17 @@ void MainWindow::PlaceShapeOnImage(Mat Im, int x, int y, int size,unsigned short
             Im.at<unsigned short>(y,x-1) = val;
         if(x < maxXm1)
             Im.at<unsigned short>(y,x+1) = val;
+    }
+    if(size > 2)
+    {
+        if(y > 0 || x > 0)
+            Im.at<unsigned short>(y-1,x-1) = val;
+        if(y > 0 || x < maxXm1)
+            Im.at<unsigned short>(y-1,x+1) = val;
+        if(y < maxYm1 || x > 0)
+            Im.at<unsigned short>(y+1,x-1) = val;
+        if(y < maxYm1 || x < maxXm1)
+            Im.at<unsigned short>(y+1,x+1) = val;
     }
 }
 
@@ -883,6 +896,9 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
 {
     int x = point.x()/imageShowScale;
     int y = point.y()/imageShowScale;
+
+    //if(x < 0 || y < 0 || x >= maxX - 1 || y > = maxY - 1)
+    //    return;
 
     ui->spinBoxValGradient->setValue(x);
     ui->spinBoxValIntensity->setValue(y);
