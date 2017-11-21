@@ -121,6 +121,8 @@ MainWindow::MainWindow(QWidget *parent) :
     transparency = ui->spinBoxTransparency->value();
 
     moveAll = ui->checkBoxMoveAll->checkState();
+    moveAllL = ui->checkBoxMoveL->checkState();
+    moveAllR = ui->checkBoxMoveP->checkState();
 
     ScaleImages();
     //OnOffImageWindow();
@@ -164,9 +166,13 @@ void MainWindow::ProcessFile()
     {
         LoadROI(ROIFile);
         ui->lineEditInfo->setText("Valid Roi");
+        ui->checkBoxROI->setChecked(1);
     }
     else
+    {
         ui->lineEditInfo->setText("No Roi For The Frame");
+        ui->checkBoxROI->setChecked(0);
+    }
     PrepareShowImages();
     ShowImages();
 
@@ -932,6 +938,7 @@ void MainWindow::SaveROI(boost::filesystem::path OutputFile)
          delete ROIVect.back();
          ROIVect.pop_back();
     }
+    ui->checkBoxROI->setChecked(1);
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -1199,37 +1206,37 @@ void MainWindow::on_checkBoxShowMedula_toggled(bool checked)
 void MainWindow::on_pushButtonUp_clicked()
 {
     Mat MaskTemp;
-    if(regionIndex == 1 || moveAll)
+    if(regionIndex == 1 || moveAll  || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskKidney1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
         MaskTemp.copyTo(MaskKidney1);
     }
-    if(regionIndex == 4 || moveAll)
+    if(regionIndex == 4 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskKidney2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
         MaskTemp.copyTo(MaskKidney2);
     }
-    if(regionIndex == 2 || moveAll)
+    if(regionIndex == 2 || moveAll  || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskPelvis1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
         MaskTemp.copyTo(MaskPelvis1);
     }
-    if(regionIndex == 5 || moveAll)
+    if(regionIndex == 5 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskPelvis2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
         MaskTemp.copyTo(MaskPelvis2);
     }
-    if(regionIndex == 3 || moveAll)
+    if(regionIndex == 3 || moveAll  || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskMedula1(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
         MaskTemp.copyTo(MaskMedula1);
     }
-    if(regionIndex == 6 || moveAll)
+    if(regionIndex == 6 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskMedula2(Rect(0, 1, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 0, maxX , maxY -1)));
@@ -1241,37 +1248,37 @@ void MainWindow::on_pushButtonUp_clicked()
 void MainWindow::on_pushButtonDown_clicked()
 {
     Mat MaskTemp;
-    if(regionIndex == 1 || moveAll)
+    if(regionIndex == 1 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskKidney1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
         MaskTemp.copyTo(MaskKidney1);
     }
-    if(regionIndex == 4 || moveAll)
+    if(regionIndex == 4 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskKidney2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
         MaskTemp.copyTo(MaskKidney2);
     }
-    if(regionIndex == 2 || moveAll)
+    if(regionIndex == 2 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskPelvis1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
         MaskTemp.copyTo(MaskPelvis1);
     }
-    if(regionIndex == 5 || moveAll)
+    if(regionIndex == 5 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskPelvis2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
         MaskTemp.copyTo(MaskPelvis2);
     }
-    if(regionIndex == 3 || moveAll)
+    if(regionIndex == 3 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskMedula1(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
         MaskTemp.copyTo(MaskMedula1);
     }
-    if(regionIndex == 6 || moveAll)
+    if(regionIndex == 6 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskMedula2(Rect(0, 0, maxX , maxY -1)).copyTo(MaskTemp(Rect(0, 1, maxX , maxY -1)));
@@ -1283,37 +1290,37 @@ void MainWindow::on_pushButtonDown_clicked()
 void MainWindow::on_pushButtonRight_clicked()
 {
     Mat MaskTemp;
-    if(regionIndex == 1 || moveAll)
+    if(regionIndex == 1 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskKidney1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskKidney1);
     }
-    if(regionIndex == 4 || moveAll)
+    if(regionIndex == 4 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskKidney2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskKidney2);
     }
-    if(regionIndex == 2 || moveAll)
+    if(regionIndex == 2 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskPelvis1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskPelvis1);
     }
-    if(regionIndex == 5 || moveAll)
+    if(regionIndex == 5 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskPelvis2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskPelvis2);
     }
-    if(regionIndex == 3 || moveAll)
+    if(regionIndex == 3 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskMedula1(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskMedula1);
     }
-    if(regionIndex == 6 || moveAll)
+    if(regionIndex == 6 || moveAll  || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskMedula2(Rect(0, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(1, 0, maxX  -1, maxY)));
@@ -1326,37 +1333,37 @@ void MainWindow::on_pushButtonLeft_clicked()
 {
     Mat MaskTemp;
 
-    if(regionIndex == 1 || moveAll)
+    if(regionIndex == 1 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskKidney1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskKidney1);
     }
-    if(regionIndex == 4 || moveAll)
+    if(regionIndex == 4 || moveAll || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskKidney2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskKidney2);
     }
-    if(regionIndex == 2 || moveAll)
+    if(regionIndex == 2 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskPelvis1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskPelvis1);
     }
-    if(regionIndex == 5 || moveAll)
+    if(regionIndex == 5 || moveAll || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskPelvis2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskPelvis2);
     }
-    if(regionIndex == 3 || moveAll)
+    if(regionIndex == 3 || moveAll || moveAllL)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskMedula1(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
         MaskTemp.copyTo(MaskMedula1);
     }
-    if(regionIndex == 6 || moveAll)
+    if(regionIndex == 6 || moveAll || moveAllR)
     {
         MaskTemp = Mat::zeros(maxY,maxX,CV_16U);
         MaskMedula2(Rect(1, 0, maxX -1 , maxY)).copyTo(MaskTemp(Rect(0, 0, maxX  -1, maxY)));
@@ -1462,4 +1469,14 @@ void MainWindow::on_pushButtonSaveRoi_clicked()
 void MainWindow::on_checkBoxMoveAll_toggled(bool checked)
 {
     moveAll = checked;
+}
+
+void MainWindow::on_checkBoxMoveL_toggled(bool checked)
+{
+   moveAllL = checked;
+}
+
+void MainWindow::on_checkBoxMoveP_toggled(bool checked)
+{
+    moveAllR = checked;
 }

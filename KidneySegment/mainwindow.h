@@ -86,6 +86,8 @@ public:
 
 
     bool moveAll;
+    bool moveAllL;
+    bool moveAllR;
 
 // my functions
     void ProcessFile();
@@ -183,6 +185,10 @@ private slots:
     void on_pushButtonSaveRoi_clicked();
 
     void on_checkBoxMoveAll_toggled(bool checked);
+
+    void on_checkBoxMoveL_toggled(bool checked);
+
+    void on_checkBoxMoveP_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
