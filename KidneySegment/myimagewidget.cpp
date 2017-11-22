@@ -49,4 +49,9 @@ void MyImageWidget::mouseMoveEvent(QMouseEvent *event)
     const int butPressed = event->buttons();
     emit on_mouseMove(point, butPressed);
 }
+void MyImageWidget::keyPressEvent(QKeyEvent * event)
+{
+    const int keyPressed = event->key();
+    emit on_KeyPressed(keyPressed);
+}
 

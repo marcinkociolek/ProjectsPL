@@ -1132,6 +1132,7 @@
    <slots>
     <signal>on_mousePressed(QPoint,int)</signal>
     <signal>on_mouseMove(QPoint,int)</signal>
+    <signal>on_KeyPressed(int)</signal>
    </slots>
   </customwidget>
  </customwidgets>
@@ -1144,8 +1145,8 @@
    <slot>on_widgetImage_mouseMoved(QPoint,int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>808</x>
-     <y>112</y>
+     <x>900</x>
+     <y>150</y>
     </hint>
     <hint type="destinationlabel">
      <x>911</x>
@@ -1161,7 +1162,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>100</x>
-     <y>499</y>
+     <y>367</y>
     </hint>
     <hint type="destinationlabel">
      <x>177</x>
@@ -1177,7 +1178,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>305</x>
-     <y>553</y>
+     <y>397</y>
     </hint>
     <hint type="destinationlabel">
      <x>400</x>
@@ -1193,7 +1194,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>515</x>
-     <y>527</y>
+     <y>397</y>
     </hint>
     <hint type="destinationlabel">
      <x>642</x>
@@ -1209,7 +1210,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>75</x>
-     <y>491</y>
+     <y>367</y>
     </hint>
     <hint type="destinationlabel">
      <x>107</x>
@@ -1225,7 +1226,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>333</x>
-     <y>494</y>
+     <y>397</y>
     </hint>
     <hint type="destinationlabel">
      <x>373</x>
@@ -1241,7 +1242,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>532</x>
-     <y>520</y>
+     <y>397</y>
     </hint>
     <hint type="destinationlabel">
      <x>607</x>
@@ -1256,8 +1257,8 @@
    <slot>on_widgetImage_mouseMoved(QPoint,int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>828</x>
-     <y>74</y>
+     <x>900</x>
+     <y>112</y>
     </hint>
     <hint type="destinationlabel">
      <x>882</x>
@@ -1265,9 +1266,42 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>widgetImageGray</sender>
+   <signal>on_KeyPressed(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>on_widgetImage_KeyPressed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>49</x>
+     <y>354</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>25</x>
+     <y>427</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>widgetImagePseudoColor</sender>
+   <signal>on_KeyPressed(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>on_widgetImage_KeyPressed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>258</x>
+     <y>377</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>275</x>
+     <y>451</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>on_widgetImage_mousePressed(QPoint)</slot>
   <slot>on_widgetImage_mouseMoved(QPoint,int)</slot>
+  <slot>on_widgetImage_KeyPressed(int)</slot>
  </slots>
 </ui>

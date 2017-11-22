@@ -60,10 +60,14 @@ public:
 
     bool showContour;
 
+    int closingShape;
+
     bool fillHoles;
     bool divideSeparateRegions;
 
     int minRegionSize;
+
+    int erosionShape;
 
     bool expandMask;
     int expansionSize;
@@ -76,6 +80,10 @@ public:
 
     bool thresholdSDA;
     int thresholdImSDA;
+
+    int postErosionShape1;
+    int postDilationShape2;
+    int postErosionShape3;
 
     bool showOutput;
     int transparency;
@@ -158,6 +166,16 @@ private slots:
     void on_pushButtonSaveOut_clicked();
 
     void on_CheckBoxContour_toggled(bool checked);
+
+    void on_spinBoxClosingShape_valueChanged(int arg1);
+
+    void on_spinBoxErosionShape_valueChanged(int arg1);
+
+    void on_spinBoxErosionShape1_valueChanged(int arg1);
+
+    void on_spinBoxDilationShape2_valueChanged(int arg1);
+
+    void on_spinBoxErosionShape3_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;

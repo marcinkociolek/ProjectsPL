@@ -111,6 +111,12 @@ void MainWindow::MaskImage(void)
 
     Threshold16(ImGradient, Mask, thresholdGradient);
 
+    if(closingShape)
+    {
+        DilationCV(Mask, closingShape);
+        ErosionCV(Mask, closingShape);
+    }
+
     if(fillHoles)
     {
         FillBorderWithValue(Mask, 0xFFFF);
@@ -123,6 +129,8 @@ void MainWindow::MaskImage(void)
     {
         DivideSeparateRegions(Mask, minRegionSize);
     }
+    if(erosionShape)
+        ErosionCV(Mask, erosionShape);
 
     if(expandMask)
     {
@@ -176,11 +184,15 @@ void MainWindow::MaskImage(void)
             wMaskSDA++;
         }
 
-        RegionErosion13(Mask);
-        RegionDilation13(Mask);
 
         //Mask = Mask * MaskSDA;
     }
+    if(postErosionShape1)
+        ErosionCV(Mask, postErosionShape1);
+    if(postDilationShape2)
+        DilationCV(Mask, postDilationShape2);
+    if(postErosionShape3)
+        ErosionCV(Mask, postErosionShape3);
     ShowImages();
 }
 //--------------------------------------------------------------------------------------------------
@@ -359,6 +371,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     showOutput = ui->CheckBoxShowOutput->checkState();
     transparency = ui->spinBoxTransparency->value();
+
+    closingShape = ui->spinBoxClosingShape->value();
+    erosionShape = ui->spinBoxErosionShape->value();
+    postErosionShape1 = ui->spinBoxErosionShape1->value();
+    postDilationShape2 = ui->spinBoxDilationShape2->value();
+    postErosionShape3 = ui->spinBoxErosionShape3->value();
 
     OnOffImageWindow();
 }
@@ -656,4 +674,34 @@ void MainWindow::on_CheckBoxContour_toggled(bool checked)
 {
     showContour = checked;
     ShowImages();
+}
+
+void MainWindow::on_spinBoxClosingShape_valueChanged(int arg1)
+{
+    closingShape = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxErosionShape_valueChanged(int arg1)
+{
+    erosionShape = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxErosionShape1_valueChanged(int arg1)
+{
+    postErosionShape1 = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxDilationShape2_valueChanged(int arg1)
+{
+    postDilationShape2 = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_spinBoxErosionShape3_valueChanged(int arg1)
+{
+    postErosionShape3 = arg1;
+    MaskImage();
 }
