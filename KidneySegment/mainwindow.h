@@ -29,9 +29,11 @@ public:
     cv::Mat ImShowPseudoColor;
     cv::Mat ImShowGradient;
 
+    cv::Mat MaskKidney1;
     cv::Mat MaskCortex1;
     cv::Mat MaskPelvis1;
     cv::Mat MaskMedula1;
+    cv::Mat MaskKidney2;
     cv::Mat MaskCortex2;
     cv::Mat MaskPelvis2;
     cv::Mat MaskMedula2;
@@ -84,6 +86,8 @@ public:
 
 
     bool moveAll;
+    bool moveAllL;
+    bool moveAllR;
 
 // my functions
     void ProcessFile();
@@ -181,6 +185,10 @@ private slots:
     void on_pushButtonSaveRoi_clicked();
 
     void on_checkBoxMoveAll_toggled(bool checked);
+
+    void on_checkBoxMoveL_toggled(bool checked);
+
+    void on_checkBoxMoveP_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

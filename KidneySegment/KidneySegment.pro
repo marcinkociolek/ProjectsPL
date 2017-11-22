@@ -17,7 +17,8 @@ SOURCES += main.cpp\
         ../../ProjectsLib/LibMarcin/DispLib.cpp \
     ../../ProjectsLib/LibMarcin/StringFcLib.cpp \
     ../../ProjectsLib/LibMarcin/gradient.cpp \
-    myimagewidget.cpp
+    myimagewidget.cpp \
+    ../../ProjectsLib/LibMarcin/RegionU16Lib.cpp
 
 HEADERS  += mainwindow.h\
         ../../ProjectsLib/LibMarcin/DispLib.h \
@@ -26,7 +27,8 @@ HEADERS  += mainwindow.h\
         ../../ProjectsLibForein/LibPMS/mazdaroiio.h \
         ../../ProjectsLib/LibMarcin/StringFcLib.h \
     ../../ProjectsLib/LibMarcin/gradient.h \
-    myimagewidget.h
+    myimagewidget.h \
+    ../../ProjectsLib/LibMarcin/RegionU16Lib.h
 
 FORMS    += mainwindow.ui
 
