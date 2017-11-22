@@ -101,7 +101,7 @@
      </font>
     </property>
     <property name="text">
-     <string>FrameNr</string>
+     <string>SliceNr</string>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxMinShow">
@@ -787,7 +787,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>show Cortex</string>
+     <string>show Kidney</string>
     </property>
     <property name="checked">
      <bool>true</bool>
