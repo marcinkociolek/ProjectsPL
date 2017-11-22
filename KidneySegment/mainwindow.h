@@ -108,6 +108,8 @@ private slots:
 
     void on_widgetImage_mouseMoved(QPoint point, int butPressed);
 
+    void on_widgetImage_KeyPressed(int key);
+
     void on_OpenFolderPushButton_clicked();
 
     void on_InFileListWidget_currentTextChanged(const QString &currentText);

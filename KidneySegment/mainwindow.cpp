@@ -4,7 +4,7 @@
 #include <QMessageBox>
 #include <QImage>
 #include <QPainter>
-#include <QMouseEvent>
+//#include <QMouseEvent>
 
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
@@ -124,6 +124,8 @@ MainWindow::MainWindow(QWidget *parent) :
     moveAllL = ui->checkBoxMoveL->checkState();
     moveAllR = ui->checkBoxMoveP->checkState();
 
+    ui->widgetImageGray->grabKeyboard();
+
     ScaleImages();
     //OnOffImageWindow();
     //setMouseCallback("Input pseudocolor", mouseWrapper, 0);
@@ -138,8 +140,8 @@ MainWindow::~MainWindow()
 //----------------------------------------------------------------------------------------------------------
 void MainWindow::ProcessFile()
 {
-    string SliceToReplace = "Slice" + ItoStrLZ(frameNr,2);
-    string FileToProcessName = regex_replace(CurrentFrame00FileName,regex("Slice00"), SliceToReplace);
+    string SliceToReplace = "Slice" + ItoStrLZ(frameNr,4);
+    string FileToProcessName = regex_replace(CurrentFrame00FileName,regex("Slice0000"), SliceToReplace);
     ui->lineEditFileToProcess->setText(FileToProcessName.c_str());
     path FileToOpen = InputDirectory;
     FileToOpen.append(FileToProcessName);
@@ -470,7 +472,7 @@ void MainWindow::on_OpenFolderPushButton_clicked()
             continue;
         path PathLocal = FileToProcess.path();
 
-        regex FilePattern(".+Slice00.+");
+        regex FilePattern(".+Slice0000.+");
         if (!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern ))
             continue;
 
@@ -1069,6 +1071,38 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
     ShowImages();
 }
 
+
+void MainWindow::on_widgetImage_KeyPressed(int key)
+{
+    switch(key)
+    {
+    case Qt::Key_Space:
+        SaveROI(ROIFile);
+        ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow()+ 1);
+        break;
+    case Qt::Key_A:
+        ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow() - 1);
+        break;
+    case Qt::Key_Z:
+        ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow() + 1);
+        break;
+    case Qt::Key_Up:
+        on_pushButtonUp_clicked();
+        break;
+    case Qt::Key_Down:
+        on_pushButtonDown_clicked();
+        break;
+    case Qt::Key_Left:
+        on_pushButtonLeft_clicked();
+        break;
+    case Qt::Key_Right:
+        on_pushButtonRight_clicked();
+        break;
+
+    default:
+        break;
+    }
+}
 //########################################################################################
 
 void MainWindow::on_comboBoxRegioNr_currentIndexChanged(int index)
