@@ -29,6 +29,7 @@ public:
     cv::Mat ImIn;
     cv::Mat ImConv;
     cv::Mat ImSDA;
+    cv::Mat ImNormInvSDA;
     cv::Mat ImGradient;
     cv::Mat Mask;
     cv::Mat MaskSDA;
@@ -77,6 +78,7 @@ public:
 
     bool calculateSDA;
     int kernelSizeSDA;
+    int kernelPixelCountSDA;
 
     bool thresholdSDA;
     int thresholdImSDA;

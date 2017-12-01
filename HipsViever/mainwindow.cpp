@@ -43,6 +43,18 @@ void MainWindow::CalculateSDA(void)
     int diameter = kernelSizeSDA;
     Mat RoiSmall = CreateRoi16(2, diameter, diameter);
 
+    unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
+    int roiPixCount = 0;
+    for(int y = 0; y < RoiSmall.rows; y++)
+    {
+        for(int x = 0; x < RoiSmall.cols; x++)
+        {
+            if(*wRoiSmall)
+                roiPixCount++;
+            wRoiSmall++;
+        }
+    }
+    kernelPixelCountSDA = roiPixCount;
     ImSDA = Mat::zeros(maxY, maxX, CV_16U);
 
     unsigned short *wImSDA = (unsigned short*)ImSDA.data;
@@ -84,8 +96,36 @@ void MainWindow::CalculateSDA(void)
         }
     }
 
+    wImSDA = (unsigned short*)ImSDA.data;
+    ImNormInvSDA = Mat::zeros(maxY,maxX,CV_8U);
+    unsigned char* wImNormInvSDA = (unsigned char* )ImNormInvSDA.data;
+
+    wImSDA = (unsigned short*)ImSDA.data;
+    double coeff = 255.0/((double)kernelPixelCountSDA);
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(x > xLimMin && x < xLimMax && y > yLimMin && y < yLimMax )
+            {
+                double val = ((double)(kernelPixelCountSDA - *wImSDA))*coeff;
+                if(val<0)
+                   val=0;
+                if(val>255)
+                   val=255;
+                *wImNormInvSDA = (unsigned char)val;
+
+            }
+            wImNormInvSDA++;
+            wImSDA++;
+        }
+    }
+
 
 }
+//--------------------------------------------------------------------------------------------------
+
+
 //--------------------------------------------------------------------------------------------------
 void MainWindow::MaskImage(void)
 {
@@ -458,6 +498,12 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
     //ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
 
     CalculateSDA();
+
+    FileName = regex_replace(FileName,regex("_crop.tif"),"_SDA.bmp");
+    path FileToSaveSDA = InputDirectory;
+    FileToSaveSDA.append(FileName );
+    imwrite(FileToSaveSDA.string().c_str(),ImNormInvSDA);
+
     MaskImage();
     //ProcessImage();
 
