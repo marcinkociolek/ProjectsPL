@@ -1101,6 +1101,19 @@
      <string>Move R</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButtonSaveOutBMP">
+    <property name="geometry">
+     <rect>
+      <x>820</x>
+      <y>100</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Out BMP</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

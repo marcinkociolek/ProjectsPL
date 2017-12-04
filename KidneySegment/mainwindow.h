@@ -192,6 +192,8 @@ private slots:
 
     void on_checkBoxMoveP_toggled(bool checked);
 
+    void on_pushButtonSaveOutBMP_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

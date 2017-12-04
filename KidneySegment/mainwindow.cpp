@@ -1514,3 +1514,27 @@ void MainWindow::on_checkBoxMoveP_toggled(bool checked)
 {
     moveAllR = checked;
 }
+
+void MainWindow::on_pushButtonSaveOutBMP_clicked()
+{
+    string SliceToReplace = "Slice" + ItoStrLZ(frameNr,4);
+    string FileToProcessName = regex_replace(CurrentFrame00FileName,regex("Slice0000"), SliceToReplace);
+
+    path OutputFile;
+    Mat ImShow;
+
+    ImShowPseudoColor.copyTo(ImShow);
+    OutputFile = InputDirectory;
+    OutputFile.append("/Out/" + FileToProcessName +"_PC.bmp");
+    imwrite(OutputFile.string(), ImShow);
+
+
+    ImShow = ShowSolidRegionOnImage(Mask2,ImShowPseudoColor);
+
+    OutputFile = InputDirectory;
+    OutputFile.append("/Out/" + FileToProcessName +"_Reg.bmp");
+    imwrite(OutputFile.string(), ImShow);
+
+
+
+}
