@@ -25,13 +25,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    InputDirectory = "E:/TestFigs/Brodatz";
+    InputDirectory = "C:/Data/Brodatz";//"E:/TestFigs/Brodatz";
     roiOffsetX = ui->spinBoxOffsetX->value();
     roiOffsetY = ui->spinBoxOffsetY->value();
     roiSizeX = ui->spinBoxSizeX->value();
     roiSizeY = ui->spinBoxSizeY->value();
     qLevels = ui->spinBoxQLevels->value();
     imShowScale = ui->spinBoxImShowScale->value();
+    maxWavScale = ui->spinBoxMaxWavScale->value();
 }
 
 MainWindow::~MainWindow()
@@ -44,6 +45,7 @@ MainWindow::~MainWindow()
 //--------------------------------------------------------------------------------------------------------------
 void MainWindow::ProcessImage()
 {
+    Mat ImShow;
     //ImSmall = Mat::zeros(Size(roiSizeX,roiSizeY) ,ImIn.type());
     if(ImIn.empty())
         return;
@@ -51,8 +53,8 @@ void MainWindow::ProcessImage()
 
     //Mat ImSmallF;
     //ImSmall.convertTo(ImSmall,CV_64F);
-
-    imshow("Small Image",ImSmall);
+    cv::resize(ImSmall , ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_NEAREST ) ;
+    imshow("Small Image",ImShow);
     int maxX = ImSmall.cols;
     int maxY = ImSmall.rows;
     int maxXY = maxX*maxY;
@@ -109,9 +111,24 @@ void MainWindow::ProcessImage()
         wIm++;
         wImNorm++;
     }
-    Mat ImShow;
-    cv::resize(ImNorm * 255/(qLevels-1), ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_AREA ) ;
+
+    cv::resize(ImNorm * 255/(qLevels-1), ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_NEAREST ) ;
     imshow("Small Image normalised",ImShow);
+    ImNorm
+    for(int scale = 0; scale < maxWavScale; scale++)
+    {
+        int localMaxX = maxX/(int)pow(2.0,scale);
+        int localMaxY = maxY/(int)pow(2.0,scale);
+        ImWaveletLL[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
+        ImWaveletLH[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
+        ImWaveletHL[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
+        ImWaveletHH[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
+        unsigned wInput
+        if(!scale)
+        {
+
+        }
+    }
 
 
 
@@ -223,5 +240,11 @@ void MainWindow::on_spinBoxQLevels_valueChanged(int arg1)
 void MainWindow::on_spinBoxImShowScale_valueChanged(int arg1)
 {
     imShowScale = arg1;
+    ProcessImage();
+}
+
+void MainWindow::on_spinBoxMaxWavScale_valueChanged(int arg1)
+{
+    maxWavScale = arg1;
     ProcessImage();
 }

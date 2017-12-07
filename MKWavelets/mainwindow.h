@@ -22,10 +22,10 @@ public:
     cv::Mat ImIn;
     cv::Mat ImSmall;
     cv::Mat ImNormalised;
-    cv::Mat ImWaveletLL;
-    cv::Mat ImWaveletLH;
-    cv::Mat ImWaveletHL;
-    cv::Mat ImWaveletHH;
+    cv::Mat ImWaveletLL[8];
+    cv::Mat ImWaveletLH[8];
+    cv::Mat ImWaveletHL[8];
+    cv::Mat ImWaveletHH[8];
 
     int roiOffsetX;
     int roiOffsetY;
@@ -33,6 +33,7 @@ public:
     int roiSizeY;
     int qLevels;
     int imShowScale;
+    int maxWavScale;
 
     int MaxScale;
 
@@ -59,6 +60,8 @@ private slots:
     void on_spinBoxQLevels_valueChanged(int arg1);
 
     void on_spinBoxImShowScale_valueChanged(int arg1);
+
+    void on_spinBoxMaxWavScale_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;
