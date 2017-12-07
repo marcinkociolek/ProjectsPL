@@ -112,9 +112,20 @@ void MainWindow::ProcessImage()
         wImNorm++;
     }
 
+
+    cv::resize(ShowImage8PseudoColor(ImNorm, 0, (float)(qLevels-1)), ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_NEAREST ) ;
+    imshow("Small Image normalised PC", ImShow);
+
     cv::resize(ImNorm * 255/(qLevels-1), ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_NEAREST ) ;
     imshow("Small Image normalised",ImShow);
-    ImNorm
+
+
+    Mat ImNormF;
+    ImNorm.convertTo(ImNormF, CV_32F);
+    cv::resize(ShowImageF32PseudoColor(ImNormF, 0, (float)(qLevels-1)), ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_NEAREST ) ;
+    imshow("Small Image normalised F PC", ImShow);
+
+
     for(int scale = 0; scale < maxWavScale; scale++)
     {
         int localMaxX = maxX/(int)pow(2.0,scale);
@@ -123,11 +134,11 @@ void MainWindow::ProcessImage()
         ImWaveletLH[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
         ImWaveletHL[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
         ImWaveletHH[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
-        unsigned wInput
-        if(!scale)
-        {
+        //unsigned wInput
+        //if(!scale)
+        //{
 
-        }
+        //}
     }
 
 
