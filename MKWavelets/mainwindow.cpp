@@ -57,6 +57,9 @@ void MainWindow::ProcessImage()
     imshow("Small Image",ImShow);
     int maxX = ImSmall.cols;
     int maxY = ImSmall.rows;
+    int maxXm1 = maxX - 1;
+    int maxYm1 = maxY - 1;
+
     int maxXY = maxX*maxY;
     unsigned char *wIm;
 
@@ -134,11 +137,59 @@ void MainWindow::ProcessImage()
         ImWaveletLH[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
         ImWaveletHL[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
         ImWaveletHH[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
-        //unsigned wInput
-        //if(!scale)
-        //{
 
-        //}
+        float *wInput;
+        float *wInput0;
+        float *wInput1;
+        float *wInput2;
+        float *wInput3;
+        float *wOutput;
+
+        if(!scale)
+            wInput = (float *)ImNormF.data;
+        else
+            wInput = (float *)ImWaveletLL[scale-1].data;
+
+        for(int y = 0; y < maxY; y++)
+        {
+            wInput1 = wInput + y * maxX;
+            wInput1 = wInput0 + 1;
+            wInput2 = wInput0 + maxX;
+            wInput3 = wInput0 + maxX + 1;
+            wOutput = (float*)ImWaveletLL.data + y * maxX;
+
+            for(int x = 0; x < maxX; x++)
+            {
+                *wOutput =  (*wInput0 + *wInput1 + *wInput2 + *wInput3)/4.0;
+                wOutput++;
+                *wInput0++;
+                *wInput1++;
+                *wInput2++;
+                *wInput3++;
+            }
+        }
+
+        if(!scale)
+            wInput0 = (float *)ImNormF.data;
+        else
+            wInput0 = (float *)ImWaveletLL[scale-1].data;
+        wInput1 = wInput0 + 1;
+        wInput2 = wInput0 + maxX;
+        wInput3 = wInput0 + maxX + 1;
+
+        wOutput = (float*)ImWaveletLH.data;
+        for(int y = 0; y < maxY; y++)
+        {
+            for(int x = 0; x < maxX; x++)
+            {
+                *wOutput =  (*wInput0 - *wInput1 + *wInput2 - *wInput3)/2.0;
+                wOutput++;
+                *wInput0++;
+                *wInput1++;
+                *wInput2++;
+                *wInput3++;
+            }
+        }
     }
 
 
