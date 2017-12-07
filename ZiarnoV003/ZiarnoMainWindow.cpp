@@ -1116,10 +1116,10 @@ void MainWindow::on_TempCheckBox_toggled(bool checked)
 
 void MainWindow::on_pushButtonGetBackground_clicked()
 {
-    for (int i = 0; i< imStackCount; i++)
-    {
-        delete[] ImStack[i];
-    }
+    //for (int i = 0; i< imStackCount; i++)
+    //{
+    //    delete[] ImStack[i];
+    //}
     delete[] ImStack;
     imStackCount = 0;
     channelCount = 3;
@@ -1150,7 +1150,8 @@ void MainWindow::on_pushButtonGetBackground_clicked()
     {
         if (FileToProcess.path().extension() != ".bmp" && FileToProcess.path().extension() != ".png" )
             continue;
-        regex FilePattern(".+_T.+");
+        regex FilePattern(".+_0.+");
+        //regex FilePattern(".+_T.+");
         if ((inputType == 2) && (!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
             continue;
 
@@ -1165,8 +1166,10 @@ void MainWindow::on_pushButtonGetBackground_clicked()
         }
 
         string FileNameTop = PathLocal.string();
-        string FileNameBottom = regex_replace(FileNameTop,regex("_T"),"_B");
-        string FileNameSide = regex_replace(FileNameTop,regex("_T"),"_S");
+        //string FileNameBottom = regex_replace(FileNameTop,regex("_T"),"_B");
+        //string FileNameSide = regex_replace(FileNameTop,regex("_T"),"_S");
+        string FileNameBottom = regex_replace(FileNameTop,regex("_0"),"_1");
+        string FileNameSide = regex_replace(FileNameTop,regex("_0"),"_2");
 
         Mat ImT = imread(FileNameTop);
 
@@ -1189,25 +1192,28 @@ void MainWindow::on_pushButtonGetBackground_clicked()
         return;
     }
 
-    ImStack = new Mat*[imStackCount];
+    ImStack = new Mat[imStackCount*channelCount];
 
     //int *Liczby = new int[3];
     //int **Liczby2D = new int*[6];
 
     for(int i = 0; i < imStackCount; i++)
     {
-        Mat *GrainImStack = new Mat[channelCount];
-        ImTVect.at(i).copyTo(GrainImStack[0]);
-        ImBVect.at(i).copyTo(GrainImStack[1]);
-        ImSVect.at(i).copyTo(GrainImStack[2]);
-        ImStack[i] = GrainImStack;
+        //Mat *GrainImStack = new Mat[channelCount];
+        if(channelCount)
+            ImTVect.at(i).copyTo(ImStack[i*channelCount + 0]);
+        if(channelCount>1)
+            ImBVect.at(i).copyTo(ImStack[i*channelCount + 1]);
+        if(channelCount>2)
+            ImSVect.at(i).copyTo(ImStack[i*channelCount + 2]);
+        //ImStack[i] = GrainImStack;
     }
     ImTVect.empty();
     ImBVect.empty();
     ImSVect.empty();
-    imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value()][ui->spinBoxImIndex->value()]);
+    imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value() *channelCount + ui->spinBoxImIndex->value()]);
 
-    int dirtyPixelsPerImage = GetBacgroundImage(ImStack, imStackCount, channelCount);
+    int dirtyPixelsPerImage = ComputeBackgroundImages(ImStack, imStackCount, channelCount);
     string Message = "dirty pixels per image = " + to_string(dirtyPixelsPerImage)+ "\n";
     ui->MesageTextEdit->append( Message.c_str());
 }
@@ -1215,11 +1221,11 @@ void MainWindow::on_pushButtonGetBackground_clicked()
 void MainWindow::on_spinBoxStackIndex_valueChanged(int arg1)
 {
     if (arg1<imStackCount)
-        imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value()][ui->spinBoxImIndex->value()]);
+        imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value() * channelCount + ui->spinBoxImIndex->value()]);
 }
 
 void MainWindow::on_spinBoxImIndex_valueChanged(int arg1)
 {
     if (arg1<3)
-        imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value()][ui->spinBoxImIndex->value()]);
+        imshow("Stack Image",ImStack[ui->spinBoxStackIndex->value() * channelCount + ui->spinBoxImIndex->value()]);
 }

@@ -99,7 +99,7 @@ public:
     bool showOutput;
     bool showOutput2;
 
-    cv::Mat **ImStack ;
+    cv::Mat *ImStack ;
     int imStackCount;
     int channelCount;
 
