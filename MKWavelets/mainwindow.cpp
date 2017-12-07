@@ -137,7 +137,7 @@ void MainWindow::ProcessImage()
         ImWaveletLH[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
         ImWaveletHL[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
         ImWaveletHH[scale] = Mat::zeros(localMaxY,localMaxX,CV_32F);
-
+        ImScaledDown[scale]=Mat::zeros(localMaxY/2,localMaxX/2,CV_32F);
         float *wInput;
         float *wInput0;
         float *wInput1;
@@ -148,48 +148,108 @@ void MainWindow::ProcessImage()
         if(!scale)
             wInput = (float *)ImNormF.data;
         else
-            wInput = (float *)ImWaveletLL[scale-1].data;
+            wInput = (float *)ImScaledDown[scale-1].data;
 
-        for(int y = 0; y < maxY; y++)
+        for(int y = 0; y < maxYm1; y++)
         {
-            wInput1 = wInput + y * maxX;
+            wInput0 = wInput + y * maxX;
             wInput1 = wInput0 + 1;
             wInput2 = wInput0 + maxX;
             wInput3 = wInput0 + maxX + 1;
-            wOutput = (float*)ImWaveletLL.data + y * maxX;
+            wOutput = (float*)ImWaveletLL[scale].data + y * maxX;
 
-            for(int x = 0; x < maxX; x++)
+            for(int x = 0; x < maxXm1; x++)
             {
                 *wOutput =  (*wInput0 + *wInput1 + *wInput2 + *wInput3)/4.0;
                 wOutput++;
-                *wInput0++;
-                *wInput1++;
-                *wInput2++;
-                *wInput3++;
+                wInput0++;
+                wInput1++;
+                wInput2++;
+                wInput3++;
             }
         }
-
-        if(!scale)
-            wInput0 = (float *)ImNormF.data;
-        else
-            wInput0 = (float *)ImWaveletLL[scale-1].data;
-        wInput1 = wInput0 + 1;
-        wInput2 = wInput0 + maxX;
-        wInput3 = wInput0 + maxX + 1;
-
-        wOutput = (float*)ImWaveletLH.data;
-        for(int y = 0; y < maxY; y++)
+        cv::resize(ShowImageF32PseudoColor(ImWaveletLL[scale], 0, (float)(qLevels-1)), ImShow, Size(0,0), (double)imShowScale*pow(2.0,scale), (double)imShowScale*pow(2.0,scale), INTER_NEAREST ) ;
+        imshow("LL", ImShow);
+        for(int y = 0; y < maxYm1; y++)
         {
-            for(int x = 0; x < maxX; x++)
+            wInput0 = wInput + y * maxX;
+            wInput1 = wInput0 + 1;
+            wInput2 = wInput0 + maxX;
+            wInput3 = wInput0 + maxX + 1;
+            wOutput = (float*)ImWaveletLH[scale].data + y * maxX;
+
+            for(int x = 0; x < maxXm1; x++)
             {
                 *wOutput =  (*wInput0 - *wInput1 + *wInput2 - *wInput3)/2.0;
                 wOutput++;
-                *wInput0++;
-                *wInput1++;
-                *wInput2++;
-                *wInput3++;
+                wInput0++;
+                wInput1++;
+                wInput2++;
+                wInput3++;
             }
         }
+        cv::resize(ShowImageF32PseudoColor(ImWaveletLH[scale], (float)(-1 * qLevels - 1), (float)(qLevels-1)), ImShow, Size(0,0), (double)imShowScale*pow(2.0,scale), (double)imShowScale*pow(2.0,scale), INTER_NEAREST ) ;
+        imshow("LH", ImShow);
+
+        for(int y = 0; y < maxYm1; y++)
+        {
+            wInput0 = wInput + y * maxX;
+            wInput1 = wInput0 + 1;
+            wInput2 = wInput0 + maxX;
+            wInput3 = wInput0 + maxX + 1;
+            wOutput = (float*)ImWaveletHL[scale].data + y * maxX;
+
+            for(int x = 0; x < maxXm1; x++)
+            {
+                *wOutput =  (*wInput0 + *wInput1 - *wInput2 - *wInput3)/2.0;
+                wOutput++;
+                wInput0++;
+                wInput1++;
+                wInput2++;
+                wInput3++;
+            }
+        }
+        cv::resize(ShowImageF32PseudoColor(ImWaveletHL[scale], (float)(-1 * qLevels - 1), (float)(qLevels-1)), ImShow, Size(0,0), (double)imShowScale*pow(2.0,scale), (double)imShowScale*pow(2.0,scale), INTER_NEAREST ) ;
+        imshow("HL", ImShow);
+
+        for(int y = 0; y < maxYm1; y++)
+        {
+            wInput0 = wInput + y * maxX;
+            wInput1 = wInput0 + 1;
+            wInput2 = wInput0 + maxX;
+            wInput3 = wInput0 + maxX + 1;
+            wOutput = (float*)ImWaveletHH[scale].data + y * maxX;
+
+            for(int x = 0; x < maxXm1; x++)
+            {
+                *wOutput =  (*wInput0 - *wInput1 - *wInput2 + *wInput3)/2.0;
+                wOutput++;
+                wInput0++;
+                wInput1++;
+                wInput2++;
+                wInput3++;
+            }
+        }
+        cv::resize(ShowImageF32PseudoColor(ImWaveletHH[scale], (float)(-1 * qLevels - 1), (float)(qLevels-1)), ImShow, Size(0,0), (double)imShowScale*pow(2.0,scale), (double)imShowScale*pow(2.0,scale), INTER_NEAREST ) ;
+        imshow("HH", ImShow);
+
+        int maxXH = localMaxX/2;
+        int maxYH = localMaxY/2;
+
+        for(int y = 0; y < maxYH; y++)
+        {
+            wInput0 = (float*)ImWaveletLL[scale].data + y * 2 * localMaxX;
+            wOutput = (float*)ImScaledDown[scale].data + y * maxXH;
+
+            for(int x = 0; x < maxXH; x++)
+            {
+                *wOutput =  *wInput0;
+                wOutput++;
+                wInput0 += 2;
+             }
+        }
+        cv::resize(ShowImageF32PseudoColor(ImScaledDown[scale], 0, (float)(qLevels-1)), ImShow, Size(0,0), (double)imShowScale*pow(2.0,scale) *2, (double)imShowScale*pow(2.0,scale)*2, INTER_NEAREST ) ;
+        imshow("scaled", ImShow);
     }
 
 

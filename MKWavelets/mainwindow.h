@@ -26,6 +26,7 @@ public:
     cv::Mat ImWaveletLH[8];
     cv::Mat ImWaveletHL[8];
     cv::Mat ImWaveletHH[8];
+    cv::Mat ImScaledDown[8];
 
     int roiOffsetX;
     int roiOffsetY;
