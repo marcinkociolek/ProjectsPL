@@ -41,6 +41,8 @@ public:
     int minNorm;
     int maxNorm;
 
+    bool showEnergy;
+
     boost::filesystem::path InputDirectory;
 
     void ProcessImage();
@@ -63,6 +65,8 @@ private slots:
     void on_spinBoxImShowScale_valueChanged(int arg1);
 
     void on_spinBoxMaxWavScale_valueChanged(int arg1);
+
+    void on_checkBoxShowEnergy_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
