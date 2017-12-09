@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    InputDirectory = "E:/TestFigs/Brodatz";//"C:/Data/Brodatz";//;
+    InputDirectory = "C:/Data/Brodatz";//"E:/TestFigs/Brodatz";
     roiOffsetX = ui->spinBoxOffsetX->value();
     roiOffsetY = ui->spinBoxOffsetY->value();
     roiSizeX = ui->spinBoxSizeX->value();
@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     imShowScale = ui->spinBoxImShowScale->value();
     maxWavScale = ui->spinBoxMaxWavScale->value();
     showEnergy = ui->checkBoxShowEnergy->checkState();
+    intensityFactor = ui->spinBoxIntensityFactor->value();
 }
 
 MainWindow::~MainWindow()
@@ -47,7 +48,7 @@ MainWindow::~MainWindow()
 void MainWindow::ProcessImage()
 {
     Mat ImShow;
-    //ImSmall = Mat::zeros(Size(roiSizeX,roiSizeY) ,ImIn.type());
+
     if(ImIn.empty())
         return;
     ImIn(Rect(roiOffsetX, roiOffsetY, roiSizeX , roiSizeY)).copyTo(ImSmall);//(Rect(roiOffsetX, roiOffsetY, roiSizeX , roiSizeY)));
@@ -55,6 +56,13 @@ void MainWindow::ProcessImage()
     //Mat ImSmallF;
     //ImSmall.convertTo(ImSmall,CV_64F);
     cv::resize(ImSmall , ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_NEAREST ) ;
+    string OutFileNameCommon = CurrentFile.string();
+
+    string OutFileName;
+
+    OutFileName = regex_replace(OutFileNameCommon,regex(".tiff"),"_Small.bmp");
+    imwrite(OutFileName, ImShow);
+
     imshow("Small Image",ImShow);
     int maxX = ImSmall.cols;
     int maxY = ImSmall.rows;
@@ -109,6 +117,10 @@ void MainWindow::ProcessImage()
     {
         double pixVal = (double)*wIm;
         double newPixVal = (pixVal - offset)*mul;
+        if(newPixVal > 255)
+            newPixVal = 255;
+        if(newPixVal < 0)
+            newPixVal = 0;
         *wImNorm = (unsigned char)newPixVal;
         sumSqr+= ((double)*wIm - mean)*((double)*wIm - mean);
         wIm++;
@@ -122,11 +134,18 @@ void MainWindow::ProcessImage()
     cv::resize(ImNorm * 255/(qLevels-1), ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_NEAREST ) ;
     imshow("Small Image normalised",ImShow);
 
+    OutFileName = regex_replace(OutFileNameCommon,regex(".tiff"),"_SmallNorm_q"+to_string(qLevels)+".bmp");
+    imwrite(OutFileName, ImShow);
+
 
     Mat ImNormF;
     ImNorm.convertTo(ImNormF, CV_32F);
     cv::resize(ShowImageF32PseudoColor(ImNormF, 0, (float)(qLevels-1)), ImShow, Size(0,0), (double)imShowScale, (double)imShowScale, INTER_NEAREST ) ;
     imshow("Small Image normalised F PC", ImShow);
+
+    OutFileName = regex_replace(OutFileNameCommon,regex(".tiff"),"_SmallNormPC_q"+to_string(qLevels)+".bmp");
+    imwrite(OutFileName, ImShow);
+
 
 
     for(int scale = 0; scale < maxWavScale; scale++)
@@ -181,6 +200,11 @@ void MainWindow::ProcessImage()
         else
             cv::resize(ShowImageF32PseudoColor(ImWaveletLL[scale], 0, intensityMax), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
         imshow("LL", ImShow);
+
+        OutFileName = regex_replace(OutFileNameCommon,regex(".tiff"),"q" + to_string(qLevels) + "s" + to_string(scale) + "_LL.bmp");
+        imwrite(OutFileName, ImShow);
+
+
         for(int y = 0; y < maxYm1; y++)
         {
             wInput0 = wInput + y * localMaxX;
@@ -200,10 +224,13 @@ void MainWindow::ProcessImage()
             }
         }
         if(showEnergy)
-            cv::resize(ShowImageF32PseudoColor(ImWaveletLH[scale].mul(ImWaveletLH[scale]), 0, intensityMax), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
+            cv::resize(ShowImageF32PseudoColor(ImWaveletLH[scale].mul(ImWaveletLH[scale]), 0, intensityMax/intensityFactor), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
         else
             cv::resize(ShowImageF32PseudoColor(ImWaveletLH[scale], intensityMin, intensityMax), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
         imshow("LH", ImShow);
+
+        OutFileName = regex_replace(OutFileNameCommon,regex(".tiff"),"q" + to_string(qLevels) + "s" + to_string(scale) + "_LH.bmp");
+        imwrite(OutFileName, ImShow);
 
         for(int y = 0; y < maxYm1; y++)
         {
@@ -225,10 +252,13 @@ void MainWindow::ProcessImage()
         }
 
         if(showEnergy)
-            cv::resize(ShowImageF32PseudoColor(ImWaveletHL[scale].mul(ImWaveletHL[scale]), 0, intensityMax), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
+            cv::resize(ShowImageF32PseudoColor(ImWaveletHL[scale].mul(ImWaveletHL[scale]), 0, intensityMax/intensityFactor), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
         else
             cv::resize(ShowImageF32PseudoColor(ImWaveletHL[scale], intensityMin, intensityMax), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
         imshow("HL", ImShow);
+
+        OutFileName = regex_replace(OutFileNameCommon,regex(".tiff"),"q" + to_string(qLevels) + "s" + to_string(scale) + "_HL.bmp");
+        imwrite(OutFileName, ImShow);
 
         for(int y = 0; y < maxYm1; y++)
         {
@@ -250,10 +280,13 @@ void MainWindow::ProcessImage()
         }
 
         if(showEnergy)
-            cv::resize(ShowImageF32PseudoColor(ImWaveletHH[scale].mul(ImWaveletHH[scale]), 0, intensityMax), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
+            cv::resize(ShowImageF32PseudoColor(ImWaveletHH[scale].mul(ImWaveletHH[scale]), 0, intensityMax/intensityFactor), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
         else
             cv::resize(ShowImageF32PseudoColor(ImWaveletHH[scale], intensityMin, intensityMax), ImShow, Size(0,0), showScaleFactor, showScaleFactor, INTER_NEAREST ) ;
         imshow("HH", ImShow);
+
+        OutFileName = regex_replace(OutFileNameCommon,regex(".tiff"),"q" + to_string(qLevels) + "s" + to_string(scale) + "_HH.bmp");
+        imwrite(OutFileName, ImShow);
 
         int maxXH = localMaxX/2;
         int maxYH = localMaxY/2;
@@ -339,7 +372,7 @@ void MainWindow::on_pushButtonFileOpen_clicked()
 
 void MainWindow::on_listWidgetFiles_currentTextChanged(const QString &currentText)
 {
-    path CurrentFile =  InputDirectory;
+    CurrentFile =  InputDirectory;
     CurrentFile.append(currentText.toStdString());
     ImIn = imread(CurrentFile.string(),CV_LOAD_IMAGE_ANYDEPTH);
     if(ImIn.empty())
@@ -396,5 +429,11 @@ void MainWindow::on_spinBoxMaxWavScale_valueChanged(int arg1)
 void MainWindow::on_checkBoxShowEnergy_toggled(bool checked)
 {
     showEnergy = checked;
+    ProcessImage();
+}
+
+void MainWindow::on_spinBoxIntensityFactor_valueChanged(int arg1)
+{
+    intensityFactor = arg1;
     ProcessImage();
 }

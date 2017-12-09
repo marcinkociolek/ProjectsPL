@@ -41,9 +41,12 @@ public:
     int minNorm;
     int maxNorm;
 
+    int intensityFactor;
+
     bool showEnergy;
 
     boost::filesystem::path InputDirectory;
+    boost::filesystem::path CurrentFile;
 
     void ProcessImage();
 
@@ -67,6 +70,8 @@ private slots:
     void on_spinBoxMaxWavScale_valueChanged(int arg1);
 
     void on_checkBoxShowEnergy_toggled(bool checked);
+
+    void on_spinBoxIntensityFactor_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;
