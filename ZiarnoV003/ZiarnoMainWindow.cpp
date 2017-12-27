@@ -47,7 +47,7 @@ using namespace std::chrono;
 // global variables
 QStringList Files;
 
-//#define TERAZ_DEBUG
+#define TERAZ_DEBUG
 
 //---------------------------------------------------------------------------------------------------
 // main program
@@ -163,6 +163,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     showFitted          = ui->ShowFitedElipseCheckBox->checkState();
     showRotated         = ui->ShowRotatedCheckBox->checkState();
+    showCropped         = ui->ShowCroppedCheckBox_2->checkState();
     showAreaForAlign    = ui->ShowAreaForAlignCheckBox->checkState();
     showAligned         = ui->ShowAlignedCheckBox->checkState();
     if(ui->AllowResizeCheckBox->checkState())
@@ -410,7 +411,7 @@ void MainWindow::ProcessImage(void)
     bool done;
 #ifdef TERAZ_DEBUG
 
-    done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation, &segParams);
+    done = SegmentGrainImg2(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation, &segParams);
 #else
     done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation);//, &segParams);
     ShowImageCombination(showInput,"Input image",*ImInVect.at(0), *ImInVect.at(1));
