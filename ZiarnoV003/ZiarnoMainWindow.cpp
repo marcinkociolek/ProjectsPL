@@ -653,31 +653,54 @@ void MainWindow::OnOffImageWindow(void)
     destroyAllWindows();
 
     if(showInput)
-        namedWindow("Input image", displayFlag);
-
+    {
+        namedWindow("Input image_T", displayFlag);
+        namedWindow("Input image_B", displayFlag);
+    }
     if(showThesholded)
-        namedWindow("Thresholded", displayFlag);
-
+    {
+        namedWindow("Thresholded_T", displayFlag);
+        namedWindow("Thresholded_B", displayFlag);
+    }
     if(show1stMorphology)
-        namedWindow("Morphology1", displayFlag);
-
+    {
+        namedWindow("Morphology1_T", displayFlag);
+        namedWindow("Morphology1_B", displayFlag);
+    }
     if(showHolesRemoved)
-        namedWindow("WithoutHoles", displayFlag);
+    {
+        namedWindow("Without Holes_T", displayFlag);
+        namedWindow("Without Holes_B", displayFlag);
+    }
 
     if(showMask)
-        namedWindow("Mask", displayFlag);
-
-    if(showContourOnInput)
-        namedWindow("Superimposed", displayFlag);
+    {
+        namedWindow("Mask_T", displayFlag);
+        namedWindow("Mask_B", displayFlag);
+    }
 
     if(showFitted)
-        namedWindow("Fitted", displayFlag);
+    {
+        namedWindow("Fitted_T", displayFlag);
+        namedWindow("Fitted_B", displayFlag);
+    }
 
     if(showRotated)
-        namedWindow("Rotated", displayFlag);
+    {
+        namedWindow("Rotated_T", displayFlag);
+        namedWindow("Rotated_B", displayFlag);
+    }
 
-    if(showAreaForAlign)
-        namedWindow("AreaForAlign", displayFlag);
+    if(showAligned)
+    {
+        namedWindow("Aligned_T", displayFlag);
+        namedWindow("Aligned_B", displayFlag);
+    }
+    if(showOutput)
+    {
+        namedWindow("Out_T", displayFlag);
+        namedWindow("Out_B", displayFlag);
+    }
 
     if(showGradient)
         namedWindow("Gradient", displayFlag);
@@ -760,13 +783,15 @@ void MainWindow::on_ShowInputImageCheckBox_toggled(bool checked)
     showInput = checked;
     if(showInput)
     {
-        namedWindow("Input image", displayFlag);
+        namedWindow("Input image_T", displayFlag);
+        namedWindow("Input image_B", displayFlag);
         if(showThirdImage)
             namedWindow("Input image 3", displayFlag);
     }
     else
     {
-        destroyWindow("Input image");
+        destroyWindow("Input image_T");
+        destroyWindow("Input image_B");
         destroyWindow("Input image 3");
     }
 
@@ -778,11 +803,14 @@ void MainWindow::on_ShowThresholdedImgeCheckBox_toggled(bool checked)
     showThesholded = checked;
     if(showThesholded)
     {
-        namedWindow("Thresholded", displayFlag);
-
+        namedWindow("Thresholded_T", displayFlag);
+        namedWindow("Thresholded_B", displayFlag);
     }
     else
-        destroyWindow("Thresholded");
+    {
+        destroyWindow("Thresholded_T");
+        destroyWindow("Thresholded_B");
+    }
     ProcessImage();
 }
 
@@ -790,9 +818,15 @@ void MainWindow::on_ShowAfter1MorphologyCheckBox_toggled(bool checked)
 {
     show1stMorphology = checked;
     if(show1stMorphology)
-        namedWindow("Morphology1", displayFlag);
+    {
+        namedWindow("Morphology1_T", displayFlag);
+        namedWindow("Morphology1_B", displayFlag);
+    }
     else
-        destroyWindow("Morphology1");
+    {
+        destroyWindow("Morphology1_T");
+        destroyWindow("Morphology1_B");
+    }
     ProcessImage();
 }
 
@@ -800,9 +834,15 @@ void MainWindow::on_ShowWithoutHolesCheckBox_toggled(bool checked)
 {
     showHolesRemoved = checked;
     if(showHolesRemoved)
-        namedWindow("WithoutHoles", displayFlag);
+    {
+        namedWindow("WithoutHoles_T", displayFlag);
+        namedWindow("WithoutHoles_B", displayFlag);
+    }
     else
-        destroyWindow("WithoutHoles");
+    {
+        destroyWindow("WithoutHoles_T");
+        destroyWindow("WithoutHoles_B");
+    }
     ProcessImage();
 }
 
@@ -826,10 +866,15 @@ void MainWindow::on_ShowMaskCheckBox_toggled(bool checked)
 {
     showMask = checked;
     if(showMask)
-        namedWindow("Mask", displayFlag);
+    {
+        namedWindow("Mask_T", displayFlag);
+        namedWindow("Mask_B", displayFlag);
+    }
     else
-        destroyWindow("Mask");
-
+    {
+        destroyWindow("Mask_T");
+        destroyWindow("Mask_B");
+    }
     ProcessImage();
 }
 
@@ -877,9 +922,15 @@ void MainWindow::on_ShowFitedElipseCheckBox_toggled(bool checked)
 {
     showFitted = checked;
     if(showFitted)
-        namedWindow("Fitted", displayFlag);
+    {
+        namedWindow("Fitted_T", displayFlag);
+        namedWindow("Fitted_B", displayFlag);
+    }
     else
-        destroyWindow("Fitted");
+    {
+        destroyWindow("Fitted_T");
+        destroyWindow("Fitted_B");
+    }
 
     ProcessImage();
 }
@@ -888,9 +939,15 @@ void MainWindow::on_ShowRotatedCheckBox_toggled(bool checked)
 {
     showRotated = checked;
     if(showRotated)
-        namedWindow("Rotated", displayFlag);
+    {
+        namedWindow("Rotated_T", displayFlag);
+        namedWindow("Rotated_B", displayFlag);
+    }
     else
-        destroyWindow("Rotated");
+    {
+        destroyWindow("Rotated_T");
+        destroyWindow("Rotated_B");
+    }
 
     ProcessImage();
 }
@@ -933,9 +990,15 @@ void MainWindow::on_ShowAlignedCheckBox_toggled(bool checked)
 {
     showAligned = checked;
     if(showAligned)
-        namedWindow("Aligned", displayFlag);
+    {
+        namedWindow("Aligned_T", displayFlag);
+        namedWindow("Aligned_B", displayFlag);
+    }
     else
-        destroyWindow("Aligned");
+    {
+        destroyWindow("Aligned_T");
+        destroyWindow("Aligned_B");
+    }
 
     ProcessImage();
 }
@@ -962,9 +1025,15 @@ void MainWindow::on_ShowOutputCheckBox_toggled(bool checked)
 {
     showOutput = checked;
     if(showOutput)
-        namedWindow("Output", WINDOW_AUTOSIZE);
+    {
+        namedWindow("Out_T", WINDOW_AUTOSIZE);
+        namedWindow("Out_B", WINDOW_AUTOSIZE);
+    }
     else
-        destroyWindow("Output");
+    {
+        destroyWindow("Out_T");
+        destroyWindow("Out_B");
+    }
 
     ProcessImage();
 }
@@ -1043,9 +1112,15 @@ void MainWindow::on_ShowCroppedCheckBox_2_toggled(bool checked)
 {
     showCropped = checked;
     if(showCropped)
-        namedWindow("Cropped", displayFlag);
+    {
+        namedWindow("Cropped_T", displayFlag);
+        namedWindow("Cropped_B", displayFlag);
+    }
     else
-        destroyWindow("Cropped");
+    {
+        destroyWindow("Cropped_T");
+        destroyWindow("Cropped_B");
+    }
 
     ProcessImage();
 }
