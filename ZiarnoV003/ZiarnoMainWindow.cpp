@@ -47,7 +47,7 @@ using namespace std::chrono;
 // global variables
 QStringList Files;
 
-#define TERAZ_DEBUG
+//
 
 //---------------------------------------------------------------------------------------------------
 // main program
@@ -411,7 +411,7 @@ void MainWindow::ProcessImage(void)
     bool done;
 #ifdef TERAZ_DEBUG
 
-    done = SegmentGrainImg2(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation, &segParams);
+    done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation, &segParams);
 #else
     done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation);//, &segParams);
     ShowImageCombination(showInput,"Input image",*ImInVect.at(0), *ImInVect.at(1));
@@ -423,9 +423,9 @@ void MainWindow::ProcessImage(void)
         MazdaRoiIterator<MR2DType> iterator1(RoiVect.at(0));
         unsigned short *wMaskTemp1 = (unsigned short*)MaskTemp1.data;
         int reg1 = 3;
-        if((RoiVect.at(0))->GetName() == "V")
+        if(!orientation)
             reg1 = 1;
-        if((RoiVect.at(0))->GetName() == "D")
+        else
             reg1 = 2;
 
 
@@ -441,9 +441,9 @@ void MainWindow::ProcessImage(void)
         MazdaRoiIterator<MR2DType> iterator2(RoiVect.at(1));
         unsigned short *wMaskTemp2 = (unsigned short*)MaskTemp2.data;
         int reg2 = 3;
-        if((RoiVect.at(1))->GetName() == "V")
+        if(orientation)
             reg2 = 1;
-        if((RoiVect.at(1))->GetName() == "D")
+        else
             reg2 = 2;
         while(! iterator2.IsBehind())
         {
@@ -459,6 +459,14 @@ void MainWindow::ProcessImage(void)
         ui->MesageTextEdit->append((CurrentFileName + "\n").c_str());
 
 #endif
+    string TransfVectStr = "\n";
+    TransfVectStr += "dir 1 = " + to_string(TransfVect[0].angle) + "\n";
+    TransfVectStr += "x = " + to_string(TransfVect[0].x) + "\n";
+    TransfVectStr += "y = " + to_string(TransfVect[0].x) + "\n";
+    TransfVectStr += "dir 2 =" + to_string(TransfVect[1].angle) + "\n";
+    TransfVectStr += "x = " + to_string(TransfVect[1].x) + "\n";
+    TransfVectStr += "y = " + to_string(TransfVect[1].x) + "\n";
+    ui->MesageTextEdit->append(TransfVectStr.c_str());
     //steady_clock::time_point t2 = steady_clock::now();
     //duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     //int stopTime = getTickCount();
@@ -1226,8 +1234,8 @@ void MainWindow::on_pushButtonGetBackground_clicked()
     {
         if (FileToProcess.path().extension() != ".bmp" && FileToProcess.path().extension() != ".png" )
             continue;
-        regex FilePattern(".+_0.+");
-        //regex FilePattern(".+_T.+");
+        //regex FilePattern(".+_0.+");
+        regex FilePattern(".+_T.+");
         if ((inputType == 2) && (!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
             continue;
 
@@ -1242,10 +1250,10 @@ void MainWindow::on_pushButtonGetBackground_clicked()
         }
 
         string FileNameTop = PathLocal.string();
-        //string FileNameBottom = regex_replace(FileNameTop,regex("_T"),"_B");
-        //string FileNameSide = regex_replace(FileNameTop,regex("_T"),"_S");
-        string FileNameBottom = regex_replace(FileNameTop,regex("_0"),"_1");
-        string FileNameSide = regex_replace(FileNameTop,regex("_0"),"_2");
+        string FileNameBottom = regex_replace(FileNameTop,regex("_T"),"_B");
+        string FileNameSide = regex_replace(FileNameTop,regex("_T"),"_S");
+        //string FileNameBottom = regex_replace(FileNameTop,regex("_0"),"_1");
+        //string FileNameSide = regex_replace(FileNameTop,regex("_0"),"_2");
 
         Mat ImT = imread(FileNameTop);
 
