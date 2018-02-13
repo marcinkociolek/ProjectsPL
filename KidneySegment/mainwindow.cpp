@@ -1078,13 +1078,19 @@ void MainWindow::on_widgetImage_KeyPressed(int key)
     {
     case Qt::Key_Space:
         SaveROI(ROIFile);
-        ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow()+ 1);
+        if(ui->InFileListWidget->currentRow()< (ui->InFileListWidget->count() - 1))
+            ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow()+ 1);
+        break;
+    case Qt::Key_S:
+        SaveROI(ROIFile);
         break;
     case Qt::Key_A:
-        ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow() - 1);
+        if(ui->InFileListWidget->currentRow()> 0)
+            ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow() - 1);
         break;
     case Qt::Key_Z:
-        ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow() + 1);
+        if(ui->InFileListWidget->currentRow()< (ui->InFileListWidget->count() - 1))
+            ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow() + 1);
         break;
     case Qt::Key_Up:
         on_pushButtonUp_clicked();
@@ -1098,6 +1104,20 @@ void MainWindow::on_widgetImage_KeyPressed(int key)
     case Qt::Key_Right:
         on_pushButtonRight_clicked();
         break;
+
+    case Qt::Key_Home:
+        ui->InFileListWidget->setCurrentRow(0);
+        break;
+    case Qt::Key_R:
+        ui->checkBoxMoveP->toggle();
+        break;
+    case Qt::Key_P:
+        ui->checkBoxMoveP->toggle();
+        break;
+    case Qt::Key_L:
+        ui->checkBoxMoveL->toggle();
+        break;
+
 
     default:
         break;
