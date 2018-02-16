@@ -495,6 +495,7 @@ void MainWindow::on_InFileListWidget_currentTextChanged(const QString &currentTe
 //----------------------------------------------------------------------------------------------------------
 void MainWindow::on_spinBoxFrameNr_valueChanged(int arg1)
 {
+    ui->InFileListWidget->setCurrentRow(0);
     frameNr = arg1;
     ProcessFile();
 }
@@ -1082,13 +1083,16 @@ void MainWindow::on_widgetImage_KeyPressed(int key)
             ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow()+ 1);
         break;
     case Qt::Key_S:
+    case Qt::Key_Insert:
         SaveROI(ROIFile);
         break;
     case Qt::Key_A:
+    case Qt::Key_PageUp:
         if(ui->InFileListWidget->currentRow()> 0)
             ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow() - 1);
         break;
     case Qt::Key_Z:
+    case Qt::Key_PageDown:
         if(ui->InFileListWidget->currentRow()< (ui->InFileListWidget->count() - 1))
             ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->currentRow() + 1);
         break;
@@ -1107,6 +1111,9 @@ void MainWindow::on_widgetImage_KeyPressed(int key)
 
     case Qt::Key_Home:
         ui->InFileListWidget->setCurrentRow(0);
+        break;
+    case Qt::Key_End:
+        ui->InFileListWidget->setCurrentRow(ui->InFileListWidget->count() - 1);
         break;
     case Qt::Key_R:
         ui->checkBoxMoveP->toggle();
