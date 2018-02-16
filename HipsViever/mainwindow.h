@@ -56,6 +56,11 @@ public:
     bool showInputPseudocolor;
 
     bool showGradient;
+
+    bool showThresholded;
+    bool showSDA;
+    bool showSDAThresholded;
+
     bool showConv;
     bool showMask;
 
@@ -71,6 +76,7 @@ public:
     int erosionShape;
 
     bool expandMask;
+    bool expandMaskY;
     int expansionSize;
 
     bool croppMask;
@@ -87,12 +93,15 @@ public:
     int postDilationShape2;
     int postErosionShape3;
 
+    bool fillHolesOnOutMask;
+
     bool showOutput;
     int transparency;
 
     bool displayFlag;
 
     void MainWindow::CalculateSDA(void);
+    cv::Mat MainWindow::CalculateSDA(cv::Mat imIn, cv::Mat Roi, int radius);
     void MainWindow::MaskImage(void);
     void MainWindow::ProcessImage(void);
     void MainWindow::ShowImages(void);
@@ -178,6 +187,16 @@ private slots:
     void on_spinBoxDilationShape2_valueChanged(int arg1);
 
     void on_spinBoxErosionShape3_valueChanged(int arg1);
+
+    void on_CheckBoxFillHolesOnOut_toggled(bool checked);
+
+    void on_CheckBoxExpandMaskY_toggled(bool checked);
+
+    void on_CheckBoxShowThesholded_toggled(bool checked);
+
+    void on_CheckBoxShowSDA_toggled(bool checked);
+
+    void on_CheckBoxShowSDAThresholded_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

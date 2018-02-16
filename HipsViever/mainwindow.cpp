@@ -65,7 +65,7 @@ void MainWindow::CalculateSDA(void)
     int yLimMin = diameter/2 + 1;
     int yLimMax = maxY - diameter/2;
     int maxXYSmall = diameter *diameter;
-
+    int radius = diameter/2;
 
     for(int y = 0; y < maxY; y++)
     {
@@ -76,7 +76,7 @@ void MainWindow::CalculateSDA(void)
                 Mat ImSmall;
                 unsigned short pixVal = *wImIn;
                 int sum = 0;
-                ImIn(Rect(x - diameter/2, y - diameter/2, diameter,diameter)).copyTo(ImSmall);
+                ImIn(Rect(x - radius, y - radius, diameter,diameter)).copyTo(ImSmall);
                 unsigned short *wImSmall = (unsigned short*)ImSmall.data;
                 unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
                 for(int i = 0; i < maxXYSmall; i++)
@@ -124,8 +124,122 @@ void MainWindow::CalculateSDA(void)
 
 }
 //--------------------------------------------------------------------------------------------------
+cv::Mat MainWindow::CalculateSDA(cv::Mat ImIn, cv::Mat Roi, int radius)
+{
+
+    if(Roi.empty())
+        return Mat::zeros(0,0,CV_16U);
+    if(ImIn.empty())
+        return Mat::zeros(0,0,CV_16U);
+
+    //unsigned short *wImIn = (unsigned short*)ImIn.data;
+    //float *wImGradient = (float*)ImGradient.data;
+
+    int maxX = ImIn.cols;
+    int maxY = ImIn.rows;
+    //int maxXY = maxX * maxY;
+    if(Roi.cols != maxX)
+        return Mat::zeros(0,0,CV_16U);
+    if(Roi.rows != maxY)
+        return Mat::zeros(0,0,CV_16U);
 
 
+    int diameter = radius * 2 + 1;
+    Mat RoiSmall = CreateRoi16(2, diameter, diameter);
+
+    unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
+    int roiPixCount = 0;
+    for(int y = 0; y < RoiSmall.rows; y++)
+    {
+        for(int x = 0; x < RoiSmall.cols; x++)
+        {
+            if(*wRoiSmall)
+                roiPixCount++;
+            wRoiSmall++;
+        }
+    }
+    kernelPixelCountSDA = roiPixCount;
+    Mat ImSDA = Mat::zeros(maxY, maxX, CV_16U);
+
+    unsigned short *wImSDA = (unsigned short*)ImSDA.data;
+    unsigned short *wImIn = (unsigned short*)ImIn.data;
+    unsigned short *wRoi = (unsigned short*)Roi.data;
+
+    int xLimMin = radius +1;
+    int xLimMax = maxX - radius;
+    int yLimMin = radius + 1;
+    int yLimMax = maxY - radius;
+    int maxXYSmall = diameter *diameter;
+
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if (*wRoi)
+            {
+                if(x > xLimMin && x < xLimMax && y > yLimMin && y < yLimMax )
+                {
+                    Mat ImSmall;
+                    unsigned short pixVal = *wImIn;
+                    int sum = 0;
+                    ImIn(Rect(x - radius, y - radius, diameter,diameter)).copyTo(ImSmall);
+                    unsigned short *wImSmall = (unsigned short*)ImSmall.data;
+                    unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
+                    for(int i = 0; i < maxXYSmall; i++)
+                    {
+                        if(*wImSmall >= pixVal && *wRoiSmall)
+                        {
+                           sum++;
+                        }
+                        wImSmall++;
+                        wRoiSmall++;
+                    }
+                    *wImSDA = sum;
+                }
+            }
+            else
+                *wImSDA = 0;
+            wRoi++;
+            wImIn++;
+            wImSDA++;
+        }
+    }
+    return ImSDA;
+}
+
+//--------------------------------------------------------------------------------------------------
+cv::Mat CreateNormalisedSDA(cv::Mat ImSDA, int kernelPixelCountSDA)
+{
+    unsigned short *wImSDA = (unsigned short*)ImSDA.data;
+    int maxX = ImSDA.cols;
+    int maxY = ImSDA.rows;
+    //int maxXY = maxX * maxY;
+
+    Mat ImNormInvSDA = Mat::zeros(maxY,maxX,CV_8U);
+    unsigned char* wImNormInvSDA = (unsigned char* )ImNormInvSDA.data;
+
+    wImSDA = (unsigned short*)ImSDA.data;
+    double coeff = 255.0/((double)kernelPixelCountSDA);
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            //if(x > xLimMin && x < xLimMax && y > yLimMin && y < yLimMax )
+            {
+                double val = ((double)(kernelPixelCountSDA - *wImSDA))*coeff;
+                if(val<0)
+                   val=0;
+                if(val>255)
+                   val=255;
+                *wImNormInvSDA = (unsigned char)val;
+
+            }
+            wImNormInvSDA++;
+            wImSDA++;
+        }
+    }
+    return ImNormInvSDA;
+}
 //--------------------------------------------------------------------------------------------------
 void MainWindow::MaskImage(void)
 {
@@ -135,21 +249,35 @@ void MainWindow::MaskImage(void)
     int maxY = ImIn.rows;
     int maxXY = maxX * maxY;
 
-/*
-    Mat MaskForFlood = Mat::zeros(maxY +2, maxX +2, CV_8U);
+    Mat ImShowGray;
+        //if(showInputGray)
+    if(showInputGray)
+        ImShowGray = ShowImage16Gray(ImIn,minShowGray,maxShowGray);
 
-    Point seedPoint;
-    seedPoint.x = 240;
-    seedPoint.y = 340;
-    Mat ImInF;
-    ImIn.convertTo(ImInF, CV_32F);
-    //floodFill(ImInF,MaskForFlood,seedPoint, 255, 0, Scalar(0),Scalar(8000)) ;
-    //floodFill(ImInF,seedPoint, 5000,0,minFlood,maxFlood) ;
-    imshow ("flood", ShowImageF32PseudoColor(ImInF, minShowGray,maxShowGray));
-*/
+    if(showInputGray)
+        imshow("Gray", ImShowGray);
+
+    Mat ImShowPseudocolor;
+    if(showInputPseudocolor||showMask)
+        ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
+    if(showInputPseudocolor)
+        imshow("Pseudocolor", ImShowPseudocolor);
+
+    if(showGradient)
+        imshow("Gradient", ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient));
+
     Mask = Threshold16(ImIn, thresholdImOrg);
-
     Threshold16(ImGradient, Mask, thresholdGradient);
+
+    if(showThresholded)
+    {
+        Mat ImShowMask;
+        if(showContour)
+            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor);
+        else
+            ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
+        imshow("Thresholded", ImShowMask);
+    }
 
     if(closingShape)
     {
@@ -174,24 +302,52 @@ void MainWindow::MaskImage(void)
 
     if(expandMask)
     {
-        Mat Kernel = Mat::ones(1,expansionSize,CV_8U);
+        Mat Kernel = Mat::ones(1,expansionSize*2+1,CV_8U);
         Mat MaskTemp;
         dilate(Mask,MaskTemp,Kernel);
 
         Mask = MaskTemp-Mask;
 
     }
+    if(expandMaskY)
+    {
+        Mat Kernel = Mat::zeros(expansionSize * 2 + 1,expansionSize * 2 + 1, CV_8U);
+        ellipse(Kernel, Point(expansionSize, expansionSize),
+            Size(expansionSize, expansionSize), 0.0, 90.0, 270.0,
+            1, -1);
+
+        Mat MaskTemp;
+        dilate(Mask,MaskTemp,Kernel);
+
+        Mask = MaskTemp-Mask;
+
+    }
+
     if(croppMask)
     {
         unsigned short *wMask = (unsigned short *)Mask.data;
-        for(int y = 0; y < croppSize; y++)
+        int cropp = croppSize;
+        if (cropp > maxY)
+            cropp = maxY;
+
+        for(int y = 0; y < cropp; y++)
         {
-            for(int y = 0; y < maxX; y++)
+            for(int x = 0; x < maxX; x++)
             {
                 *wMask = 0;
                 wMask++;
             }
         }
+    }
+
+    if(showMask)
+    {
+        Mat ImShowMask;
+        if(showContour)
+            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor);
+        else
+            ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
+        imshow("Mask", ImShowMask);
     }
 
     if(thresholdSDA && !ImSDA.empty())
@@ -233,6 +389,13 @@ void MainWindow::MaskImage(void)
         DilationCV(Mask, postDilationShape2);
     if(postErosionShape3)
         ErosionCV(Mask, postErosionShape3);
+    if(fillHolesOnOutMask)
+    {
+        FillBorderWithValue(Mask, 0xFFFF);
+        OneRegionFill5Fast1(Mask,  0xFFFF);
+        FillHoles(Mask);
+        DeleteRegionFromImage(Mask, 0xFFFF);
+    }
     ShowImages();
 }
 //--------------------------------------------------------------------------------------------------
@@ -268,7 +431,7 @@ void MainWindow::ProcessImage(void)
 
 
 
-    ShowImages();
+    //ShowImages();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -372,7 +535,11 @@ MainWindow::MainWindow(QWidget *parent) :
     showInputPseudocolor = ui->CheckBoxShowInputImagePC->checkState();
     showInputGray = ui->CheckBoxShowInputImageGray->checkState();
     showGradient = ui->CheckBoxShowGradient->checkState();
+    showThresholded = ui->CheckBoxShowThesholded->checkState();
     showMask = ui->CheckBoxShowMask->checkState();
+    showSDA = ui->CheckBoxShowSDA->checkState();
+    showSDAThresholded = ui->CheckBoxShowSDAThresholded->checkState();
+
     showConv = ui->CheckBoxShowConv->checkState();
 
     minShowGray = ui->spinBoxMinShowGray->value();
@@ -398,6 +565,7 @@ MainWindow::MainWindow(QWidget *parent) :
     minRegionSize = ui->spinBoxMinRegionSize->value();
 
     expandMask = ui->CheckBoxExpandMask->checkState();
+    expandMaskY = ui->CheckBoxExpandMaskY->checkState();
     expansionSize = ui->spinBoxExpansionSize->value();
 
     croppMask = ui->CheckBoxCroppMask->checkState();
@@ -417,6 +585,9 @@ MainWindow::MainWindow(QWidget *parent) :
     postErosionShape1 = ui->spinBoxErosionShape1->value();
     postDilationShape2 = ui->spinBoxDilationShape2->value();
     postErosionShape3 = ui->spinBoxErosionShape3->value();
+
+    fillHolesOnOutMask = ui->CheckBoxFillHolesOnOut->checkState();
+
 
     OnOffImageWindow();
 }
@@ -497,7 +668,7 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
     //FileToOpen2.append(FileName);
     //ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
 
-    CalculateSDA();
+    //CalculateSDA();
 
     FileName = regex_replace(FileName,regex("_crop.tif"),"_SDA.bmp");
     path FileToSaveSDA = InputDirectory;
@@ -685,7 +856,7 @@ void MainWindow::on_spinBoxThresholdSDA_valueChanged(int arg1)
 void MainWindow::on_CheckBoxCalculateSDA_toggled(bool checked)
 {
     calculateSDA = checked;
-    CalculateSDA();
+    //CalculateSDA();
     MaskImage();
 }
 
@@ -710,10 +881,17 @@ void MainWindow::on_pushButtonSaveOut_clicked()
 {
     string FileName(CurrentFileName);
 
-     FileName = regex_replace(FileName,regex("_crop.tif"),"_out.bmp");
+    FileName = regex_replace(FileName,regex("_crop.tif"),"_out.bmp");
     path FileToSave = InputDirectory;
     FileToSave.append(FileName);
     imwrite(FileToSave.string(),ImOut);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
+    string FileNameMask(CurrentFileName);
+
+    FileNameMask = regex_replace(FileNameMask,regex("_crop.tif"),"_mask.bmp");
+    path FileToSaveMask = InputDirectory;
+    FileToSaveMask.append(FileNameMask);
+    imwrite(FileToSaveMask.string(),Mask*255);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
 }
 
 void MainWindow::on_CheckBoxContour_toggled(bool checked)
@@ -749,5 +927,37 @@ void MainWindow::on_spinBoxDilationShape2_valueChanged(int arg1)
 void MainWindow::on_spinBoxErosionShape3_valueChanged(int arg1)
 {
     postErosionShape3 = arg1;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxFillHolesOnOut_toggled(bool checked)
+{
+    fillHolesOnOutMask = checked;
+    MaskImage();
+}
+
+
+
+void MainWindow::on_CheckBoxExpandMaskY_toggled(bool checked)
+{
+    expandMaskY = checked;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxShowThesholded_toggled(bool checked)
+{
+    showThresholded = checked;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxShowSDA_toggled(bool checked)
+{
+    showSDA = checked;
+    MaskImage();
+}
+
+void MainWindow::on_CheckBoxShowSDAThresholded_toggled(bool checked)
+{
+    showSDAThresholded = checked;
     MaskImage();
 }
