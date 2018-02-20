@@ -124,7 +124,7 @@ void MainWindow::CalculateSDA(void)
 
 }
 //--------------------------------------------------------------------------------------------------
-cv::Mat MainWindow::CalculateSDA(cv::Mat ImIn, cv::Mat Roi, int radius)
+cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius)
 {
 
     if(Roi.empty())
@@ -158,7 +158,7 @@ cv::Mat MainWindow::CalculateSDA(cv::Mat ImIn, cv::Mat Roi, int radius)
             wRoiSmall++;
         }
     }
-    kernelPixelCountSDA = roiPixCount;
+    int kernelPixelCountSDA = roiPixCount;
     Mat ImSDA = Mat::zeros(maxY, maxX, CV_16U);
 
     unsigned short *wImSDA = (unsigned short*)ImSDA.data;
@@ -262,6 +262,8 @@ void MainWindow::MaskImage(void)
         ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
     if(showInputPseudocolor)
         imshow("Pseudocolor", ImShowPseudocolor);
+    //ImGradient = GradientDown(ImIn);
+    ImGradient = GradientMorph(ImIn, 4);
 
     if(showGradient)
         imshow("Gradient", ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient));
@@ -300,7 +302,7 @@ void MainWindow::MaskImage(void)
     if(erosionShape)
         ErosionCV(Mask, erosionShape);
 
-    if(expandMask)
+    if(0)//(expandMask)
     {
         Mat Kernel = Mat::ones(1,expansionSize*2+1,CV_8U);
         Mat MaskTemp;
@@ -311,13 +313,14 @@ void MainWindow::MaskImage(void)
     }
     if(expandMaskY)
     {
-        Mat Kernel = Mat::zeros(expansionSize * 2 + 1,expansionSize * 2 + 1, CV_8U);
+        Mat Kernel = Mat::zeros(expansionSize + 1,expansionSize * 2 + 1, CV_8U);
         ellipse(Kernel, Point(expansionSize, expansionSize),
-            Size(expansionSize, expansionSize), 0.0, 90.0, 270.0,
+            Size(expansionSize, expansionSize), 0.0, 180.0, 360.0,
             1, -1);
 
+        imshow("kernel",Kernel * 255);
         Mat MaskTemp;
-        dilate(Mask,MaskTemp,Kernel);
+        dilate(Mask,MaskTemp,Kernel,Point(expansionSize, expansionSize));
 
         Mask = MaskTemp-Mask;
 
@@ -349,6 +352,16 @@ void MainWindow::MaskImage(void)
             ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
         imshow("Mask", ImShowMask);
     }
+
+    ImSDA = CalculateSDAL(ImIn, Mask, kernelSizeSDA);
+
+    //CalculateSDA();
+    if(showSDA)
+    {
+        imshow("SDA", ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA));
+    }
+
+    return;
 
     if(thresholdSDA && !ImSDA.empty())
     {
@@ -660,7 +673,7 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
     FileToOpen.append(FileName);
     ImIn = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
     //ImGradient = GradientDown(ImIn);
-    ImGradient = GradientMorph(ImIn, 4);
+    //ImGradient = GradientMorph(ImIn, 4);
 
 
     //FileName = regex_replace(FileName,regex("_crop"),"_SDA");
@@ -670,10 +683,10 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
 
     //CalculateSDA();
 
-    FileName = regex_replace(FileName,regex("_crop.tif"),"_SDA.bmp");
-    path FileToSaveSDA = InputDirectory;
-    FileToSaveSDA.append(FileName );
-    imwrite(FileToSaveSDA.string().c_str(),ImNormInvSDA);
+    //FileName = regex_replace(FileName,regex("_crop.tif"),"_SDA.bmp");
+    //path FileToSaveSDA = InputDirectory;
+    //FileToSaveSDA.append(FileName );
+    //imwrite(FileToSaveSDA.string().c_str(),ImNormInvSDA);
 
     MaskImage();
     //ProcessImage();

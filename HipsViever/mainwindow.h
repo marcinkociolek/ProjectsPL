@@ -101,7 +101,7 @@ public:
     bool displayFlag;
 
     void MainWindow::CalculateSDA(void);
-    cv::Mat MainWindow::CalculateSDA(cv::Mat imIn, cv::Mat Roi, int radius);
+    //cv::Mat MainWindow::CalculateSDA(cv::Mat imIn, cv::Mat Roi, int radius);
     void MainWindow::MaskImage(void);
     void MainWindow::ProcessImage(void);
     void MainWindow::ShowImages(void);
