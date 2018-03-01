@@ -241,75 +241,189 @@ cv::Mat CreateNormalisedSDA(cv::Mat ImSDA, int kernelPixelCountSDA)
     return ImNormInvSDA;
 }
 //--------------------------------------------------------------------------------------------------
-void MainWindow::MaskImage(void)
+cv::Mat CreateNormalisedSDA(cv::Mat ImSDA, cv::Mat Mask, int kernelPixelCountSDA)
 {
+    unsigned short *wImSDA = (unsigned short*)ImSDA.data;
+    int maxX = ImSDA.cols;
+    int maxY = ImSDA.rows;
+    //int maxXY = maxX * maxY;
+
+    Mat ImNormInvSDA = Mat::zeros(maxY,maxX,CV_8U);
+    unsigned char* wImNormInvSDA = (unsigned char* )ImNormInvSDA.data;
+
+    wImSDA = (unsigned short*)ImSDA.data;
+    double coeff = 255.0/((double)kernelPixelCountSDA);
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            //if(x > xLimMin && x < xLimMax && y > yLimMin && y < yLimMax )
+            {
+                double val = ((double)(kernelPixelCountSDA - *wImSDA))*coeff;
+                if(val<0)
+                   val=0;
+                if(val>255)
+                   val=255;
+                *wImNormInvSDA = (unsigned char)val;
+
+            }
+            wImNormInvSDA++;
+            wImSDA++;
+        }
+    }
+    return ImNormInvSDA;
+}
+//--------------------------------------------------------------------------------------------------
+void FindReginsTouchingImplant(Mat MaskImplant, Mat MaskSDA)
+{
+    if(MaskSDA.empty())
+        return;
+    if(MaskImplant.empty())
+        return;
+
+    int maxX = MaskSDA.cols;
+    int maxY = MaskSDA.rows;
+
+    Mat MaskOut = Mat::zeros(maxY,maxX, CV_16U);
+
+    unsigned short *wMaskImplant = (unsigned short *)MaskImplant.data;
+    unsigned short *wMaskImplantXP = wMaskImplant+1;
+    unsigned short *wMaskImplantXM = wMaskImplant-1;
+    unsigned short *wMaskSDA = (unsigned short *)MaskSDA.data;
+    unsigned short *wMaskOut = (unsigned short *)MaskOut.data;
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMaskSDA)
+            {
+                if(*wMaskImplantXP ||*wMaskImplantXM)
+                    *wMaskOut = 1;
+            }
+            wMaskImplantXP++;
+            wMaskImplantXM++;
+            wMaskOut++;
+            wMaskSDA++;
+        }
+    }
+
+    for(int i = 0; i < 40; i++)
+    {
+        Mat MaskTemp = Mat::zeros(maxY, maxX, CV_16U);
+        unsigned short *wMaskTemp = (unsigned short *)MaskTemp.data;
+        wMaskSDA = (unsigned short *)MaskSDA.data;
+        wMaskOut = (unsigned short *)MaskOut.data;
+        unsigned short *wMaskOutXP = wMaskOut + 1;
+        unsigned short *wMaskOutXM = wMaskOut - 1;
+        unsigned short *wMaskOutYP = wMaskOut + maxX;
+        unsigned short *wMaskOutYM = wMaskOut - maxX;
+
+        unsigned short *wMaskOut = (unsigned short *)MaskOut.data;
+        for(int y = 0; y < maxY; y++)
+        {
+            for(int x = 0; x < maxX; x++)
+            {
+                if(*wMaskSDA)
+                {
+                    if(*wMaskOutXP ||*wMaskOutXM ||*wMaskOutYP ||*wMaskOutYM )
+                        *wMaskTemp = 1;
+                }
+                wMaskOutXP++;
+                wMaskOutXM++;
+                wMaskOutYP++;
+                wMaskOutYM++;
+                wMaskOut++;
+                wMaskSDA++;
+                wMaskTemp++;
+            }
+        }
+        MaskTemp.copyTo(MaskOut);
+    }
+
+
+    MaskOut.copyTo(MaskSDA);
+}
+
+//--------------------------------------------------------------------------------------------------
+void MainWindow::OpenImage(void)
+{
+    ImIn = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
     if(ImIn.empty())
         return;
-    int maxX = ImIn.cols;
-    int maxY = ImIn.rows;
-    int maxXY = maxX * maxY;
+    maxX = ImIn.cols;
+    maxY = ImIn.rows;
+    maxXY = maxX * maxY;
 
-    Mat ImShowGray;
+    //ImGradient = GradientDown(ImIn);
+    ImGradient = GradientMorph(ImIn, 4);
+
+    ShowImages();
+    MaskImage();
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::ShowImages(void)
+{
         //if(showInputGray)
     if(showInputGray)
         ImShowGray = ShowImage16Gray(ImIn,minShowGray,maxShowGray);
-
     if(showInputGray)
         imshow("Gray", ImShowGray);
 
-    Mat ImShowPseudocolor;
     if(showInputPseudocolor||showMask)
         ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
     if(showInputPseudocolor)
         imshow("Pseudocolor", ImShowPseudocolor);
-    //ImGradient = GradientDown(ImIn);
-    ImGradient = GradientMorph(ImIn, 4);
-
     if(showGradient)
         imshow("Gradient", ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient));
 
-    Mask = Threshold16(ImIn, thresholdImOrg);
-    Threshold16(ImGradient, Mask, thresholdGradient);
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::MaskImage(void)
+{
+    if(ImIn.empty())
+        return;
+    MaskImplant = Threshold16(ImIn, thresholdImOrg);
+    Threshold16(ImGradient, MaskImplant, thresholdGradient);
+
+    if(closingShape)
+    {
+        DilationCV(MaskImplant, closingShape);
+        ErosionCV(MaskImplant, closingShape);
+    }
+
+    if(fillHoles)
+    {
+        FillBorderWithValue(MaskImplant, 0xFFFF);
+        OneRegionFill5Fast1(MaskImplant,  0xFFFF);
+        FillHoles(MaskImplant);
+        DeleteRegionFromImage(MaskImplant, 0xFFFF);
+    }
+
+    if(divideSeparateRegions)
+    {
+        DivideSeparateRegions(MaskImplant, minRegionSize);
+    }
+    if(erosionShape)
+    {
+        ErosionCV(MaskImplant, erosionShape);
+        DilationCV(MaskImplant, erosionShape);
+    }
 
     if(showThresholded)
     {
         Mat ImShowMask;
         if(showContour)
-            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor);
+            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskImplant), ImShowPseudocolor);
         else
-            ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
+            ImShowMask = ShowSolidRegionOnImageInBlack(MaskImplant, ImShowPseudocolor);
         imshow("Thresholded", ImShowMask);
     }
 
-    if(closingShape)
-    {
-        DilationCV(Mask, closingShape);
-        ErosionCV(Mask, closingShape);
-    }
-
-    if(fillHoles)
-    {
-        FillBorderWithValue(Mask, 0xFFFF);
-        OneRegionFill5Fast1(Mask,  0xFFFF);
-        FillHoles(Mask);
-        DeleteRegionFromImage(Mask, 0xFFFF);
-    }
-
-    if(divideSeparateRegions)
-    {
-        DivideSeparateRegions(Mask, minRegionSize);
-    }
-    if(erosionShape)
-        ErosionCV(Mask, erosionShape);
-
-    if(0)//(expandMask)
+    if(expandMask)
     {
         Mat Kernel = Mat::ones(1,expansionSize*2+1,CV_8U);
-        Mat MaskTemp;
-        dilate(Mask,MaskTemp,Kernel);
-
-        Mask = MaskTemp-Mask;
-
+        dilate(MaskImplant,Mask,Kernel);
+        Mask = Mask-MaskImplant;
     }
     if(expandMaskY)
     {
@@ -319,10 +433,9 @@ void MainWindow::MaskImage(void)
             1, -1);
 
         imshow("kernel",Kernel * 255);
-        Mat MaskTemp;
-        dilate(Mask,MaskTemp,Kernel,Point(expansionSize, expansionSize));
+        dilate(MaskImplant,Mask,Kernel,Point(expansionSize, expansionSize));
 
-        Mask = MaskTemp-Mask;
+        Mask = Mask-MaskImplant;
 
     }
 
@@ -353,16 +466,32 @@ void MainWindow::MaskImage(void)
         imshow("Mask", ImShowMask);
     }
 
+
+
+    EstymateSDA();
+
+
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::EstymateSDA(void)
+{
+    if(ImIn.empty())
+        return;
+    if(!calculateSDA)
+        return;
     ImSDA = CalculateSDAL(ImIn, Mask, kernelSizeSDA);
 
     //CalculateSDA();
     if(showSDA)
     {
-        imshow("SDA", ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA));
+        ImShowSDA = ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA);
+        imshow("SDA", ImShowSDA);
     }
-
-    return;
-
+    PostSDA();
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::PostSDA(void)
+{
     if(thresholdSDA && !ImSDA.empty())
     {
         unsigned short *wImSDA = (unsigned short*)ImSDA.data;
@@ -384,33 +513,52 @@ void MainWindow::MaskImage(void)
         wMaskSDA = (unsigned short*)MaskSDA.data;
         unsigned short *wMask = (unsigned short*)Mask.data;
 
-        for(int i = 0; i < maxXY; i++)
-        {
-
-            if(!*wMaskSDA)
-                *wMask = 0;
-            wMask++;
-            wMaskSDA++;
-        }
-
-
-        //Mask = Mask * MaskSDA;
     }
+
+
     if(postErosionShape1)
-        ErosionCV(Mask, postErosionShape1);
+        ErosionCV(MaskSDA, postErosionShape1);
     if(postDilationShape2)
-        DilationCV(Mask, postDilationShape2);
+        DilationCV(MaskSDA, postDilationShape2);
     if(postErosionShape3)
-        ErosionCV(Mask, postErosionShape3);
+        ErosionCV(MaskSDA, postErosionShape3);
     if(fillHolesOnOutMask)
     {
-        FillBorderWithValue(Mask, 0xFFFF);
-        OneRegionFill5Fast1(Mask,  0xFFFF);
-        FillHoles(Mask);
-        DeleteRegionFromImage(Mask, 0xFFFF);
+        FillBorderWithValue(MaskSDA, 0xFFFF);
+        OneRegionFill5Fast1(MaskSDA,  0xFFFF);
+        FillHoles(MaskSDA);
+        DeleteRegionFromImage(MaskSDA, 0xFFFF);
     }
-    ShowImages();
+
+    FindReginsTouchingImplant(MaskImplant, MaskSDA);
+
+    if(divideSeparateRegionsSDA)
+    {
+        DivideSeparateRegions(MaskSDA, minRegionSizeSDA);
+    }
+
+    if(showOutput)
+    {
+        Mat ImShowMask;
+        if(showContour)
+            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowPseudocolor);
+        else
+            ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowPseudocolor);
+        imshow("Output", ImShowMask);
+    }
+    if(showOutputOnSDA)
+    {
+        Mat ImShowMask;
+        if(showContour)
+            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowSDA);
+        else
+            ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowSDA);
+        imshow("Output on SDA", ImShowMask);
+    }
+
+        return;
 }
+
 //--------------------------------------------------------------------------------------------------
 void MainWindow::ProcessImage(void)
 {
@@ -447,66 +595,7 @@ void MainWindow::ProcessImage(void)
     //ShowImages();
 }
 
-//--------------------------------------------------------------------------------------------------
-void MainWindow::ShowImages(void)
-{
-    if(ImIn.empty())
-        return;
-    Mat ImShowGray;
-    //if(showInputGray)
-        ImShowGray = ShowImage16Gray(ImIn,minShowGray,maxShowGray);
 
-    if(showInputGray)
-    {
-
-        imshow("Gray", ImShowGray);
-    }
-    Mat ImShowPseudocolor;
-    if(showInputPseudocolor||showMask)
-        ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
-    if(showInputPseudocolor)
-    {
-
-        imshow("Pseudocolor", ImShowPseudocolor);
-    }
-    if(showGradient)
-    {
-        //Mat ImShowGradient = ShowImageF32PseudoColor(ImGradient,minShowGradient,maxShowGradient);
-        Mat ImShowGradient = ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient);
-        imshow("Gradient", ImShowGradient);
-    }
-    if(showMask)
-    {
-        Mat ImShowMask;
-        if(showContour)
-            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor);
-        else
-            ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
-        imshow("Mask", ImShowMask);
-    }
-    if(showConv && !ImSDA.empty())
-    {
-        Mat ImShowConverted;
-
-        ImShowConverted = ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA);
-        if(!MaskSDA.empty()&& thresholdSDA)
-        {
-            if(showContour)
-                ImShowConverted = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowConverted);
-            else
-                ImShowConverted = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowConverted);
-        }
-
-
-        imshow("SDA", ImShowConverted);
-    }
-    ImOut = ShowTransparentRegionOnImage(Mask,ImShowGray,transparency);
-    if(showOutput)
-    {
-        imshow("Output", ImOut);
-    }
-
-}
 //--------------------------------------------------------------------------------------------------
 void MainWindow::OnOffImageWindow(void)
 {
@@ -591,6 +680,8 @@ MainWindow::MainWindow(QWidget *parent) :
     thresholdImSDA  = ui->spinBoxThresholdSDA->value();
 
     showOutput = ui->CheckBoxShowOutput->checkState();
+    showOutputOnSDA = ui->CheckBoxShowOutputOnSDA->checkState();
+
     transparency = ui->spinBoxTransparency->value();
 
     closingShape = ui->spinBoxClosingShape->value();
@@ -601,6 +692,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     fillHolesOnOutMask = ui->CheckBoxFillHolesOnOut->checkState();
 
+    divideSeparateRegionsSDA = ui->CheckBoxDivideseparateregionsSDA->checkState();
+    minRegionSizeSDA = ui->spinBoxMinRegionSizeSDA->value();
 
     OnOffImageWindow();
 }
@@ -671,26 +764,8 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
 
     FileToOpen = InputDirectory;
     FileToOpen.append(FileName);
-    ImIn = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
-    //ImGradient = GradientDown(ImIn);
-    //ImGradient = GradientMorph(ImIn, 4);
 
-
-    //FileName = regex_replace(FileName,regex("_crop"),"_SDA");
-    //path FileToOpen2 = InputDirectory;
-    //FileToOpen2.append(FileName);
-    //ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
-
-    //CalculateSDA();
-
-    //FileName = regex_replace(FileName,regex("_crop.tif"),"_SDA.bmp");
-    //path FileToSaveSDA = InputDirectory;
-    //FileToSaveSDA.append(FileName );
-    //imwrite(FileToSaveSDA.string().c_str(),ImNormInvSDA);
-
-    MaskImage();
-    //ProcessImage();
-
+    OpenImage();
 }
 
 
@@ -754,7 +829,9 @@ void MainWindow::on_CheckBoxShowGradient_toggled(bool checked)
 void MainWindow::on_spinBoxThresholdOryginalImage_valueChanged(int arg1)
 {
     thresholdImOrg = (unsigned short)arg1;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
+
     //ProcessImage();
 }
 
@@ -809,85 +886,95 @@ void MainWindow::on_CheckBoxAllowResize_toggled(bool checked)
 void MainWindow::on_spinBoxThresholdGradient_valueChanged(int arg1)
 {
     thresholdGradient = (unsigned short)arg1;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_CheckBoxFillHoles_toggled(bool checked)
 {
     fillHoles = checked;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_CheckBoxDivideseparateregions_toggled(bool checked)
 {
     divideSeparateRegions = checked;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_spinBoxMinRegionSize_valueChanged(int arg1)
 {
     minRegionSize = arg1;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_CheckBoxExpandMask_toggled(bool checked)
 {
     expandMask = checked;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_spinBoxExpansionSize_valueChanged(int arg1)
 {
     expansionSize = arg1;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_CheckBoxCroppMask_toggled(bool checked)
 {
     croppMask = checked;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_spinBoxCroppSize_valueChanged(int arg1)
 {
     croppSize = arg1;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_CheckBoxThresholdSDA_toggled(bool checked)
 {
     thresholdSDA = checked;
-    MaskImage();
+    //MaskImage();
 }
 
 void MainWindow::on_spinBoxThresholdSDA_valueChanged(int arg1)
 {
     thresholdImSDA = arg1;
-    MaskImage();
+    PostSDA();
+
 }
 
 void MainWindow::on_CheckBoxCalculateSDA_toggled(bool checked)
 {
     calculateSDA = checked;
     //CalculateSDA();
-    MaskImage();
+    EstymateSDA();
 }
 
 void MainWindow::on_spinBoxSDAKernelSize_valueChanged(int arg1)
 {
+    ui->CheckBoxCalculateSDA->setChecked(false);
     kernelSizeSDA = arg1;
 }
 
 void MainWindow::on_CheckBoxShowOutput_toggled(bool checked)
 {
     showOutput = checked;
-     ShowImages();
+    //ShowImages();
 }
 
 void MainWindow::on_spinBoxTransparency_valueChanged(int arg1)
 {
     transparency = arg1;
-     ShowImages();
+    //ShowImages();
 }
 
 void MainWindow::on_pushButtonSaveOut_clicked()
@@ -910,43 +997,50 @@ void MainWindow::on_pushButtonSaveOut_clicked()
 void MainWindow::on_CheckBoxContour_toggled(bool checked)
 {
     showContour = checked;
-    ShowImages();
+    ui->CheckBoxCalculateSDA->setChecked(false);
+    MaskImage();
 }
 
 void MainWindow::on_spinBoxClosingShape_valueChanged(int arg1)
 {
     closingShape = arg1;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_spinBoxErosionShape_valueChanged(int arg1)
 {
     erosionShape = arg1;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_spinBoxErosionShape1_valueChanged(int arg1)
 {
     postErosionShape1 = arg1;
-    MaskImage();
+    PostSDA();
+    //MaskImage();
 }
 
 void MainWindow::on_spinBoxDilationShape2_valueChanged(int arg1)
 {
     postDilationShape2 = arg1;
-    MaskImage();
+    PostSDA();
+    //MaskImage();
 }
 
 void MainWindow::on_spinBoxErosionShape3_valueChanged(int arg1)
 {
     postErosionShape3 = arg1;
-    MaskImage();
+    PostSDA();
+    //MaskImage();
 }
 
 void MainWindow::on_CheckBoxFillHolesOnOut_toggled(bool checked)
 {
     fillHolesOnOutMask = checked;
-    MaskImage();
+    PostSDA();
+    //MaskImage();
 }
 
 
@@ -954,23 +1048,39 @@ void MainWindow::on_CheckBoxFillHolesOnOut_toggled(bool checked)
 void MainWindow::on_CheckBoxExpandMaskY_toggled(bool checked)
 {
     expandMaskY = checked;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_CheckBoxShowThesholded_toggled(bool checked)
 {
     showThresholded = checked;
+    ui->CheckBoxCalculateSDA->setChecked(false);
     MaskImage();
 }
 
 void MainWindow::on_CheckBoxShowSDA_toggled(bool checked)
 {
     showSDA = checked;
-    MaskImage();
+    //MaskImage();
 }
 
 void MainWindow::on_CheckBoxShowSDAThresholded_toggled(bool checked)
 {
     showSDAThresholded = checked;
-    MaskImage();
+    //MaskImage();
+}
+
+
+
+void MainWindow::on_CheckBoxDivideseparateregionsSDA_toggled(bool checked)
+{
+    divideSeparateRegionsSDA = checked;
+    PostSDA();
+}
+
+void MainWindow::on_spinBoxMinRegionSizeSDA_valueChanged(int arg1)
+{
+    minRegionSizeSDA = arg1;
+    PostSDA();
 }

@@ -31,9 +31,19 @@ public:
     cv::Mat ImSDA;
     cv::Mat ImNormInvSDA;
     cv::Mat ImGradient;
+    cv::Mat MaskImplant;
     cv::Mat Mask;
+
     cv::Mat MaskSDA;
     cv::Mat ImOut;
+
+    cv::Mat ImShowGray;
+    cv::Mat ImShowPseudocolor;
+    cv::Mat ImShowSDA;
+
+    int maxX;
+    int maxY;
+    int maxXY;
 
     int minShowGray;
     int maxShowGray;
@@ -71,6 +81,7 @@ public:
     bool fillHoles;
     bool divideSeparateRegions;
 
+
     int minRegionSize;
 
     int erosionShape;
@@ -95,16 +106,26 @@ public:
 
     bool fillHolesOnOutMask;
 
+    bool divideSeparateRegionsSDA;
+    int minRegionSizeSDA;
+
     bool showOutput;
+    bool showOutputOnSDA;
+
     int transparency;
 
     bool displayFlag;
 
     void MainWindow::CalculateSDA(void);
     //cv::Mat MainWindow::CalculateSDA(cv::Mat imIn, cv::Mat Roi, int radius);
-    void MainWindow::MaskImage(void);
-    void MainWindow::ProcessImage(void);
+    void MainWindow::OpenImage(void);
     void MainWindow::ShowImages(void);
+
+    void MainWindow::MaskImage(void);
+    void MainWindow::EstymateSDA(void);
+    void MainWindow::PostSDA(void);
+    void MainWindow::ProcessImage(void);
+
     void MainWindow::OnOffImageWindow(void);
 
 private slots:
@@ -197,6 +218,11 @@ private slots:
     void on_CheckBoxShowSDA_toggled(bool checked);
 
     void on_CheckBoxShowSDAThresholded_toggled(bool checked);
+
+
+    void on_CheckBoxDivideseparateregionsSDA_toggled(bool checked);
+
+    void on_spinBoxMinRegionSizeSDA_valueChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;
