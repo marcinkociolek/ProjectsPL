@@ -409,9 +409,10 @@ void MainWindow::ProcessImage(void)
 
     int orientation;
     bool done;
+    string StrOut;
 #ifdef TERAZ_DEBUG
 
-    done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation, &segParams);
+    done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation, &segParams, &StrOut);
 #else
     done = SegmentGrainImg(&ImInVect, &ImOutVect, &RoiVect, &TransfVect, &orientation);//, &segParams);
     ShowImageCombination(showInput,"Input image",*ImInVect.at(0), *ImInVect.at(1));
@@ -460,13 +461,20 @@ void MainWindow::ProcessImage(void)
 
 #endif
     string TransfVectStr = "\n";
-    TransfVectStr += "dir 1 = " + to_string(TransfVect[0].angle) + "\n";
-    TransfVectStr += "x = " + to_string(TransfVect[0].x) + "\n";
-    TransfVectStr += "y = " + to_string(TransfVect[0].x) + "\n";
-    TransfVectStr += "dir 2 =" + to_string(TransfVect[1].angle) + "\n";
-    TransfVectStr += "x = " + to_string(TransfVect[1].x) + "\n";
-    TransfVectStr += "y = " + to_string(TransfVect[1].x) + "\n";
-    ui->MesageTextEdit->append(TransfVectStr.c_str());
+    if(done)
+    {
+        //TransfVectStr += "dir 1 = " + to_string(TransfVect[0].angle) + "\n";
+        //TransfVectStr += "x = " + to_string(TransfVect[0].x) + "\n";
+        //TransfVectStr += "y = " + to_string(TransfVect[0].x) + "\n";
+        //TransfVectStr += "dir 2 =" + to_string(TransfVect[1].angle) + "\n";
+        //TransfVectStr += "x = " + to_string(TransfVect[1].x) + "\n";
+        //TransfVectStr += "y = " + to_string(TransfVect[1].x) + "\n";
+
+    }
+    else
+        TransfVectStr += " not done \n";
+        ui->MesageTextEdit->append(TransfVectStr.c_str());
+        ui->MesageTextEdit->append(StrOut.c_str());
     //steady_clock::time_point t2 = steady_clock::now();
     //duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     //int stopTime = getTickCount();
