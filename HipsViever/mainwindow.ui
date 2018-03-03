@@ -69,8 +69,8 @@
    <widget class="QComboBox" name="comboBoxShowModeGray">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>290</y>
+      <x>740</x>
+      <y>30</y>
       <width>140</width>
       <height>30</height>
      </rect>
@@ -934,7 +934,7 @@
     <property name="geometry">
      <rect>
       <x>259</x>
-      <y>330</y>
+      <y>380</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -952,7 +952,7 @@
     <property name="geometry">
      <rect>
       <x>390</x>
-      <y>330</y>
+      <y>380</y>
       <width>81</width>
       <height>24</height>
      </rect>
@@ -982,7 +982,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>310</y>
+      <y>320</y>
       <width>171</width>
       <height>17</height>
      </rect>
@@ -998,7 +998,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>360</y>
+      <y>410</y>
       <width>171</width>
       <height>17</height>
      </rect>
@@ -1014,7 +1014,7 @@
     <property name="geometry">
      <rect>
       <x>259</x>
-      <y>380</y>
+      <y>430</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -1032,7 +1032,7 @@
     <property name="geometry">
      <rect>
       <x>390</x>
-      <y>380</y>
+      <y>430</y>
       <width>81</width>
       <height>24</height>
      </rect>
@@ -1077,8 +1077,8 @@
    <widget class="QSpinBox" name="spinBoxTransparency">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>590</y>
+      <x>680</x>
+      <y>510</y>
       <width>81</width>
       <height>24</height>
      </rect>
@@ -1107,8 +1107,8 @@
    <widget class="QLabel" name="labelMaxDispGradient_9">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>590</y>
+      <x>550</x>
+      <y>510</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -1125,8 +1125,8 @@
    <widget class="QPushButton" name="pushButtonSaveOut">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>630</y>
+      <x>550</x>
+      <y>550</y>
       <width>93</width>
       <height>28</height>
      </rect>
@@ -1251,7 +1251,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>410</y>
+      <y>460</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -1269,7 +1269,7 @@
     <property name="geometry">
      <rect>
       <x>390</x>
-      <y>410</y>
+      <y>460</y>
       <width>81</width>
       <height>24</height>
      </rect>
@@ -1299,7 +1299,7 @@
     <property name="geometry">
      <rect>
       <x>390</x>
-      <y>440</y>
+      <y>490</y>
       <width>81</width>
       <height>24</height>
      </rect>
@@ -1329,7 +1329,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>440</y>
+      <y>490</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -1347,7 +1347,7 @@
     <property name="geometry">
      <rect>
       <x>390</x>
-      <y>470</y>
+      <y>520</y>
       <width>81</width>
       <height>24</height>
      </rect>
@@ -1377,7 +1377,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>470</y>
+      <y>520</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -1395,7 +1395,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>500</y>
+      <y>550</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -1475,7 +1475,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>520</y>
+      <y>570</y>
       <width>171</width>
       <height>17</height>
      </rect>
@@ -1491,7 +1491,7 @@
     <property name="geometry">
      <rect>
       <x>391</x>
-      <y>540</y>
+      <y>590</y>
       <width>81</width>
       <height>24</height>
      </rect>
@@ -1521,7 +1521,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>540</y>
+      <y>590</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -1549,6 +1549,21 @@
     </property>
     <property name="checked">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBoxSDASize">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>340</y>
+      <width>211</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
     </property>
    </widget>
   </widget>

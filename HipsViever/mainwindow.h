@@ -34,6 +34,7 @@ public:
     cv::Mat MaskImplant;
     cv::Mat Mask;
 
+
     cv::Mat MaskSDA;
     cv::Mat ImOut;
 
@@ -93,6 +94,7 @@ public:
     bool croppMask;
     int croppSize;
 
+    int sdaSize;
     bool calculateSDA;
     int kernelSizeSDA;
     int kernelPixelCountSDA;
@@ -123,7 +125,9 @@ public:
 
     void MainWindow::MaskImage(void);
     void MainWindow::EstymateSDA(void);
+    void MainWindow::ShowSDA(void);
     void MainWindow::PostSDA(void);
+    void MainWindow::ShowResults(void);
     void MainWindow::ProcessImage(void);
 
     void MainWindow::OnOffImageWindow(void);
@@ -223,6 +227,8 @@ private slots:
     void on_CheckBoxDivideseparateregionsSDA_toggled(bool checked);
 
     void on_spinBoxMinRegionSizeSDA_valueChanged(int arg1);
+
+    void on_comboBoxSDASize_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

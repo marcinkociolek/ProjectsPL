@@ -124,7 +124,7 @@ void MainWindow::CalculateSDA(void)
 
 }
 //--------------------------------------------------------------------------------------------------
-cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius)
+cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int *outSDARoiPixCount = 0)
 {
 
     if(Roi.empty())
@@ -204,7 +204,9 @@ cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius)
             wImSDA++;
         }
     }
+    *outSDARoiPixCount = roiPixCount;
     return ImSDA;
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -479,16 +481,41 @@ void MainWindow::EstymateSDA(void)
         return;
     if(!calculateSDA)
         return;
-    ImSDA = CalculateSDAL(ImIn, Mask, kernelSizeSDA);
+    int kernelPixelCountSDA;
+    switch(sdaSize)
+    {
+    case 1:
+        ImSDA = CalculateSDAL(ImIn, Mask + MaskImplant, kernelSizeSDA, &kernelPixelCountSDA);
+        break;
+    case 2:
+        ImSDA = CalculateSDAL(ImIn, Mat::ones(ImIn.rows,ImIn.cols, CV_16U), kernelSizeSDA, &kernelPixelCountSDA);
+        break;
+
+    default:
+        ImSDA = CalculateSDAL(ImIn, Mask, kernelSizeSDA, &kernelPixelCountSDA);
+        break;
+    }
+    ImNormInvSDA = CreateNormalisedSDA(ImSDA, kernelPixelCountSDA);
+    //
+
 
     //CalculateSDA();
+    ShowSDA();
+    PostSDA();
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::ShowSDA(void)
+{
     if(showSDA)
     {
         ImShowSDA = ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA);
         imshow("SDA", ImShowSDA);
+        imshow("SDA norm", ImNormInvSDA);
+        ShowImage8PseudoColor(ImNormInvSDA, 0, 255);
+        imshow("SDA norm PC", ShowImage8PseudoColor(ImNormInvSDA, 0.0, 255.0));
     }
-    PostSDA();
 }
+
 //--------------------------------------------------------------------------------------------------
 void MainWindow::PostSDA(void)
 {
@@ -537,6 +564,11 @@ void MainWindow::PostSDA(void)
         DivideSeparateRegions(MaskSDA, minRegionSizeSDA);
     }
 
+    ShowResults();
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::ShowResults(void)
+{
     if(showOutput)
     {
         Mat ImShowMask;
@@ -555,8 +587,6 @@ void MainWindow::PostSDA(void)
             ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowSDA);
         imshow("Output on SDA", ImShowMask);
     }
-
-        return;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -633,6 +663,12 @@ MainWindow::MainWindow(QWidget *parent) :
         displayFlag = WINDOW_NORMAL;
     else
         displayFlag = WINDOW_AUTOSIZE;
+
+    ui->comboBoxSDASize->addItem("SDA in mask only");
+    ui->comboBoxSDASize->addItem("SDA in mask + implant");
+    ui->comboBoxSDASize->addItem("SDA in whole image");
+
+    sdaSize =  ui->comboBoxSDASize->currentIndex();
 
     showInputPseudocolor = ui->CheckBoxShowInputImagePC->checkState();
     showInputGray = ui->CheckBoxShowInputImageGray->checkState();
@@ -850,13 +886,15 @@ void MainWindow::on_CheckBoxShowConv_toggled(bool checked)
 void MainWindow::on_spinBoxMinShowConv_valueChanged(int arg1)
 {
     minShowSDA = arg1;
-    ShowImages();
+    ShowSDA();
+    ShowResults();
 }
 
 void MainWindow::on_spinBoxMaxShowConv_valueChanged(int arg1)
 {
     maxShowSDA = arg1;
-    ShowImages();
+    ShowSDA();
+    ShowResults();
 }
 
 void MainWindow::on_spinBoxMinFlood_valueChanged(int arg1)
@@ -998,7 +1036,7 @@ void MainWindow::on_CheckBoxContour_toggled(bool checked)
 {
     showContour = checked;
     ui->CheckBoxCalculateSDA->setChecked(false);
-    MaskImage();
+    ShowResults();
 }
 
 void MainWindow::on_spinBoxClosingShape_valueChanged(int arg1)
@@ -1083,4 +1121,11 @@ void MainWindow::on_spinBoxMinRegionSizeSDA_valueChanged(int arg1)
 {
     minRegionSizeSDA = arg1;
     PostSDA();
+}
+
+void MainWindow::on_comboBoxSDASize_currentIndexChanged(int index)
+{
+    sdaSize = index;
+    //ui->CheckBoxCalculateSDA->setChecked(false);
+    EstymateSDA();
 }
