@@ -34,6 +34,7 @@ public:
     cv::Mat MaskImplant;
     cv::Mat Mask;
 
+    cv::Mat MaskSDARef;
 
     cv::Mat MaskSDA;
     cv::Mat ImOut;
@@ -117,9 +118,15 @@ public:
     bool showOutput;
     bool showOutputOnSDA;
 
+    //int kernelPixelCountSDA;
+
     int transparency;
+    int kernelSizeSDARef;
 
     bool displayFlag;
+
+    std::string OutString;
+    std::string LocalString;
 
     void MainWindow::CalculateSDA(void);
     //cv::Mat MainWindow::CalculateSDA(cv::Mat imIn, cv::Mat Roi, int radius);
@@ -238,6 +245,12 @@ private slots:
     void on_CheckBoxShowSDANormPC_toggled(bool checked);
 
     void on_CheckBoxShowSDANorm_toggled(bool checked);
+
+    void on_pushButtonStoreLocalToOut_clicked();
+
+    void on_pushButtonSaveRef_clicked();
+
+    void on_pushButtonClearOut_clicked();
 
 private:
     Ui::MainWindow *ui;

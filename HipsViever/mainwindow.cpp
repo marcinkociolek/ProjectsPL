@@ -22,6 +22,45 @@ using namespace std;
 using namespace boost::filesystem;
 using namespace boost;
 using namespace cv;
+//--------------------------------------------------------------------------------------------------
+double JaccardIndex(Mat MaskRef, Mat Mask, int *maskCountOut, int *maskRefCountOut)
+{
+    if(MaskRef.empty())
+        return -1.0;
+    if(Mask.empty())
+        return -1.0;
+    if(MaskRef.cols != Mask.cols)
+        return -1.0;
+    if(MaskRef.rows != Mask.rows)
+        return -1.0;
+
+    int maxXY = Mask.cols * Mask.rows;
+
+    int andCount = 0;
+    int orCount = 0;
+    int maskRefCount = 0;
+    int maskCount = 0;
+
+    unsigned short *wMask = (unsigned short *)Mask.data;
+    unsigned short *wMaskRef = (unsigned short *)MaskRef.data;
+    for(int i = 0; i < maxXY; i++)
+    {
+        if(*wMaskRef)
+            maskRefCount++;
+        if(*wMask)
+            maskCount++;
+        if(*wMaskRef && *wMask)
+            andCount++;
+        if(*wMaskRef || *wMask)
+            orCount++;
+
+        wMaskRef++;
+        wMask++;
+    }
+    *maskCountOut = maskCount;
+    *maskRefCountOut = maskRefCount;
+    return (double)andCount/(double)orCount;
+}
 
 //--------------------------------------------------------------------------------------------------
 //          My functions
@@ -373,7 +412,7 @@ void MainWindow::ShowImages(void)
     if(showInputGray)
         imshow("Gray", ImShowGray);
 
-    if(showInputPseudocolor||showMask)
+    //if(showInputPseudocolor||showMask)
         ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
     if(showInputPseudocolor)
         imshow("Pseudocolor", ImShowPseudocolor);
@@ -490,7 +529,7 @@ void MainWindow::EstymateSDA(void)
         return;
     if(!calculateSDA)
         return;
-    int kernelPixelCountSDA;
+    kernelPixelCountSDA;
     switch(sdaSize)
     {
     case 1:
@@ -583,6 +622,23 @@ void MainWindow::PostSDA(void)
     {
         DivideSeparateRegions(MaskSDA, minRegionSizeSDA);
     }
+
+    double jaccard ;
+    int maskSDACount;
+    int maskSDARefCount;
+
+    jaccard = JaccardIndex(MaskSDARef, MaskSDA, &maskSDACount, &maskSDARefCount);
+
+    LocalString = FileToOpen.stem().string() + "\t";
+
+    LocalString += to_string(kernelSizeSDA) + "\t";
+    LocalString += to_string(kernelPixelCountSDA) + "\t";
+
+    LocalString += to_string(thresholdImSDA) + "\t";
+    LocalString += to_string(jaccard) + "\t";
+    LocalString += to_string(maskSDARefCount) + "\t";
+    LocalString += to_string(maskSDACount);
+    ui->lineEditLocalOut->setText(LocalString.c_str());
 
     ShowResults();
 }
@@ -806,6 +862,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     divideSeparateRegionsSDA = ui->CheckBoxDivideseparateregionsSDA->checkState();
     minRegionSizeSDA = ui->spinBoxMinRegionSizeSDA->value();
+
+    string HeaderString =  "File\t\t";
+    HeaderString +=  "SDA d\t";
+    HeaderString +=  "SDA #\t";
+    HeaderString +=  "SDA TH\t";
+    HeaderString +=  "Jack\t";
+    HeaderString +=  "mask #\t";
+    HeaderString +=  "ref #\t";
+
+    ui->lineEditHeader->setText(HeaderString.c_str());
 
     OnOffImageWindow();
 }
@@ -1262,4 +1328,24 @@ void MainWindow::on_CheckBoxShowSDANorm_toggled(bool checked)
    else
        destroyWindow("SDA norm");
    ShowSDA();
+}
+
+
+
+void MainWindow::on_pushButtonStoreLocalToOut_clicked()
+{
+    OutString += "\n" + LocalString;
+    ui->textEditOutFile->setText(OutString.c_str());
+}
+
+void MainWindow::on_pushButtonSaveRef_clicked()
+{
+    MaskSDA.copyTo(MaskSDARef);
+    kernelSizeSDARef = kernelSizeSDA;
+}
+
+void MainWindow::on_pushButtonClearOut_clicked()
+{
+    OutString = "";
+    ui->textEditOutFile->setText(OutString.c_str());
 }

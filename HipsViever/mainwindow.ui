@@ -63,7 +63,7 @@
      <string>Show input image Gray</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QComboBox" name="comboBoxShowModeGray">
@@ -187,7 +187,7 @@
      <string>Show input image PC</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QLabel" name="labelMaxDispPseudoColor">
@@ -389,7 +389,7 @@
      <string>Show Gradient</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QCheckBox" name="CheckBoxShowMask">
@@ -405,7 +405,7 @@
      <string>Show Mask</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxThresholdOryginalImage">
@@ -1052,7 +1052,7 @@
      <number>10000</number>
     </property>
     <property name="singleStep">
-     <number>25</number>
+     <number>1</number>
     </property>
     <property name="value">
      <number>6000</number>
@@ -1125,8 +1125,8 @@
    <widget class="QPushButton" name="pushButtonSaveOut">
     <property name="geometry">
      <rect>
-      <x>550</x>
-      <y>550</y>
+      <x>840</x>
+      <y>510</y>
       <width>93</width>
       <height>28</height>
      </rect>
@@ -1322,7 +1322,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <number>2</number>
+     <number>0</number>
     </property>
    </widget>
    <widget class="QLabel" name="labelMaxDispGradient_13">
@@ -1370,7 +1370,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <number>4</number>
+     <number>0</number>
     </property>
    </widget>
    <widget class="QLabel" name="labelMaxDispGradient_14">
@@ -1436,7 +1436,7 @@
      <string>Show Implant Mask</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QCheckBox" name="CheckBoxShowSDA">
@@ -1596,6 +1596,75 @@
     </property>
     <property name="checked">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="textEditOutFile">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>680</y>
+      <width>901</width>
+      <height>131</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonSaveRef">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>550</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SaveRef</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonClearOut">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>540</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Clear OutSting</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonStoreLocalToOut">
+    <property name="geometry">
+     <rect>
+      <x>539</x>
+      <y>580</y>
+      <width>111</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Store Local to Out</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditLocalOut">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>650</y>
+      <width>901</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditHeader">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>620</y>
+      <width>901</width>
+      <height>21</height>
+     </rect>
     </property>
    </widget>
   </widget>
