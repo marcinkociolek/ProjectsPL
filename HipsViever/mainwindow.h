@@ -68,8 +68,11 @@ public:
 
     bool showGradient;
 
-    bool showThresholded;
+    bool showMaskImplant;
     bool showSDA;
+    bool showSDANorm;
+    bool showSDANormPC;
+
     bool showSDAThresholded;
 
     bool showConv;
@@ -124,12 +127,14 @@ public:
     void MainWindow::ShowImages(void);
 
     void MainWindow::MaskImage(void);
+    void MainWindow::ShowMask(void);
     void MainWindow::EstymateSDA(void);
     void MainWindow::ShowSDA(void);
     void MainWindow::PostSDA(void);
     void MainWindow::ShowResults(void);
     void MainWindow::ProcessImage(void);
 
+    void MainWindow::ShowAll(void);
     void MainWindow::OnOffImageWindow(void);
 
 private slots:
@@ -217,7 +222,7 @@ private slots:
 
     void on_CheckBoxExpandMaskY_toggled(bool checked);
 
-    void on_CheckBoxShowThesholded_toggled(bool checked);
+    void on_CheckBoxShowMaskImplant_toggled(bool checked);
 
     void on_CheckBoxShowSDA_toggled(bool checked);
 
@@ -229,6 +234,10 @@ private slots:
     void on_spinBoxMinRegionSizeSDA_valueChanged(int arg1);
 
     void on_comboBoxSDASize_currentIndexChanged(int index);
+
+    void on_CheckBoxShowSDANormPC_toggled(bool checked);
+
+    void on_CheckBoxShowSDANorm_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

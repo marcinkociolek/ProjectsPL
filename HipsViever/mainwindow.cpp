@@ -366,6 +366,8 @@ void MainWindow::OpenImage(void)
 void MainWindow::ShowImages(void)
 {
         //if(showInputGray)
+    if(ImIn.empty())
+        return;
     if(showInputGray)
         ImShowGray = ShowImage16Gray(ImIn,minShowGray,maxShowGray);
     if(showInputGray)
@@ -411,16 +413,6 @@ void MainWindow::MaskImage(void)
         DilationCV(MaskImplant, erosionShape);
     }
 
-    if(showThresholded)
-    {
-        Mat ImShowMask;
-        if(showContour)
-            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskImplant), ImShowPseudocolor);
-        else
-            ImShowMask = ShowSolidRegionOnImageInBlack(MaskImplant, ImShowPseudocolor);
-        imshow("Thresholded", ImShowMask);
-    }
-
     if(expandMask)
     {
         Mat Kernel = Mat::ones(1,expansionSize*2+1,CV_8U);
@@ -434,7 +426,7 @@ void MainWindow::MaskImage(void)
             Size(expansionSize, expansionSize), 0.0, 180.0, 360.0,
             1, -1);
 
-        imshow("kernel",Kernel * 255);
+        //imshow("kernel",Kernel * 255);
         dilate(MaskImplant,Mask,Kernel,Point(expansionSize, expansionSize));
 
         Mask = Mask-MaskImplant;
@@ -458,6 +450,29 @@ void MainWindow::MaskImage(void)
         }
     }
 
+
+
+    ShowMask();
+    EstymateSDA();
+
+
+}
+//--------------------------------------------------------------------------------------------------
+void MainWindow::ShowMask(void)
+{
+    if(MaskImplant.empty())
+        return;
+    if(showMaskImplant)
+    {
+        Mat ImShowMask;
+        if(showContour)
+            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskImplant), ImShowPseudocolor);
+        else
+            ImShowMask = ShowSolidRegionOnImageInBlack(MaskImplant, ImShowPseudocolor);
+        imshow("Mask Implant", ImShowMask);
+    }
+    if(Mask.empty())
+        return;
     if(showMask)
     {
         Mat ImShowMask;
@@ -467,12 +482,6 @@ void MainWindow::MaskImage(void)
             ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
         imshow("Mask", ImShowMask);
     }
-
-
-
-    EstymateSDA();
-
-
 }
 //--------------------------------------------------------------------------------------------------
 void MainWindow::EstymateSDA(void)
@@ -506,11 +515,22 @@ void MainWindow::EstymateSDA(void)
 //--------------------------------------------------------------------------------------------------
 void MainWindow::ShowSDA(void)
 {
+    if(ImSDA.empty())
+        return;
+    ImShowSDA = ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA);
     if(showSDA)
     {
-        ImShowSDA = ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA);
+
         imshow("SDA", ImShowSDA);
+    }
+    if(ImNormInvSDA.empty())
+        return;
+    if(showSDANorm)
+    {
         imshow("SDA norm", ImNormInvSDA);
+    }
+    if(showSDANormPC)
+    {
         ShowImage8PseudoColor(ImNormInvSDA, 0, 255);
         imshow("SDA norm PC", ShowImage8PseudoColor(ImNormInvSDA, 0.0, 255.0));
     }
@@ -569,6 +589,9 @@ void MainWindow::PostSDA(void)
 //--------------------------------------------------------------------------------------------------
 void MainWindow::ShowResults(void)
 {
+    if(MaskSDA.empty())
+        return;
+
     if(showOutput)
     {
         Mat ImShowMask;
@@ -578,6 +601,8 @@ void MainWindow::ShowResults(void)
             ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowPseudocolor);
         imshow("Output", ImShowMask);
     }
+    if(ImShowSDA.empty())
+        return;
     if(showOutputOnSDA)
     {
         Mat ImShowMask;
@@ -624,33 +649,82 @@ void MainWindow::ProcessImage(void)
 
     //ShowImages();
 }
-
-
+//--------------------------------------------------------------------------------------------------
+void MainWindow::ShowAll(void)
+{
+    ShowImages();
+    ShowMask();
+    ShowSDA();
+    ShowResults();
+}
 //--------------------------------------------------------------------------------------------------
 void MainWindow::OnOffImageWindow(void)
 {
-    destroyAllWindows();
+    //destroyAllWindows();
 
     if(showInputGray)
         namedWindow("Gray", displayFlag);
+    else
+        destroyWindow("Gray");
 
     if(showInputPseudocolor)
         namedWindow("Pseudocolor", displayFlag);
+    else
+        destroyWindow("Pseudocolor");
 
     if(showGradient)
         namedWindow("Gradient", displayFlag);
+    else
+        destroyWindow("Gradient");
 
     if(showConv)
         namedWindow("SDA", displayFlag);
+    else
+        destroyWindow("SDA");
+
+    if(showMaskImplant)
+        namedWindow("Mask Implant", displayFlag);
+    else
+        destroyWindow("Mask Implant");
 
     if(showMask)
         namedWindow("Mask", displayFlag);
+    else
+        destroyWindow("Mask");
+/*
+    if(showKernel)
+        namedWindow("Mask Implant", displayFlag);
+    else
+        destroyWindow("Mask Implant");
+*/
+    if(showSDANormPC)
+        namedWindow("SDA", displayFlag);
+    else
+        destroyWindow("SDA");
+
+    if(showSDANorm)
+        namedWindow("SDA norm", displayFlag);
+    else
+        destroyWindow("SDA norm");
+
+    if(showSDANormPC)
+        namedWindow("SDA norm PC", displayFlag);
+    else
+        destroyWindow("SDA norm PC");
+
 
     if(showOutput)
         namedWindow("Output", displayFlag);
+    else
+        destroyWindow("Output");
 
+    if(showOutputOnSDA)
+        namedWindow("Output on SDA", displayFlag);
+    else
+        destroyWindow("Output on SDA");
 
-
+    ShowAll();
+    //ShowResults();
 }
 //--------------------------------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent) :
@@ -673,9 +747,11 @@ MainWindow::MainWindow(QWidget *parent) :
     showInputPseudocolor = ui->CheckBoxShowInputImagePC->checkState();
     showInputGray = ui->CheckBoxShowInputImageGray->checkState();
     showGradient = ui->CheckBoxShowGradient->checkState();
-    showThresholded = ui->CheckBoxShowThesholded->checkState();
+    showMaskImplant = ui->CheckBoxShowMaskImplant->checkState();
     showMask = ui->CheckBoxShowMask->checkState();
     showSDA = ui->CheckBoxShowSDA->checkState();
+    showSDANorm = ui->CheckBoxShowSDANorm->checkState();
+    showSDANormPC = ui->CheckBoxShowSDANormPC->checkState();
     showSDAThresholded = ui->CheckBoxShowSDAThresholded->checkState();
 
     showConv = ui->CheckBoxShowConv->checkState();
@@ -821,12 +897,20 @@ void MainWindow::on_spinBoxMaxShowGray_valueChanged(int arg1)
 void MainWindow::on_CheckBoxShowInputImageGray_toggled(bool checked)
 {
     showInputGray = checked;
+    if(showInputGray)
+        namedWindow("Gray", displayFlag);
+    else
+        destroyWindow("Gray");
     ShowImages();
 }
 
 void MainWindow::on_CheckBoxShowInputImagePC_toggled(bool checked)
 {
     showInputPseudocolor = checked;
+    if(showInputPseudocolor)
+        namedWindow("Pseudocolor", displayFlag);
+    else
+        destroyWindow("Pseudocolor");
     ShowImages();
 }
 
@@ -857,6 +941,10 @@ void MainWindow::on_spinBoxMaxShowGradient_valueChanged(int arg1)
 void MainWindow::on_CheckBoxShowGradient_toggled(bool checked)
 {
     showGradient = checked;
+    if(showGradient)
+        namedWindow("Gradient", displayFlag);
+    else
+        destroyWindow("Gradient");
     ShowImages();
 }
 
@@ -874,12 +962,17 @@ void MainWindow::on_spinBoxThresholdOryginalImage_valueChanged(int arg1)
 void MainWindow::on_CheckBoxShowMask_toggled(bool checked)
 {
     showMask = checked;
-    ShowImages();
+    if(showMask)
+        namedWindow("Mask", displayFlag);
+    else
+        destroyWindow("Mask");
+    ShowMask();
 }
 
 void MainWindow::on_CheckBoxShowConv_toggled(bool checked)
 {
     showConv = checked;
+    OnOffImageWindow();
     ShowImages();
 }
 
@@ -917,7 +1010,7 @@ void MainWindow::on_CheckBoxAllowResize_toggled(bool checked)
         displayFlag = WINDOW_AUTOSIZE;
 
     OnOffImageWindow();
-    ShowImages();
+    //ShowAll();
 
 }
 
@@ -1006,6 +1099,16 @@ void MainWindow::on_spinBoxSDAKernelSize_valueChanged(int arg1)
 void MainWindow::on_CheckBoxShowOutput_toggled(bool checked)
 {
     showOutput = checked;
+    if(showOutput)
+        namedWindow("Output", displayFlag);
+    else
+        destroyWindow("Output");
+
+    if(showOutputOnSDA)
+        namedWindow("Output on SDA", displayFlag);
+    else
+        destroyWindow("Output on SDA");
+    ShowResults();
     //ShowImages();
 }
 
@@ -1036,6 +1139,7 @@ void MainWindow::on_CheckBoxContour_toggled(bool checked)
 {
     showContour = checked;
     ui->CheckBoxCalculateSDA->setChecked(false);
+    ShowAll();
     ShowResults();
 }
 
@@ -1090,16 +1194,25 @@ void MainWindow::on_CheckBoxExpandMaskY_toggled(bool checked)
     MaskImage();
 }
 
-void MainWindow::on_CheckBoxShowThesholded_toggled(bool checked)
+void MainWindow::on_CheckBoxShowMaskImplant_toggled(bool checked)
 {
-    showThresholded = checked;
+    showMaskImplant = checked;
     ui->CheckBoxCalculateSDA->setChecked(false);
-    MaskImage();
+    if(showMaskImplant)
+        namedWindow("Mask Implant", displayFlag);
+    else
+        destroyWindow("Mask Implant");
+    ShowMask();
 }
 
 void MainWindow::on_CheckBoxShowSDA_toggled(bool checked)
 {
     showSDA = checked;
+    if(showSDA)
+        namedWindow("SDA", displayFlag);
+    else
+        destroyWindow("SDA");
+    ShowSDA();
     //MaskImage();
 }
 
@@ -1128,4 +1241,25 @@ void MainWindow::on_comboBoxSDASize_currentIndexChanged(int index)
     sdaSize = index;
     //ui->CheckBoxCalculateSDA->setChecked(false);
     EstymateSDA();
+}
+
+void MainWindow::on_CheckBoxShowSDANormPC_toggled(bool checked)
+{
+    showSDANormPC = checked;
+    if(showSDANormPC)
+         namedWindow("SDA norm PC", displayFlag);
+     else
+         destroyWindow("SDA norm PC");
+    ShowSDA();
+
+}
+
+void MainWindow::on_CheckBoxShowSDANorm_toggled(bool checked)
+{
+   showSDANorm = checked;
+   if(showSDANorm)
+       namedWindow("SDA norm", displayFlag);
+   else
+       destroyWindow("SDA norm");
+   ShowSDA();
 }

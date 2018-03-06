@@ -396,7 +396,7 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>130</y>
+      <y>90</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -1423,7 +1423,7 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QCheckBox" name="CheckBoxShowThesholded">
+   <widget class="QCheckBox" name="CheckBoxShowMaskImplant">
     <property name="geometry">
      <rect>
       <x>400</x>
@@ -1433,7 +1433,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Show Thresholded</string>
+     <string>Show Implant Mask</string>
     </property>
     <property name="checked">
      <bool>true</bool>
@@ -1443,7 +1443,7 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>150</y>
+      <y>110</y>
       <width>151</width>
       <height>17</height>
      </rect>
@@ -1564,6 +1564,38 @@
      <font>
       <pointsize>11</pointsize>
      </font>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxShowSDANorm">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>130</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show SDA Norm</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckBoxShowSDANormPC">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>150</y>
+      <width>151</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show SDA norm PC</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
