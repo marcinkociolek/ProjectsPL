@@ -909,7 +909,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <number>130</number>
+     <number>230</number>
     </property>
    </widget>
    <widget class="QLabel" name="labelMaxDispGradient_6">
@@ -1665,6 +1665,19 @@
       <width>901</width>
       <height>21</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonFindOptimalTheshold">
+    <property name="geometry">
+     <rect>
+      <x>689</x>
+      <y>590</y>
+      <width>131</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Find Optimal Threshold</string>
     </property>
    </widget>
   </widget>

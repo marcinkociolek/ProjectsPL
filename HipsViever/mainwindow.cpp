@@ -17,6 +17,7 @@
 #include "DispLib.h"
 #include "gradient.h"
 #include "RegionU16Lib.h"
+#include "StringFcLib.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -529,7 +530,7 @@ void MainWindow::EstymateSDA(void)
         return;
     if(!calculateSDA)
         return;
-    kernelPixelCountSDA;
+    //kernelPixelCountSDA;
     switch(sdaSize)
     {
     case 1:
@@ -623,50 +624,54 @@ void MainWindow::PostSDA(void)
         DivideSeparateRegions(MaskSDA, minRegionSizeSDA);
     }
 
-    double jaccard ;
+
     int maskSDACount;
     int maskSDARefCount;
 
     jaccard = JaccardIndex(MaskSDARef, MaskSDA, &maskSDACount, &maskSDARefCount);
 
-    LocalString = FileToOpen.stem().string() + "\t";
+    if(!stopDisplay)
+    {
+        LocalString = FileToOpen.stem().string() + "\t";
 
-    LocalString += to_string(kernelSizeSDA) + "\t";
-    LocalString += to_string(kernelPixelCountSDA) + "\t";
+        LocalString += to_string(kernelSizeSDA) + "\t";
+        LocalString += to_string(kernelPixelCountSDA) + "\t";
 
-    LocalString += to_string(thresholdImSDA) + "\t";
-    LocalString += to_string(jaccard) + "\t";
-    LocalString += to_string(maskSDARefCount) + "\t";
-    LocalString += to_string(maskSDACount);
-    ui->lineEditLocalOut->setText(LocalString.c_str());
+        LocalString += to_string(thresholdImSDA) + "\t";
+        LocalString += to_string(jaccard) + "\t";
+        LocalString += to_string(maskSDARefCount) + "\t";
+        LocalString += to_string(maskSDACount);
+        ui->lineEditLocalOut->setText(LocalString.c_str());
 
-    ShowResults();
+        ShowResults();
+    }
 }
 //--------------------------------------------------------------------------------------------------
 void MainWindow::ShowResults(void)
 {
+
     if(MaskSDA.empty())
         return;
 
+    if(showContour)
+        ImShowOutput = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowPseudocolor);
+    else
+        ImShowOutput = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowPseudocolor);
     if(showOutput)
     {
-        Mat ImShowMask;
-        if(showContour)
-            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowPseudocolor);
-        else
-            ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowPseudocolor);
-        imshow("Output", ImShowMask);
+        imshow("Output", ImShowOutput);
     }
     if(ImShowSDA.empty())
         return;
+
+
+    if(showContour)
+        ImShowOutputOnSDA = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowSDA);
+    else
+        ImShowOutputOnSDA = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowSDA);
     if(showOutputOnSDA)
     {
-        Mat ImShowMask;
-        if(showContour)
-            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowSDA);
-        else
-            ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowSDA);
-        imshow("Output on SDA", ImShowMask);
+        imshow("Output on SDA", ImShowOutputOnSDA);
     }
 }
 
@@ -798,7 +803,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxSDASize->addItem("SDA in mask + implant");
     ui->comboBoxSDASize->addItem("SDA in whole image");
 
-    sdaSize =  ui->comboBoxSDASize->currentIndex();
+    sdaSize = 1;
+    ui->comboBoxSDASize->setCurrentIndex(sdaSize);
 
     showInputPseudocolor = ui->CheckBoxShowInputImagePC->checkState();
     showInputGray = ui->CheckBoxShowInputImageGray->checkState();
@@ -873,6 +879,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->lineEditHeader->setText(HeaderString.c_str());
 
+    stopDisplay = 0;
+
     OnOffImageWindow();
 }
 
@@ -942,6 +950,23 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
 
     FileToOpen = InputDirectory;
     FileToOpen.append(FileName);
+
+    ImIn.release();
+    ImConv.release();
+    ImSDA.release();
+    ImNormInvSDA.release();
+    ImGradient.release();
+    MaskImplant.release();
+    Mask.release();
+
+    //MaskSDARef;
+
+    MaskSDA.release();
+    ImOut.release();
+
+    ImShowGray.release();
+    ImShowPseudocolor.release();
+    ImShowSDA.release();
 
     OpenImage();
 }
@@ -1186,19 +1211,34 @@ void MainWindow::on_spinBoxTransparency_valueChanged(int arg1)
 
 void MainWindow::on_pushButtonSaveOut_clicked()
 {
-    string FileName(CurrentFileName);
+    string FileNameOut(CurrentFileName);
 
-    FileName = regex_replace(FileName,regex("_crop.tif"),"_out.bmp");
-    path FileToSave = InputDirectory;
-    FileToSave.append(FileName);
-    imwrite(FileToSave.string(),ImOut);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+    FileNameOut = regex_replace(FileNameOut,regex("_crop.tif"),"_outSdaR" + ItoStrLZ(kernelSizeSDA,2) + ".bmp");
+    path FileToSaveOut = InputDirectory;
+    FileToSaveOut.append(FileNameOut);
+    imwrite(FileToSaveOut.string(),ImShowOutput);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
+    string FileNameOutOnSDA(CurrentFileName);
+
+    FileNameOutOnSDA = regex_replace(FileNameOutOnSDA,regex("_crop.tif"),"_outOnSDSdaR" + ItoStrLZ(kernelSizeSDA,2) + ".bmp");
+    path FileToSaveOutOnSDA = InputDirectory;
+    FileToSaveOutOnSDA.append(FileNameOutOnSDA);
+    imwrite(FileToSaveOutOnSDA.string(),ImShowOutputOnSDA);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
 
     string FileNameMask(CurrentFileName);
 
-    FileNameMask = regex_replace(FileNameMask,regex("_crop.tif"),"_mask.bmp");
+    FileNameMask = regex_replace(FileNameMask,regex("_crop.tif"),"_maskSdaR" + ItoStrLZ(kernelSizeSDA,2) + ".bmp");
     path FileToSaveMask = InputDirectory;
     FileToSaveMask.append(FileNameMask);
-    imwrite(FileToSaveMask.string(),Mask*255);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+    imwrite(FileToSaveMask.string(),MaskSDA*255);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
+    string FileNameSDA(CurrentFileName);
+
+    FileNameSDA = regex_replace(FileNameSDA,regex("_crop.tif"),"_SDAR" + ItoStrLZ(kernelSizeSDA,2) + ".bmp");
+    path FileToSaveSDA = InputDirectory;
+    FileToSaveSDA.append(FileNameSDA);
+    imwrite(FileToSaveSDA.string(),ImShowSDA);//ImConv = imread(FileToOpen2.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
 }
 
 void MainWindow::on_CheckBoxContour_toggled(bool checked)
@@ -1348,4 +1388,51 @@ void MainWindow::on_pushButtonClearOut_clicked()
 {
     OutString = "";
     ui->textEditOutFile->setText(OutString.c_str());
+}
+
+void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
+{
+    //MaskSDARef.release();
+    //MaskSDA.copyTo(MaskSDARef);
+    //kernelSizeSDARef = kernelSizeSDA;
+    for (int radius = 50; radius >=30; radius--)
+    {
+
+        kernelSizeSDA = radius;
+        EstymateSDA();
+        double jaccardMax  = 0.0;
+        int jaccardMaxThreshold = 0;
+        stopDisplay = true;
+        int thresholdStop = 0;
+        for(int threshold = kernelPixelCountSDA - 1; threshold  >= 0; threshold-= 20)
+        {
+            thresholdImSDA = threshold;
+            PostSDA();
+            if(jaccard > 0.5)
+            {
+                thresholdStop = threshold;
+                break;
+            }
+        }
+        for(int threshold = thresholdStop; threshold  > 0; threshold--)
+        {
+            thresholdImSDA = threshold;
+            PostSDA();
+            if(jaccardMax < jaccard)
+            {
+                jaccardMax = jaccard;
+                jaccardMaxThreshold = threshold;
+            }
+            if(jaccardMax - jaccard > 0.1)
+                break;
+        }
+        stopDisplay = false;
+        ui->spinBoxThresholdSDA->setValue(jaccardMaxThreshold);
+        thresholdImSDA = jaccardMaxThreshold;
+        PostSDA();
+        OutString += "\n" + LocalString;
+        ui->textEditOutFile->append(LocalString.c_str());
+        waitKey(80);
+    }
+
 }

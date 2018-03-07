@@ -43,6 +43,9 @@ public:
     cv::Mat ImShowPseudocolor;
     cv::Mat ImShowSDA;
 
+    cv::Mat ImShowOutput;
+    cv::Mat ImShowOutputOnSDA;
+
     int maxX;
     int maxY;
     int maxXY;
@@ -123,7 +126,11 @@ public:
     int transparency;
     int kernelSizeSDARef;
 
+    bool stopDisplay;
+
     bool displayFlag;
+
+    double jaccard;
 
     std::string OutString;
     std::string LocalString;
@@ -251,6 +258,8 @@ private slots:
     void on_pushButtonSaveRef_clicked();
 
     void on_pushButtonClearOut_clicked();
+
+    void on_pushButtonFindOptimalTheshold_clicked();
 
 private:
     Ui::MainWindow *ui;
