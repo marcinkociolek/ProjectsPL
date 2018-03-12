@@ -8,6 +8,8 @@
 #include <boost/regex.hpp>
 
 #include <string>
+#include <iostream>
+#include <fstream>
 
 
 #include <opencv2/core/core.hpp>
@@ -1387,6 +1389,8 @@ void MainWindow::on_pushButtonSaveRef_clicked()
 void MainWindow::on_pushButtonClearOut_clicked()
 {
     OutString = "";
+    OutJaccard ="";
+    OutString = "";
     ui->textEditOutFile->setText(OutString.c_str());
 }
 
@@ -1395,9 +1399,17 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
     //MaskSDARef.release();
     //MaskSDA.copyTo(MaskSDARef);
     //kernelSizeSDARef = kernelSizeSDA;
+
+    OutJaccard = "";
+    OutThreshold = "";
+    OutString = "";
+    ui->textEditOutFile->setText(OutString.c_str());
+
     for (int radius = 50; radius >=30; radius--)
     {
 
+        OutJaccard += to_string(radius) + "\t";
+        OutThreshold += to_string(radius) + "\t";
         kernelSizeSDA = radius;
         EstymateSDA();
         double jaccardMax  = 0.0;
@@ -1423,9 +1435,13 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
                 jaccardMax = jaccard;
                 jaccardMaxThreshold = threshold;
             }
-            if(jaccardMax - jaccard > 0.1)
+            if(jaccard < 0.4)
                 break;
+            OutJaccard += to_string(jaccard) + "\t";
+            OutThreshold += to_string(threshold) + "\t";
         }
+        OutJaccard += "\n";
+        OutThreshold += "\n";
         stopDisplay = false;
         ui->spinBoxThresholdSDA->setValue(jaccardMaxThreshold);
         thresholdImSDA = jaccardMaxThreshold;
@@ -1434,5 +1450,95 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
         ui->textEditOutFile->append(LocalString.c_str());
         waitKey(80);
     }
+    string FileNameJacc(CurrentFileName);
+    FileNameJacc = regex_replace(FileNameJacc,regex("_crop.tif"),"_Jacc.txt");
+    path FileToSaveJacc = InputDirectory;
+    FileToSaveJacc.append(FileNameJacc);
+    std::ofstream outJ(FileToSaveJacc.string());
+    outJ << OutJaccard;
+    outJ.close();
 
+    string FileNameThr(CurrentFileName);
+    FileNameThr = regex_replace(FileNameThr,regex("_crop.tif"),"_Thr.txt");
+    path FileToSaveThr = InputDirectory;
+    FileToSaveThr.append(FileNameThr);
+    std::ofstream outT(FileToSaveThr.string());
+    outT << OutThreshold;
+    outT.close();
+
+    string FileNameOut(CurrentFileName);
+    FileNameOut = regex_replace(FileNameOut,regex("_crop.tif"),"_Out.txt");
+    path FileToSaveOut = InputDirectory;
+    FileToSaveOut.append(FileNameOut);
+    std::ofstream out(FileToSaveOut.string());
+    out << OutString;
+    out.close();
+
+
+}
+
+void MainWindow::on_pushButtonDataFor2dPlot_clicked()
+{
+    OutJaccard = "";
+    OutThreshold = "";
+    OutString = "";
+    ui->textEditOutFile->setText(OutString.c_str());
+
+    for (int radius = 50; radius >=30; radius--)
+    {
+
+        OutJaccard += to_string(radius) + "\t";
+        OutThreshold += to_string(radius) + "\t";
+        kernelSizeSDA = radius;
+        EstymateSDA();
+        double jaccardMax  = 0.0;
+        int jaccardMaxThreshold = 0;
+        stopDisplay = true;
+
+        for(int threshold = 8000; threshold  > 0; threshold-= 20)
+        {
+            thresholdImSDA = threshold;
+            PostSDA();
+            if(jaccardMax < jaccard)
+            {
+                jaccardMax = jaccard;
+                jaccardMaxThreshold = threshold;
+            }
+
+            OutJaccard += to_string(jaccard) + "\t";
+            OutThreshold += to_string(threshold) + "\t";
+        }
+        OutJaccard += "\n";
+        OutThreshold += "\n";
+        stopDisplay = false;
+        ui->spinBoxThresholdSDA->setValue(jaccardMaxThreshold);
+        thresholdImSDA = jaccardMaxThreshold;
+        PostSDA();
+        OutString += "\n" + LocalString;
+        ui->textEditOutFile->append(LocalString.c_str());
+        waitKey(80);
+    }
+    string FileNameJacc(CurrentFileName);
+    FileNameJacc = regex_replace(FileNameJacc,regex("_crop.tif"),"_Jacc.txt");
+    path FileToSaveJacc = InputDirectory;
+    FileToSaveJacc.append(FileNameJacc);
+    std::ofstream outJ(FileToSaveJacc.string());
+    outJ << OutJaccard;
+    outJ.close();
+
+    string FileNameThr(CurrentFileName);
+    FileNameThr = regex_replace(FileNameThr,regex("_crop.tif"),"_Thr.txt");
+    path FileToSaveThr = InputDirectory;
+    FileToSaveThr.append(FileNameThr);
+    std::ofstream outT(FileToSaveThr.string());
+    outT << OutThreshold;
+    outT.close();
+
+    string FileNameOut(CurrentFileName);
+    FileNameOut = regex_replace(FileNameOut,regex("_crop.tif"),"_Out.txt");
+    path FileToSaveOut = InputDirectory;
+    FileToSaveOut.append(FileNameOut);
+    std::ofstream out(FileToSaveOut.string());
+    out << OutString;
+    out.close();
 }

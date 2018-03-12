@@ -133,6 +133,8 @@ public:
     double jaccard;
 
     std::string OutString;
+    std::string OutJaccard;
+    std::string OutThreshold;
     std::string LocalString;
 
     void MainWindow::CalculateSDA(void);
@@ -260,6 +262,8 @@ private slots:
     void on_pushButtonClearOut_clicked();
 
     void on_pushButtonFindOptimalTheshold_clicked();
+
+    void on_pushButtonDataFor2dPlot_clicked();
 
 private:
     Ui::MainWindow *ui;
