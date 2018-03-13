@@ -1479,6 +1479,10 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
 
 void MainWindow::on_pushButtonDataFor2dPlot_clicked()
 {
+    MaskSDARef.release();
+    MaskSDA.copyTo(MaskSDARef);
+    kernelSizeSDARef = kernelSizeSDA;
+
     OutJaccard = "";
     OutThreshold = "";
     OutString = "";
@@ -1495,7 +1499,16 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
         int jaccardMaxThreshold = 0;
         stopDisplay = true;
 
-        for(int threshold = 8000; threshold  > 0; threshold-= 20)
+        int thresholdStart = 6500;
+        int thresholdStep = 5;
+        for(int threshold = thresholdStart; threshold  > kernelPixelCountSDA; threshold -= thresholdStep)
+        {
+            OutJaccard += to_string(0) + "\t";
+            OutThreshold += to_string(threshold) + "\t";
+            thresholdStart = threshold - thresholdStep;
+        }
+
+        for(int threshold = thresholdStart; threshold  > 1200; threshold-= thresholdStep)
         {
             thresholdImSDA = threshold;
             PostSDA();
@@ -1519,25 +1532,25 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
         waitKey(80);
     }
     string FileNameJacc(CurrentFileName);
-    FileNameJacc = regex_replace(FileNameJacc,regex("_crop.tif"),"_Jacc.txt");
+    //FileNameJacc = regex_replace(FileNameJacc,regex("_crop.tif"),"_Jacc.txt");
     path FileToSaveJacc = InputDirectory;
-    FileToSaveJacc.append(FileNameJacc);
+    FileToSaveJacc.append(FileNameJacc +"_Jacc.txt");
     std::ofstream outJ(FileToSaveJacc.string());
     outJ << OutJaccard;
     outJ.close();
 
     string FileNameThr(CurrentFileName);
-    FileNameThr = regex_replace(FileNameThr,regex("_crop.tif"),"_Thr.txt");
+    //FileNameThr = regex_replace(FileNameThr,regex("_crop.tif"),"_Thr.txt");
     path FileToSaveThr = InputDirectory;
-    FileToSaveThr.append(FileNameThr);
+    FileToSaveThr.append(FileNameThr+"_Thr.txt");
     std::ofstream outT(FileToSaveThr.string());
     outT << OutThreshold;
     outT.close();
 
     string FileNameOut(CurrentFileName);
-    FileNameOut = regex_replace(FileNameOut,regex("_crop.tif"),"_Out.txt");
+    //FileNameOut = regex_replace(FileNameOut,regex("_crop.tif"),"_Out.txt");
     path FileToSaveOut = InputDirectory;
-    FileToSaveOut.append(FileNameOut);
+    FileToSaveOut.append(FileNameOut+"_Out.txt");
     std::ofstream out(FileToSaveOut.string());
     out << OutString;
     out.close();
