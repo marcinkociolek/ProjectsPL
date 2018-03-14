@@ -1451,25 +1451,25 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
         waitKey(80);
     }
     string FileNameJacc(CurrentFileName);
-    FileNameJacc = regex_replace(FileNameJacc,regex("_crop.tif"),"_Jacc.txt");
+    //FileNameJacc = regex_replace(FileNameJacc,regex("_crop.tif"),"_Jacc.txt");
     path FileToSaveJacc = InputDirectory;
-    FileToSaveJacc.append(FileNameJacc);
+    FileToSaveJacc.append(FileNameJacc +"_JaccL.txt");
     std::ofstream outJ(FileToSaveJacc.string());
     outJ << OutJaccard;
     outJ.close();
 
     string FileNameThr(CurrentFileName);
-    FileNameThr = regex_replace(FileNameThr,regex("_crop.tif"),"_Thr.txt");
+    //FileNameThr = regex_replace(FileNameThr,regex("_crop.tif"),"_Thr.txt");
     path FileToSaveThr = InputDirectory;
-    FileToSaveThr.append(FileNameThr);
+    FileToSaveThr.append(FileNameThr+"_ThrL.txt");
     std::ofstream outT(FileToSaveThr.string());
     outT << OutThreshold;
     outT.close();
 
     string FileNameOut(CurrentFileName);
-    FileNameOut = regex_replace(FileNameOut,regex("_crop.tif"),"_Out.txt");
+    //FileNameOut = regex_replace(FileNameOut,regex("_crop.tif"),"_Out.txt");
     path FileToSaveOut = InputDirectory;
-    FileToSaveOut.append(FileNameOut);
+    FileToSaveOut.append(FileNameOut+"_OutL.txt");
     std::ofstream out(FileToSaveOut.string());
     out << OutString;
     out.close();
