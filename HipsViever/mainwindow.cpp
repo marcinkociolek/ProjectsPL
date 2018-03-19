@@ -433,6 +433,7 @@ void MainWindow::MaskImage(void)
 
     if(closingShape)
     {
+        //ErosionCV(MaskImplant, closingShape);
         DilationCV(MaskImplant, closingShape);
         ErosionCV(MaskImplant, closingShape);
     }
@@ -445,15 +446,17 @@ void MainWindow::MaskImage(void)
         DeleteRegionFromImage(MaskImplant, 0xFFFF);
     }
 
-    if(divideSeparateRegions)
-    {
-        DivideSeparateRegions(MaskImplant, minRegionSize);
-    }
     if(erosionShape)
     {
         ErosionCV(MaskImplant, erosionShape);
         DilationCV(MaskImplant, erosionShape);
     }
+
+    if(divideSeparateRegions)
+    {
+        DivideSeparateRegions(MaskImplant, minRegionSize);
+    }
+
 
     if(expandMask)
     {
@@ -495,6 +498,7 @@ void MainWindow::MaskImage(void)
 
 
     ShowMask();
+
     EstymateSDA();
 
 
@@ -871,6 +875,8 @@ MainWindow::MainWindow(QWidget *parent) :
     divideSeparateRegionsSDA = ui->CheckBoxDivideseparateregionsSDA->checkState();
     minRegionSizeSDA = ui->spinBoxMinRegionSizeSDA->value();
 
+    FilePatternStr = ui->lineEditFilePattern->text().toStdString();
+
     string HeaderString =  "File\t\t";
     HeaderString +=  "SDA d\t";
     HeaderString +=  "SDA #\t";
@@ -885,6 +891,51 @@ MainWindow::MainWindow(QWidget *parent) :
 
     OnOffImageWindow();
 }
+
+void MainWindow::RefreshFileList()
+{
+    //InputDirectory = dialog.getExistingDirectory().toStdWString();//  toStdString());
+    if (!exists(InputDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((InputDirectory.string()+ " not exists ").c_str());
+        msgBox.exec();
+        InputDirectory = "c:\\";
+    }
+    if (!is_directory(InputDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((InputDirectory.string()+ " This is not a directory path ").c_str());
+        msgBox.exec();
+        InputDirectory = "c:\\";
+    }
+    //Files.clear();
+    ui->LineEditDirectory->setText(QString::fromWCharArray(InputDirectory.wstring().c_str()));
+    ui->ListWidgetFiles->clear();
+
+    regex FilePattern(FilePatternStr);
+    for (directory_entry& FileToProcess : directory_iterator(InputDirectory))
+    {
+        if (FileToProcess.path().extension() != ".tif" && FileToProcess.path().extension() != ".png" )
+            continue;
+        path PathLocal = FileToProcess.path();
+
+
+        if ((!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
+            continue;
+
+        if (!exists(PathLocal))
+        {
+            //Files << PathLocal.filename().string() << " File not exists" << "\n";
+            QMessageBox msgBox;
+            msgBox.setText((PathLocal.filename().string() + " File not exists" ).c_str());
+            msgBox.exec();
+            break;
+        }
+        ui->ListWidgetFiles->addItem(PathLocal.filename().string().c_str());
+    }
+}
+
 
 MainWindow::~MainWindow()
 {
@@ -905,44 +956,7 @@ void MainWindow::on_pushButtonSelectInFolder_clicked()
     else
          return;
 
-    //InputDirectory = dialog.getExistingDirectory().toStdWString();//  toStdString());
-    if (!exists(InputDirectory))
-    {
-        QMessageBox msgBox;
-        msgBox.setText((InputDirectory.string()+ " not exists ").c_str());
-        msgBox.exec();
-        InputDirectory = "c:\\";
-    }
-    if (!is_directory(InputDirectory))
-    {
-        QMessageBox msgBox;
-        msgBox.setText((InputDirectory.string()+ " This is not a directory path ").c_str());
-        msgBox.exec();
-        InputDirectory = "c:\\";
-    }
-    //Files.clear();
-    ui->LineEditDirectory->setText(QString::fromWCharArray(InputDirectory.wstring().c_str()));
-    ui->ListWidgetFiles->clear();
-    for (directory_entry& FileToProcess : directory_iterator(InputDirectory))
-    {
-        if (FileToProcess.path().extension() != ".tif" && FileToProcess.path().extension() != ".png" )
-            continue;
-        path PathLocal = FileToProcess.path();
-
-        regex FilePattern(".+crop.+");
-        if ((!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
-            continue;
-
-        if (!exists(PathLocal))
-        {
-            //Files << PathLocal.filename().string() << " File not exists" << "\n";
-            QMessageBox msgBox;
-            msgBox.setText((PathLocal.filename().string() + " File not exists" ).c_str());
-            msgBox.exec();
-            break;
-        }
-        ui->ListWidgetFiles->addItem(PathLocal.filename().string().c_str());
-    }
+    RefreshFileList();
 }
 
 void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentText)
@@ -1554,4 +1568,10 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
     std::ofstream out(FileToSaveOut.string());
     out << OutString;
     out.close();
+}
+
+void MainWindow::on_lineEditFilePattern_returnPressed()
+{
+    FilePatternStr = ui->lineEditFilePattern->text().toStdString();
+     RefreshFileList();
 }

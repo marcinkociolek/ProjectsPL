@@ -137,6 +137,8 @@ public:
     std::string OutThreshold;
     std::string LocalString;
 
+    std:: string FilePatternStr;
+
     void MainWindow::CalculateSDA(void);
     //cv::Mat MainWindow::CalculateSDA(cv::Mat imIn, cv::Mat Roi, int radius);
     void MainWindow::OpenImage(void);
@@ -153,6 +155,7 @@ public:
     void MainWindow::ShowAll(void);
     void MainWindow::OnOffImageWindow(void);
 
+    void MainWindow::RefreshFileList();
 private slots:
     void on_pushButtonSelectInFolder_clicked();
 
@@ -264,6 +267,8 @@ private slots:
     void on_pushButtonFindOptimalTheshold_clicked();
 
     void on_pushButtonDataFor2dPlot_clicked();
+
+    void on_lineEditFilePattern_returnPressed();
 
 private:
     Ui::MainWindow *ui;
