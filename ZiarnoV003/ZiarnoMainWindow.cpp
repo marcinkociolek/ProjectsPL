@@ -1242,8 +1242,8 @@ void MainWindow::on_pushButtonGetBackground_clicked()
     {
         if (FileToProcess.path().extension() != ".bmp" && FileToProcess.path().extension() != ".png" )
             continue;
-        //regex FilePattern(".+_0.+");
-        regex FilePattern(".+_T.+");
+        regex FilePattern(".+_0.+");
+        //regex FilePattern(".+_T.+");
         if ((inputType == 2) && (!regex_match(FileToProcess.path().filename().string().c_str(), FilePattern )))
             continue;
 
@@ -1258,10 +1258,10 @@ void MainWindow::on_pushButtonGetBackground_clicked()
         }
 
         string FileNameTop = PathLocal.string();
-        string FileNameBottom = regex_replace(FileNameTop,regex("_T"),"_B");
-        string FileNameSide = regex_replace(FileNameTop,regex("_T"),"_S");
-        //string FileNameBottom = regex_replace(FileNameTop,regex("_0"),"_1");
-        //string FileNameSide = regex_replace(FileNameTop,regex("_0"),"_2");
+        //string FileNameBottom = regex_replace(FileNameTop,regex("_T"),"_B");
+        //string FileNameSide = regex_replace(FileNameTop,regex("_T"),"_S");
+        string FileNameBottom = regex_replace(FileNameTop,regex("_0"),"_1");
+        string FileNameSide = regex_replace(FileNameTop,regex("_0"),"_2");
 
         Mat ImT = imread(FileNameTop);
 
