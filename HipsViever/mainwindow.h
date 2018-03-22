@@ -118,6 +118,8 @@ public:
     bool divideSeparateRegionsSDA;
     int minRegionSizeSDA;
 
+    bool findRegTouchingImplant;
+
     bool showOutput;
     bool showOutputOnSDA;
 
@@ -156,6 +158,9 @@ public:
     void MainWindow::OnOffImageWindow(void);
 
     void MainWindow::RefreshFileList();
+
+    std::string MainWindow::ParamsToString(void);
+
 private slots:
     void on_pushButtonSelectInFolder_clicked();
 
@@ -269,6 +274,8 @@ private slots:
     void on_pushButtonDataFor2dPlot_clicked();
 
     void on_lineEditFilePattern_returnPressed();
+
+    void on_checkBoxFindRegTouchingImplant_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

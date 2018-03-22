@@ -623,7 +623,11 @@ void MainWindow::PostSDA(void)
         DeleteRegionFromImage(MaskSDA, 0xFFFF);
     }
 
-    FindReginsTouchingImplant(MaskImplant, MaskSDA);
+    if(findRegTouchingImplant)
+    {
+        FindReginsTouchingImplant(MaskImplant, MaskSDA);
+    }
+
 
     if(divideSeparateRegionsSDA)
     {
@@ -793,6 +797,63 @@ void MainWindow::OnOffImageWindow(void)
     ShowAll();
     //ShowResults();
 }
+string MainWindow::ParamsToString(void)
+{
+    string Out = "";
+
+    Out += "Current file name:\t" + CurrentFileName + "\n";
+    Out += "File to open:\t" + FileToOpen.string() + "\n";
+    Out += "Current directory:\t" + CurrentDir.string() + "\n";
+    Out += "Input Directory:\t" + InputDirectory.string() + "\n";
+
+
+    Out += "max X:\t" + to_string(maxX) + "\n";
+    Out += "max Y:\t" + to_string(maxY) + "\n";
+    Out += "Threshold input Im :\t" + to_string(thresholdImOrg) + "\n";
+    Out += "Threshold gradient Im :\t" + to_string(thresholdGradient) + "\n";
+
+    Out += "Closing element shape :\t" + to_string(closingShape) + "\n";
+
+    Out += "Fil holes :\t" + to_string(fillHoles) + "\n";
+    Out += "Divide separate regions :\t" + to_string(divideSeparateRegions) + "\n";
+
+
+    Out += "Minimum region size :\t" + to_string(minRegionSize) + "\n";
+
+    Out += "Opening element shape :\t" + to_string(erosionShape) + "\n";
+
+    Out += "Expand mask :\t" + to_string(expandMask) + "\n";
+    Out += "Expand mask horisontaly :\t" + to_string(expandMaskY) + "\n";
+    Out += "Expansion mask size:\t" + to_string(expansionSize) + "\n";
+
+    Out += "crop mask from top :\t" + to_string(croppMask) + "\n";
+    Out += "crop mask from top size:\t" + to_string(croppSize) + "\n";
+
+    //Out += "crop mask from top size:\t" + to_string(sdaSize) + "\n";
+    //bool calculateSDA;
+    Out += "SDA kernel size:\t" + to_string(kernelSizeSDA) + "\n";
+    Out += "SDA kernel pix count:\t" + to_string(kernelPixelCountSDA) + "\n";
+
+    Out += "SDA thresholding:\t" + to_string(thresholdSDA) + "\n";
+    Out += "SDA threshold val:\t" + to_string(thresholdImSDA) + "\n";
+
+    Out += "Erosion 1 shape:\t" + to_string(postErosionShape1) + "\n";
+    Out += "Dilation 2 shape:\t" + to_string(postDilationShape2) + "\n";
+    Out += "Erosion 3 shape:\t" + to_string(postErosionShape3) + "\n";
+
+    Out += "Fill holes on out mask:\t" + to_string(fillHolesOnOutMask) + "\n";
+
+    Out += "Divide separate regions on out mask:\t" + to_string(divideSeparateRegionsSDA) + "\n";
+    Out += "inimal region size on out mask:\t" + to_string(minRegionSizeSDA) + "\n";
+
+    Out += "\n";
+
+    return Out;
+
+    //int kernelPixelCountSDA;
+
+
+}
 //--------------------------------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -871,6 +932,8 @@ MainWindow::MainWindow(QWidget *parent) :
     postErosionShape3 = ui->spinBoxErosionShape3->value();
 
     fillHolesOnOutMask = ui->CheckBoxFillHolesOnOut->checkState();
+    findRegTouchingImplant = ui->checkBoxFindRegTouchingImplant->checkState();
+
 
     divideSeparateRegionsSDA = ui->CheckBoxDivideseparateregionsSDA->checkState();
     minRegionSizeSDA = ui->spinBoxMinRegionSizeSDA->value();
@@ -1410,9 +1473,11 @@ void MainWindow::on_pushButtonClearOut_clicked()
 
 void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
 {
-    //MaskSDARef.release();
-    //MaskSDA.copyTo(MaskSDARef);
-    //kernelSizeSDARef = kernelSizeSDA;
+    MaskSDARef.release();
+    MaskSDA.copyTo(MaskSDARef);
+    kernelSizeSDARef = kernelSizeSDA;
+
+    string paramsStr = ParamsToString();
 
     OutJaccard = "";
     OutThreshold = "";
@@ -1469,7 +1534,7 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
     path FileToSaveJacc = InputDirectory;
     FileToSaveJacc.append(FileNameJacc +"_JaccL.txt");
     std::ofstream outJ(FileToSaveJacc.string());
-    outJ << OutJaccard;
+    outJ << OutJaccard << "\n\n" << paramsStr;
     outJ.close();
 
     string FileNameThr(CurrentFileName);
@@ -1477,7 +1542,7 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
     path FileToSaveThr = InputDirectory;
     FileToSaveThr.append(FileNameThr+"_ThrL.txt");
     std::ofstream outT(FileToSaveThr.string());
-    outT << OutThreshold;
+    outT << OutThreshold << "\n\n" << paramsStr;
     outT.close();
 
     string FileNameOut(CurrentFileName);
@@ -1485,7 +1550,7 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
     path FileToSaveOut = InputDirectory;
     FileToSaveOut.append(FileNameOut+"_OutL.txt");
     std::ofstream out(FileToSaveOut.string());
-    out << OutString;
+    out << OutString << "\n\n" << paramsStr;
     out.close();
 
 
@@ -1496,6 +1561,8 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
     MaskSDARef.release();
     MaskSDA.copyTo(MaskSDARef);
     kernelSizeSDARef = kernelSizeSDA;
+
+    string paramsStr = ParamsToString();
 
     OutJaccard = "";
     OutThreshold = "";
@@ -1550,7 +1617,7 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
     path FileToSaveJacc = InputDirectory;
     FileToSaveJacc.append(FileNameJacc +"_Jacc.txt");
     std::ofstream outJ(FileToSaveJacc.string());
-    outJ << OutJaccard;
+    outJ << OutJaccard << "\n\n" << paramsStr;
     outJ.close();
 
     string FileNameThr(CurrentFileName);
@@ -1558,7 +1625,7 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
     path FileToSaveThr = InputDirectory;
     FileToSaveThr.append(FileNameThr+"_Thr.txt");
     std::ofstream outT(FileToSaveThr.string());
-    outT << OutThreshold;
+    outT << OutThreshold << "\n\n" << paramsStr;
     outT.close();
 
     string FileNameOut(CurrentFileName);
@@ -1566,7 +1633,7 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
     path FileToSaveOut = InputDirectory;
     FileToSaveOut.append(FileNameOut+"_Out.txt");
     std::ofstream out(FileToSaveOut.string());
-    out << OutString;
+    out << OutString << "\n\n" << paramsStr;
     out.close();
 }
 
@@ -1574,4 +1641,10 @@ void MainWindow::on_lineEditFilePattern_returnPressed()
 {
     FilePatternStr = ui->lineEditFilePattern->text().toStdString();
      RefreshFileList();
+}
+
+void MainWindow::on_checkBoxFindRegTouchingImplant_toggled(bool checked)
+{
+    findRegTouchingImplant = checked;
+    PostSDA();
 }
