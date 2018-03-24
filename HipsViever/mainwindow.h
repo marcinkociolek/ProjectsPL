@@ -277,6 +277,8 @@ private slots:
 
     void on_checkBoxFindRegTouchingImplant_toggled(bool checked);
 
+    void on_DistortImIn_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

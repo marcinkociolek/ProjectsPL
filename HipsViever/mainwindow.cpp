@@ -1648,3 +1648,22 @@ void MainWindow::on_checkBoxFindRegTouchingImplant_toggled(bool checked)
     findRegTouchingImplant = checked;
     PostSDA();
 }
+
+void MainWindow::on_DistortImIn_clicked()
+{
+    unsigned short *wImIn = (unsigned short *)ImIn.data;
+    int maxX = ImIn.cols;
+    int maxY = ImIn.rows;
+    for(int y = 0 ; y < maxY; y++)
+    {
+        for(int x = 0 ; x < maxX; x++)
+        {
+            *wImIn += y;
+            wImIn++;
+        }
+
+    }
+    ShowImages();
+    ShowMask();
+    EstymateSDA();
+}
