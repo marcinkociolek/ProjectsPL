@@ -1120,9 +1120,11 @@ void MainWindow::on_widgetImage_KeyPressed(int key)
         break;
     case Qt::Key_P:
         ui->checkBoxMoveP->toggle();
+        ui->comboBoxRegioNr->setCurrentIndex(0);
         break;
     case Qt::Key_L:
         ui->checkBoxMoveL->toggle();
+        ui->comboBoxRegioNr->setCurrentIndex(0);
         break;
 
 
@@ -1535,11 +1537,13 @@ void MainWindow::on_checkBoxMoveAll_toggled(bool checked)
 void MainWindow::on_checkBoxMoveL_toggled(bool checked)
 {
    moveAllL = checked;
+   ui->comboBoxRegioNr->setCurrentIndex(0);
 }
 
 void MainWindow::on_checkBoxMoveP_toggled(bool checked)
 {
     moveAllR = checked;
+    ui->comboBoxRegioNr->setCurrentIndex(0);
 }
 
 void MainWindow::on_pushButtonSaveOutBMP_clicked()
