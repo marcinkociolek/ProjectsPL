@@ -56,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxShowModeGray->addItem("Image + Contour");
     ui->comboBoxShowModeGray->addItem("Image + TReg");
     ui->comboBoxShowModeGray->addItem("Image + TCont");
-    ui->comboBoxShowModeGray->setCurrentIndex(1);
+    ui->comboBoxShowModeGray->setCurrentIndex(4);
     showModeGray = ui->comboBoxShowModeGray->currentIndex();
 
 
@@ -71,7 +71,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxShowModePseudoColor->addItem("Image + Contour");
     ui->comboBoxShowModePseudoColor->addItem("Image + TReg");
     ui->comboBoxShowModePseudoColor->addItem("Image + TCont");
-    ui->comboBoxShowModePseudoColor->setCurrentIndex(1);
+    ui->comboBoxShowModePseudoColor->setCurrentIndex(2);
+
     showModePseudoColor = ui->comboBoxShowModePseudoColor->currentIndex();
     //showRegionOnPseudoColor = ui->checkBoxShowRegionOnPseudoColor->checkState();
     //showContourOnPseudoColor = ui->checkBoxShowContourOnPseudoColor->checkState();
@@ -98,9 +99,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboBoxRegioNr->addItem("KidneyL");
     ui->comboBoxRegioNr->addItem("PelvisL");
     ui->comboBoxRegioNr->addItem("MedulaL");
-    ui->comboBoxRegioNr->addItem("KidneyP");
-    ui->comboBoxRegioNr->addItem("PelvisP");
-    ui->comboBoxRegioNr->addItem("MedulaP");
+    ui->comboBoxRegioNr->addItem("KidneyR");
+    ui->comboBoxRegioNr->addItem("PelvisR");
+    ui->comboBoxRegioNr->addItem("MedulaR");
     ui->comboBoxRegioNr->setCurrentIndex(0);
     regionIndex = 0;
 
