@@ -1505,7 +1505,7 @@
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
     <property name="minimum">
-     <number>200</number>
+     <number>5</number>
     </property>
     <property name="maximum">
      <number>20000</number>
