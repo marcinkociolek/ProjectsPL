@@ -434,6 +434,8 @@ void MainWindow::ShowImages(void)
         }
     }
 
+
+
 }
 //--------------------------------------------------------------------------------------------------
 void MainWindow::MaskImage(void)
@@ -540,6 +542,7 @@ void MainWindow::ShowMask(void)
             ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
         imshow("Mask", ImShowMask);
     }
+
 }
 //--------------------------------------------------------------------------------------------------
 void MainWindow::EstymateSDA(void)
@@ -646,7 +649,9 @@ void MainWindow::PostSDA(void)
         DivideSeparateRegions(MaskSDA, minRegionSizeSDA);
     }
 
-
+    //MaskSDA = Mat::ones(maxY,maxX,CV_16U);
+    //MaskSDA *= Mask;
+    MaskOutside(MaskSDA,MaskImplant);
     int maskSDACount;
     int maskSDARefCount;
 
@@ -695,6 +700,8 @@ void MainWindow::ShowResults(void)
     {
         imshow("Output on SDA", ImShowOutputOnSDA);
     }
+
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1748,6 +1755,9 @@ void MainWindow::on_pushButtonOpenRefROI_clicked()
 
     MaskSDARef.release();
     MaskSDARef = imread(RefROIFileNameWithPath, CV_LOAD_IMAGE_ANYDEPTH);
+    //MaskSDARef = Mat::ones(MaskSDARef.rows,MaskSDARef.cols,CV_16U);
+    //MaskSDARef *= Mask;
+    MaskOutside(MaskSDARef,MaskImplant);
     ShowImages();
 }
 
@@ -1755,4 +1765,15 @@ void MainWindow::on_checkBoxShowRefference_toggled(bool checked)
 {
     showRef = checked;
     ShowImages();
+}
+
+void MainWindow::on_pushButtonTemp_clicked()
+{
+
+    Mat ImShowTemp = ImShowPseudocolor;
+    //ImShowTemp = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDARef), ImShowPseudocolor);
+    ImShowTemp = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowTemp);
+    //ImShowTemp = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowTemp);
+
+    imshow("Temp", ImShowTemp);
 }

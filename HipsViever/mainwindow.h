@@ -285,6 +285,8 @@ private slots:
 
     void on_checkBoxShowRefference_toggled(bool checked);
 
+    void on_pushButtonTemp_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
