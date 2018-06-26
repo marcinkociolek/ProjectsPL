@@ -35,6 +35,7 @@ public:
     cv::Mat Mask;
 
     cv::Mat MaskSDARef;
+    cv::Mat MaskSDARefTemp;
 
     cv::Mat MaskSDA;
     cv::Mat ImOut;
@@ -77,9 +78,6 @@ public:
     bool showSDANorm;
     bool showSDANormPC;
 
-    bool showSDAThresholded;
-
-    bool showConv;
     bool showMask;
 
     bool showContour;
@@ -190,7 +188,6 @@ private slots:
 
     void on_CheckBoxShowMask_toggled(bool checked);
 
-    void on_CheckBoxShowConv_toggled(bool checked);
 
     void on_spinBoxMinShowConv_valueChanged(int arg1);
 
@@ -252,9 +249,6 @@ private slots:
 
     void on_CheckBoxShowSDA_toggled(bool checked);
 
-    void on_CheckBoxShowSDAThresholded_toggled(bool checked);
-
-
     void on_CheckBoxDivideseparateregionsSDA_toggled(bool checked);
 
     void on_spinBoxMinRegionSizeSDA_valueChanged(int arg1);
@@ -286,6 +280,8 @@ private slots:
     void on_checkBoxShowRefference_toggled(bool checked);
 
     void on_pushButtonTemp_clicked();
+
+    void on_CheckBoxShowOutputOnSDA_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

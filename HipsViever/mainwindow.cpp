@@ -401,6 +401,15 @@ void MainWindow::OpenImage(void)
     //ImGradient = GradientDown(ImIn);
     ImGradient = GradientMorph(ImIn, 4);
 
+
+
+    path ReffFileToOpen = InputDirectory;
+    ReffFileToOpen.append(FileToOpen.stem().string() + "ROI.tiff");
+
+    MaskSDARef.release();
+    MaskSDARefTemp = imread(ReffFileToOpen.string(), CV_LOAD_IMAGE_ANYDEPTH);
+
+
     ShowImages();
     MaskImage();
 }
@@ -421,18 +430,7 @@ void MainWindow::ShowImages(void)
         imshow("Pseudocolor", ImShowPseudocolor);
     if(showGradient)
         imshow("Gradient", ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient));
-    if(showRef)
-    {
-        if(!MaskSDARef.empty())
-        {
-            Mat ImShowMask;
-            if(showContour)
-                ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDARef), ImShowPseudocolor);
-            else
-                ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDARef, ImShowPseudocolor);
-            imshow("Refference", ImShowMask);
-        }
-    }
+
 
 
 
@@ -509,6 +507,12 @@ void MainWindow::MaskImage(void)
         }
     }
 
+    if(MaskSDARefTemp.empty())
+        MaskSDARefTemp = Mat::zeros(maxY,maxX,CV_16U);
+    else
+        MaskSDARefTemp.copyTo(MaskSDARef);
+
+    MaskInside(MaskSDARef,Mask);
 
 
     ShowMask();
@@ -542,6 +546,18 @@ void MainWindow::ShowMask(void)
             ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
         imshow("Mask", ImShowMask);
     }
+    if(showRef)
+    {
+        if(!MaskSDARef.empty())
+        {
+            Mat ImShowMask;
+            if(showContour)
+                ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDARef), ImShowPseudocolor);
+            else
+                ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDARef, ImShowPseudocolor);
+            imshow("Refference", ImShowMask);
+        }
+    }
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -570,7 +586,9 @@ void MainWindow::EstymateSDA(void)
 
 
     //CalculateSDA();
-    ShowSDA();
+    if(!stopDisplay)
+        ShowSDA();
+
     PostSDA();
 }
 //--------------------------------------------------------------------------------------------------
@@ -651,7 +669,7 @@ void MainWindow::PostSDA(void)
 
     //MaskSDA = Mat::ones(maxY,maxX,CV_16U);
     //MaskSDA *= Mask;
-    MaskOutside(MaskSDA,MaskImplant);
+    MaskInside(MaskSDA,Mask);
     int maskSDACount;
     int maskSDARefCount;
 
@@ -659,6 +677,7 @@ void MainWindow::PostSDA(void)
 
     if(!stopDisplay)
     {
+
         LocalString = FileToOpen.stem().string() + "\t";
 
         LocalString += to_string(kernelSizeSDA) + "\t";
@@ -767,10 +786,7 @@ void MainWindow::OnOffImageWindow(void)
     else
         destroyWindow("Gradient");
 
-    if(showConv)
-        namedWindow("SDA", displayFlag);
-    else
-        destroyWindow("SDA");
+
 
     if(showMaskImplant)
         namedWindow("Mask Implant", displayFlag);
@@ -812,6 +828,11 @@ void MainWindow::OnOffImageWindow(void)
         namedWindow("Output on SDA", displayFlag);
     else
         destroyWindow("Output on SDA");
+
+    if(showRef)
+        namedWindow("Refference", displayFlag);
+    else
+        destroyWindow("Refference");
 
     ShowAll();
     //ShowResults();
@@ -900,11 +921,9 @@ MainWindow::MainWindow(QWidget *parent) :
     showSDA = ui->CheckBoxShowSDA->checkState();
     showSDANorm = ui->CheckBoxShowSDANorm->checkState();
     showSDANormPC = ui->CheckBoxShowSDANormPC->checkState();
-    showSDAThresholded = ui->CheckBoxShowSDAThresholded->checkState();
+
 
     showRef = ui->checkBoxShowRefference->checkState();
-
-    showConv = ui->CheckBoxShowConv->checkState();
 
     minShowGray = ui->spinBoxMinShowGray->value();
     maxShowGray = ui->spinBoxMaxShowGray->value();
@@ -1160,12 +1179,7 @@ void MainWindow::on_CheckBoxShowMask_toggled(bool checked)
     ShowMask();
 }
 
-void MainWindow::on_CheckBoxShowConv_toggled(bool checked)
-{
-    showConv = checked;
-    OnOffImageWindow();
-    ShowImages();
-}
+
 
 void MainWindow::on_spinBoxMinShowConv_valueChanged(int arg1)
 {
@@ -1467,11 +1481,7 @@ void MainWindow::on_CheckBoxShowSDA_toggled(bool checked)
     //MaskImage();
 }
 
-void MainWindow::on_CheckBoxShowSDAThresholded_toggled(bool checked)
-{
-    showSDAThresholded = checked;
-    //MaskImage();
-}
+
 
 
 
@@ -1564,11 +1574,11 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
         int jaccardMaxThreshold = 0;
         stopDisplay = true;
         int thresholdStop = 0;
-        for(int threshold = kernelPixelCountSDA - 1; threshold  >= 0; threshold-= 20)
+        for(int threshold = kernelPixelCountSDA - 1; threshold  >= 0; threshold-= 1)
         {
             thresholdImSDA = threshold;
             PostSDA();
-            if(jaccard > 0.5)
+            if(jaccard > 0.3)
             {
                 thresholdStop = threshold;
                 break;
@@ -1583,7 +1593,7 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
                 jaccardMax = jaccard;
                 jaccardMaxThreshold = threshold;
             }
-            if(jaccard < 0.4)
+            if(jaccard < 0.2)
                 break;
             OutJaccard += to_string(jaccard) + "\t";
             OutThreshold += to_string(threshold) + "\t";
@@ -1591,7 +1601,7 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
         OutJaccard += "\n";
         OutThreshold += "\n";
         stopDisplay = false;
-        ui->spinBoxThresholdSDA->setValue(jaccardMaxThreshold);
+        //ui->spinBoxThresholdSDA->setValue(jaccardMaxThreshold);
         thresholdImSDA = jaccardMaxThreshold;
         PostSDA();
         OutString += "\n" + LocalString;
@@ -1754,17 +1764,16 @@ void MainWindow::on_pushButtonOpenRefROI_clicked()
     string RefROIFileNameWithPath = fileNames.at(0).toStdString();//dialog.getOpenFileName(this).toStdString();
 
     MaskSDARef.release();
-    MaskSDARef = imread(RefROIFileNameWithPath, CV_LOAD_IMAGE_ANYDEPTH);
-    //MaskSDARef = Mat::ones(MaskSDARef.rows,MaskSDARef.cols,CV_16U);
-    //MaskSDARef *= Mask;
-    MaskOutside(MaskSDARef,MaskImplant);
-    ShowImages();
+    MaskSDARefTemp = imread(RefROIFileNameWithPath, CV_LOAD_IMAGE_ANYDEPTH);
+    MaskImage();
+
 }
 
 void MainWindow::on_checkBoxShowRefference_toggled(bool checked)
 {
     showRef = checked;
-    ShowImages();
+    OnOffImageWindow();
+    ShowMask();
 }
 
 void MainWindow::on_pushButtonTemp_clicked()
@@ -1776,4 +1785,11 @@ void MainWindow::on_pushButtonTemp_clicked()
     //ImShowTemp = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowTemp);
 
     imshow("Temp", ImShowTemp);
+}
+
+void MainWindow::on_CheckBoxShowOutputOnSDA_toggled(bool checked)
+{
+    showOutputOnSDA = checked;
+    OnOffImageWindow();
+    ShowResults();
 }
