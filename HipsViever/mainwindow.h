@@ -84,6 +84,8 @@ public:
 
     bool showContour;
 
+    bool showRef;
+
     int closingShape;
 
     bool fillHoles;
@@ -278,6 +280,10 @@ private slots:
     void on_checkBoxFindRegTouchingImplant_toggled(bool checked);
 
     void on_DistortImIn_clicked();
+
+    void on_pushButtonOpenRefROI_clicked();
+
+    void on_checkBoxShowRefference_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

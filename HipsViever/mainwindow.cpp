@@ -421,6 +421,18 @@ void MainWindow::ShowImages(void)
         imshow("Pseudocolor", ImShowPseudocolor);
     if(showGradient)
         imshow("Gradient", ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient));
+    if(showRef)
+    {
+        if(!MaskSDARef.empty())
+        {
+            Mat ImShowMask;
+            if(showContour)
+                ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDARef), ImShowPseudocolor);
+            else
+                ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDARef, ImShowPseudocolor);
+            imshow("Refference", ImShowMask);
+        }
+    }
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -882,6 +894,8 @@ MainWindow::MainWindow(QWidget *parent) :
     showSDANorm = ui->CheckBoxShowSDANorm->checkState();
     showSDANormPC = ui->CheckBoxShowSDANormPC->checkState();
     showSDAThresholded = ui->CheckBoxShowSDAThresholded->checkState();
+
+    showRef = ui->checkBoxShowRefference->checkState();
 
     showConv = ui->CheckBoxShowConv->checkState();
 
@@ -1518,8 +1532,11 @@ void MainWindow::on_pushButtonClearOut_clicked()
 
 void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
 {
-    MaskSDARef.release();
-    MaskSDA.copyTo(MaskSDARef);
+    //MaskSDARef.release();
+    //MaskSDA.copyTo(MaskSDARef);
+    if(MaskSDARef.empty())
+        return;
+
     kernelSizeSDARef = kernelSizeSDA;
 
     string paramsStr = ParamsToString();
@@ -1711,4 +1728,31 @@ void MainWindow::on_DistortImIn_clicked()
     ShowImages();
     ShowMask();
     EstymateSDA();
+}
+
+void MainWindow::on_pushButtonOpenRefROI_clicked()
+{
+    QFileDialog dialog(this, "Open File");
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setNameFilter(tr("Images (*.tiff)"));
+    dialog.setDirectory(InputDirectory.string().c_str());
+
+    QStringList fileNames;
+    if (dialog.exec())
+        fileNames = dialog.selectedFiles();
+    else
+        return;
+    if(!fileNames.size())
+        return;
+    string RefROIFileNameWithPath = fileNames.at(0).toStdString();//dialog.getOpenFileName(this).toStdString();
+
+    MaskSDARef.release();
+    MaskSDARef = imread(RefROIFileNameWithPath, CV_LOAD_IMAGE_ANYDEPTH);
+    ShowImages();
+}
+
+void MainWindow::on_checkBoxShowRefference_toggled(bool checked)
+{
+    showRef = checked;
+    ShowImages();
 }
