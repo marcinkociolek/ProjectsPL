@@ -134,21 +134,23 @@ public:
 
     double jaccard;
 
-    std::string OutString;
-    std::string OutJaccard;
-    std::string OutThreshold;
+    //std::string OutString;
+    //std::string OutJaccard;
+    //std::string OutThreshold;
     std::string LocalString;
 
     std:: string FilePatternStr;
-
     void MainWindow::CalculateSDA(void);
+    //void MainWindow::CalculateSDA(void);
+
     //cv::Mat MainWindow::CalculateSDA(cv::Mat imIn, cv::Mat Roi, int radius);
     void MainWindow::OpenImage(void);
     void MainWindow::ShowImages(void);
 
     void MainWindow::MaskImage(void);
     void MainWindow::ShowMask(void);
-    void MainWindow::EstymateSDA(void);
+    //void MainWindow::EstymateSDA(void);
+    void MainWindow::EstymateSDA(bool calculateSDA, int sdaSize, cv::Mat ImIn, cv::Mat Mask, cv::Mat MaskImplant, int kernelSizeSDA, int *kernelPixelCountSDA);
     void MainWindow::ShowSDA(void);
     void MainWindow::PostSDA(void);
     void MainWindow::ShowResults(void);

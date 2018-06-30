@@ -469,6 +469,8 @@ void MainWindow::MaskImage(void)
         DivideSeparateRegions(MaskImplant, minRegionSize);
     }
 
+    ErosionCV(MaskImplant, 3);
+
 
     if(expandMask)
     {
@@ -507,6 +509,26 @@ void MainWindow::MaskImage(void)
         }
     }
 
+    if(1)
+    {
+        int cropp = 50;
+        if (cropp > maxY)
+            cropp = maxY;
+        int startY = maxY - cropp;
+        unsigned short *wMask = (unsigned short *)Mask.data + startY * maxX;
+        //int cropp = croppSize;
+
+
+        for(int y = startY; y < maxY; y++)
+        {
+            for(int x = 0; x < maxX; x++)
+            {
+                *wMask = 0;
+                wMask++;
+            }
+        }
+    }
+
     if(MaskSDARefTemp.empty())
         MaskSDARefTemp = Mat::zeros(maxY,maxX,CV_16U);
     else
@@ -517,7 +539,7 @@ void MainWindow::MaskImage(void)
 
     ShowMask();
 
-    EstymateSDA();
+    EstymateSDA(calculateSDA, sdaSize, ImIn, Mask, MaskImplant, kernelSizeSDA, &kernelPixelCountSDA);
 
 
 }
@@ -561,7 +583,7 @@ void MainWindow::ShowMask(void)
 
 }
 //--------------------------------------------------------------------------------------------------
-void MainWindow::EstymateSDA(void)
+void MainWindow::EstymateSDA(bool calculateSDA, int sdaSize, cv::Mat ImIn, cv::Mat Mask, cv::Mat MaskImplant, int kernelSizeSDA, int *kernelPixelCountSDA)
 {
     if(ImIn.empty())
         return;
@@ -571,17 +593,17 @@ void MainWindow::EstymateSDA(void)
     switch(sdaSize)
     {
     case 1:
-        ImSDA = CalculateSDAL(ImIn, Mask + MaskImplant, kernelSizeSDA, &kernelPixelCountSDA);
+        ImSDA = CalculateSDAL(ImIn, Mask + MaskImplant, kernelSizeSDA, kernelPixelCountSDA);
         break;
     case 2:
-        ImSDA = CalculateSDAL(ImIn, Mat::ones(ImIn.rows,ImIn.cols, CV_16U), kernelSizeSDA, &kernelPixelCountSDA);
+        ImSDA = CalculateSDAL(ImIn, Mat::ones(ImIn.rows,ImIn.cols, CV_16U), kernelSizeSDA, kernelPixelCountSDA);
         break;
 
     default:
-        ImSDA = CalculateSDAL(ImIn, Mask, kernelSizeSDA, &kernelPixelCountSDA);
+        ImSDA = CalculateSDAL(ImIn, Mask, kernelSizeSDA, kernelPixelCountSDA);
         break;
     }
-    ImNormInvSDA = CreateNormalisedSDA(ImSDA, kernelPixelCountSDA);
+    ImNormInvSDA = CreateNormalisedSDA(ImSDA, *kernelPixelCountSDA);
     //
 
 
@@ -616,7 +638,7 @@ void MainWindow::ShowSDA(void)
 }
 
 //--------------------------------------------------------------------------------------------------
-void MainWindow::PostSDA(void)
+void MainWindow::PostSDA()
 {
     if(thresholdSDA && !ImSDA.empty())
     {
@@ -1292,7 +1314,7 @@ void MainWindow::on_CheckBoxCalculateSDA_toggled(bool checked)
 {
     calculateSDA = checked;
     //CalculateSDA();
-    EstymateSDA();
+    EstymateSDA(calculateSDA, sdaSize, ImIn, Mask, MaskImplant, kernelSizeSDA, &kernelPixelCountSDA);
 }
 
 void MainWindow::on_spinBoxSDAKernelSize_valueChanged(int arg1)
@@ -1501,7 +1523,7 @@ void MainWindow::on_comboBoxSDASize_currentIndexChanged(int index)
 {
     sdaSize = index;
     //ui->CheckBoxCalculateSDA->setChecked(false);
-    EstymateSDA();
+    EstymateSDA(calculateSDA, sdaSize, ImIn, Mask, MaskImplant, kernelSizeSDA, &kernelPixelCountSDA);
 }
 
 void MainWindow::on_CheckBoxShowSDANormPC_toggled(bool checked)
@@ -1529,8 +1551,8 @@ void MainWindow::on_CheckBoxShowSDANorm_toggled(bool checked)
 
 void MainWindow::on_pushButtonStoreLocalToOut_clicked()
 {
-    OutString += "\n" + LocalString;
-    ui->textEditOutFile->setText(OutString.c_str());
+    //OutString += "\n" + LocalString;
+    //ui->textEditOutFile->setText(OutString.c_str());
 }
 
 void MainWindow::on_pushButtonSaveRef_clicked()
@@ -1541,10 +1563,10 @@ void MainWindow::on_pushButtonSaveRef_clicked()
 
 void MainWindow::on_pushButtonClearOut_clicked()
 {
-    OutString = "";
-    OutJaccard ="";
-    OutString = "";
-    ui->textEditOutFile->setText(OutString.c_str());
+    //OutString = "";
+    //OutJaccard ="";
+    //OutString = "";
+    ui->textEditOutFile->setText("");
 }
 
 void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
@@ -1558,9 +1580,9 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
 
     string paramsStr = ParamsToString();
 
-    OutJaccard = "";
-    OutThreshold = "";
-    OutString = "";
+    string OutJaccard = "";
+    string OutThreshold = "";
+    string OutString = "";
     ui->textEditOutFile->setText(OutString.c_str());
 
     for (int radius = 50; radius >=30; radius--)
@@ -1569,22 +1591,12 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
         OutJaccard += to_string(radius) + "\t";
         OutThreshold += to_string(radius) + "\t";
         kernelSizeSDA = radius;
-        EstymateSDA();
+        EstymateSDA(1, sdaSize, ImIn, Mask, MaskImplant, radius, &kernelPixelCountSDA);
         double jaccardMax  = 0.0;
         int jaccardMaxThreshold = 0;
         stopDisplay = true;
-        int thresholdStop = 0;
-        for(int threshold = kernelPixelCountSDA - 1; threshold  >= 0; threshold-= 1)
-        {
-            thresholdImSDA = threshold;
-            PostSDA();
-            if(jaccard > 0.3)
-            {
-                thresholdStop = threshold;
-                break;
-            }
-        }
-        for(int threshold = thresholdStop; threshold  > 0; threshold--)
+
+        for(int threshold = 0; threshold  < kernelPixelCountSDA; threshold+=1)
         {
             thresholdImSDA = threshold;
             PostSDA();
@@ -1593,8 +1605,8 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
                 jaccardMax = jaccard;
                 jaccardMaxThreshold = threshold;
             }
-            if(jaccard < 0.2)
-                break;
+            if(jaccard < 0.01)
+                 break;
             OutJaccard += to_string(jaccard) + "\t";
             OutThreshold += to_string(threshold) + "\t";
         }
@@ -1643,9 +1655,9 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
 
     string paramsStr = ParamsToString();
 
-    OutJaccard = "";
-    OutThreshold = "";
-    OutString = "";
+    string OutJaccard = "";
+    string OutThreshold = "";
+    string OutString = "";
     ui->textEditOutFile->setText(OutString.c_str());
 
     for (int radius = 50; radius >=30; radius--)
@@ -1654,7 +1666,7 @@ void MainWindow::on_pushButtonDataFor2dPlot_clicked()
         OutJaccard += to_string(radius) + "\t";
         OutThreshold += to_string(radius) + "\t";
         kernelSizeSDA = radius;
-        EstymateSDA();
+        EstymateSDA(1, sdaSize, ImIn, Mask, MaskImplant, radius, &kernelPixelCountSDA);
         double jaccardMax  = 0.0;
         int jaccardMaxThreshold = 0;
         stopDisplay = true;
@@ -1744,7 +1756,7 @@ void MainWindow::on_DistortImIn_clicked()
     }
     ShowImages();
     ShowMask();
-    EstymateSDA();
+    EstymateSDA(calculateSDA, sdaSize, ImIn, Mask, MaskImplant, kernelSizeSDA, &kernelPixelCountSDA);
 }
 
 void MainWindow::on_pushButtonOpenRefROI_clicked()
