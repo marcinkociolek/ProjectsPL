@@ -1587,7 +1587,6 @@ void MainWindow::on_pushButtonFindOptimalTheshold_clicked()
 
     for (int radius = 50; radius >=30; radius--)
     {
-
         OutJaccard += to_string(radius) + "\t";
         OutThreshold += to_string(radius) + "\t";
         kernelSizeSDA = radius;
