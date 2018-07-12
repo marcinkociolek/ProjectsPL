@@ -134,6 +134,12 @@ public:
 
     double jaccard;
 
+    bool useParamsFromFile;
+
+    std::vector<std::string> ImNamesVector;
+    std::vector<int> IntensityThresholdVector;
+    std::vector<int> GradientThresholdVector;
+
     //std::string OutString;
     //std::string OutJaccard;
     //std::string OutThreshold;
@@ -284,6 +290,10 @@ private slots:
     void on_pushButtonTemp_clicked();
 
     void on_CheckBoxShowOutputOnSDA_toggled(bool checked);
+
+    void on_pushButtonLoadImageParams_clicked();
+
+    void on_checkBoxUseParamsFromFile_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

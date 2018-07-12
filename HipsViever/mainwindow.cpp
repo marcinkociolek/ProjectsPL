@@ -1012,6 +1012,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->lineEditHeader->setText(HeaderString.c_str());
 
+    useParamsFromFile = ui->checkBoxUseParamsFromFile->checkState();
+
     stopDisplay = 0;
 
     OnOffImageWindow();
@@ -1086,7 +1088,37 @@ void MainWindow::on_pushButtonSelectInFolder_clicked()
 
 void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentText)
 {
+
+
     CurrentFileName = currentText.toStdString();
+
+
+    if(useParamsFromFile)
+    {
+        int vectorIndex = -1;
+        for(int i = 0; i < ImNamesVector.size();i++)
+        {
+            if(ImNamesVector[i] == CurrentFileName)
+            {
+                vectorIndex = i;
+                break;
+            }
+        }
+        if(vectorIndex>-1)
+        {
+            ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
+            ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
+        }
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.setText("no data");
+            msgBox.exec();
+            return;
+        }
+    }
+
+
     string FileName(CurrentFileName);
 
     FileToOpen = InputDirectory;
@@ -1803,4 +1835,81 @@ void MainWindow::on_CheckBoxShowOutputOnSDA_toggled(bool checked)
     showOutputOnSDA = checked;
     OnOffImageWindow();
     ShowResults();
+}
+
+void MainWindow::on_pushButtonLoadImageParams_clicked()
+{
+    ImNamesVector.clear() ;
+    IntensityThresholdVector.clear();
+    GradientThresholdVector.clear();
+    if (!exists(InputDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((InputDirectory.string()+ " not exists ").c_str());
+        msgBox.exec();
+        return;
+    }
+    path ParamFile = InputDirectory;
+    ParamFile.append("ImageParams.txt");
+
+    if (!exists(ParamFile))
+        return;
+    std::ifstream inFile(ParamFile.string());
+    if (!inFile.is_open())
+    {
+        QMessageBox msgBox;
+        msgBox.setText(" File not exists");
+        msgBox.exec();
+        return;
+    }
+    // ------------------read params from file-----------------------------
+
+    string Line;
+    if(inFile.good())
+    {
+        getline(inFile, Line);
+        regex LinePattern("FileName\tInensityTheshold\tGradientThreshold.+");
+        if (!regex_match(Line.c_str(), LinePattern))
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Invalid FileFormat " );
+            msgBox.exec();
+        }
+    }
+    while(inFile.good())
+    {
+        //TileParams params;
+        getline(inFile,Line);
+
+        std::stringstream InStringStream(Line);
+
+        std::string subStr;
+
+        InStringStream >> subStr;
+        if(subStr == "")
+            continue;
+        string ImFileName = subStr;
+        InStringStream >> subStr;
+        if(subStr == "")
+            continue;
+        int intensityTh = std::stoi(subStr);
+        InStringStream >> subStr;
+        if(subStr == "")
+            continue;
+        int gradientTh = std::stoi(subStr);
+
+        ImNamesVector.push_back(ImFileName);
+        IntensityThresholdVector.push_back(intensityTh);
+        GradientThresholdVector.push_back(gradientTh);
+    }
+
+    inFile.close();
+    return;
+
+
+}
+
+void MainWindow::on_checkBoxUseParamsFromFile_toggled(bool checked)
+{
+    useParamsFromFile = checked;
 }
