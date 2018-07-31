@@ -1108,6 +1108,7 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
         {
             ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
             ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
+
         }
         else
         {
@@ -1140,6 +1141,9 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
     ImShowGray.release();
     ImShowPseudocolor.release();
     ImShowSDA.release();
+
+    if(useParamsFromFile)
+        ui->CheckBoxCalculateSDA->setChecked(true);
 
     OpenImage();
 }
