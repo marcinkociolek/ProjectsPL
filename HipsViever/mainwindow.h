@@ -295,6 +295,10 @@ private slots:
 
     void on_checkBoxUseParamsFromFile_toggled(bool checked);
 
+    void on_pushButtonX1_clicked();
+
+    void on_pushButtonX2_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

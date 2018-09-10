@@ -1268,7 +1268,7 @@ void MainWindow::on_spinBoxMaxFlood_valueChanged(int arg1)
 void MainWindow::on_CheckBoxAllowResize_toggled(bool checked)
 {
     if(ui->CheckBoxAllowResize->checkState())
-        displayFlag = WINDOW_NORMAL;
+        displayFlag = CV_GUI_EXPANDED;//WINDOW_NORMAL;
     else
         displayFlag = WINDOW_AUTOSIZE;
 
@@ -1916,4 +1916,19 @@ void MainWindow::on_pushButtonLoadImageParams_clicked()
 void MainWindow::on_checkBoxUseParamsFromFile_toggled(bool checked)
 {
     useParamsFromFile = checked;
+}
+
+void MainWindow::on_pushButtonX1_clicked()
+{
+    //"Refference"
+    resizeWindow("Refference", maxX,maxY);
+
+
+}
+
+void MainWindow::on_pushButtonX2_clicked()
+{
+    resizeWindow("Refference", maxX*2,maxY*2);
+
+
 }
