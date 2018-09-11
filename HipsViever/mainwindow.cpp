@@ -546,41 +546,57 @@ void MainWindow::MaskImage(void)
 //--------------------------------------------------------------------------------------------------
 void MainWindow::ShowMask(void)
 {
-    if(MaskImplant.empty())
-        return;
-    if(showMaskImplant)
+    if(showMaskImplant && !MaskImplant.empty())
     {
         Mat ImShowMask;
         if(showContour)
             ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskImplant), ImShowPseudocolor);
         else
             ImShowMask = ShowSolidRegionOnImageInBlack(MaskImplant, ImShowPseudocolor);
+
+        if(rotateImages)
+            rotate(ImShowMask,ImShowMask, ROTATE_90_CLOCKWISE);
+
+        if(imageScale > 1.0)
+            cv::resize(ImShowMask,ImShowMask,Size(),imageScale,imageScale,INTER_NEAREST);
+
         imshow("Mask Implant", ImShowMask);
     }
-    if(Mask.empty())
-        return;
-    if(showMask)
+
+    if(showMask && !Mask.empty())
     {
         Mat ImShowMask;
         if(showContour)
             ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor);
         else
             ImShowMask = ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor);
+
+        if(rotateImages)
+            rotate(ImShowMask,ImShowMask, ROTATE_90_CLOCKWISE);
+
+        if(imageScale > 1.0)
+            cv::resize(ImShowMask,ImShowMask,Size(),imageScale,imageScale,INTER_NEAREST);
+
+
         imshow("Mask", ImShowMask);
     }
-    if(showRef)
+    if(showRef && !MaskSDARef.empty())
     {
-        if(!MaskSDARef.empty())
-        {
-            Mat ImShowMask;
-            if(showContour)
-                ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDARef), ImShowPseudocolor);
-            else
-                ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDARef, ImShowPseudocolor);
-            imshow("Refference", ImShowMask);
-        }
-    }
+        Mat ImShowMask;
+        if(showContour)
+            ImShowMask = ShowSolidRegionOnImageInBlack(GetContour5(MaskSDARef), ImShowPseudocolor);
+        else
+            ImShowMask = ShowSolidRegionOnImageInBlack(MaskSDARef, ImShowPseudocolor);
 
+        if(rotateImages)
+            rotate(ImShowMask,ImShowMask, ROTATE_90_CLOCKWISE);
+
+        if(imageScale > 1.0)
+            cv::resize(ImShowMask,ImShowMask,Size(),imageScale,imageScale,INTER_NEAREST);
+
+        imshow("Refference", ImShowMask);
+
+    }
 }
 //--------------------------------------------------------------------------------------------------
 void MainWindow::EstymateSDA(bool calculateSDA, int sdaSize, cv::Mat ImIn, cv::Mat Mask, cv::Mat MaskImplant, int kernelSizeSDA, int *kernelPixelCountSDA)
@@ -1013,6 +1029,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEditHeader->setText(HeaderString.c_str());
 
     useParamsFromFile = ui->checkBoxUseParamsFromFile->checkState();
+
+    imageScale = ui->doubleSpinBoxImScale->value();
+    rotateImages = ui->checkBoxRotateImages->checkState();
 
     stopDisplay = 0;
 
@@ -1921,14 +1940,32 @@ void MainWindow::on_checkBoxUseParamsFromFile_toggled(bool checked)
 void MainWindow::on_pushButtonX1_clicked()
 {
     //"Refference"
-    resizeWindow("Refference", maxX,maxY);
-
+    if(rotateImages)
+        resizeWindow("Refference", maxY,maxX);
+    else
+        resizeWindow("Refference", maxX,maxY);
 
 }
 
 void MainWindow::on_pushButtonX2_clicked()
 {
-    resizeWindow("Refference", maxX*2,maxY*2);
+    if(rotateImages)
+        resizeWindow("Refference", maxY*2,maxX*2);
+    else
+        resizeWindow("Refference", maxX*2,maxY*2);
 
 
+}
+
+void MainWindow::on_checkBoxRotateImages_toggled(bool checked)
+{
+    rotateImages = checked;
+    ShowMask();
+}
+
+
+void MainWindow::on_doubleSpinBoxImScale_valueChanged(double arg1)
+{
+     imageScale = arg1;
+     ShowMask();
 }

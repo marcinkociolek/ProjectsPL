@@ -1792,8 +1792,8 @@
    <widget class="QPushButton" name="pushButtonX1">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>360</y>
+      <x>620</x>
+      <y>380</y>
       <width>21</width>
       <height>22</height>
      </rect>
@@ -1805,14 +1805,49 @@
    <widget class="QPushButton" name="pushButtonX2">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>360</y>
+      <x>650</x>
+      <y>380</y>
       <width>21</width>
       <height>22</height>
      </rect>
     </property>
     <property name="text">
      <string>X2</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxRotateImages">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>350</y>
+      <width>72</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Rortate Images</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="doubleSpinBoxImScale">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>380</y>
+      <width>81</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="prefix">
+     <string>im scale </string>
+    </property>
+    <property name="decimals">
+     <number>0</number>
+    </property>
+    <property name="minimum">
+     <double>1.000000000000000</double>
+    </property>
+    <property name="maximum">
+     <double>4.000000000000000</double>
     </property>
    </widget>
   </widget>

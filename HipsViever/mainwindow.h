@@ -84,6 +84,9 @@ public:
 
     bool showRef;
 
+    bool rotateImages;
+    double imageScale;
+
     int closingShape;
 
     bool fillHoles;
@@ -298,6 +301,12 @@ private slots:
     void on_pushButtonX1_clicked();
 
     void on_pushButtonX2_clicked();
+
+    void on_checkBoxRotateImages_toggled(bool checked);
+
+
+
+    void on_doubleSpinBoxImScale_valueChanged(double arg1);
 
 private:
     Ui::MainWindow *ui;
