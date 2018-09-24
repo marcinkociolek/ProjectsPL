@@ -250,6 +250,100 @@ cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int *outSDARoiPixCo
     return ImSDA;
 
 }
+//--------------------------------------------------------------------------------------------------
+cv::Mat CalculateSDAL2(cv::Mat ImIn, cv::Mat Roi, int radius, int *outSDARoiPixCount = 0)
+{
+
+    if(Roi.empty())
+        return Mat::zeros(0,0,CV_16U);
+    if(ImIn.empty())
+        return Mat::zeros(0,0,CV_16U);
+
+    //unsigned short *wImIn = (unsigned short*)ImIn.data;
+    //float *wImGradient = (float*)ImGradient.data;
+
+    int maxX = ImIn.cols;
+    int maxY = ImIn.rows;
+    //int maxXY = maxX * maxY;
+    if(Roi.cols != maxX)
+        return Mat::zeros(0,0,CV_16U);
+    if(Roi.rows != maxY)
+        return Mat::zeros(0,0,CV_16U);
+
+
+    int diameter = radius * 2 + 1;
+
+
+    int roiMaxX = diameter;
+    int roiMaxY = diameter;
+    Mat RoiSmall = Mat::zeros(roiMaxY, roiMaxX, CV_16U);
+    ellipse(RoiSmall, Point(roiMaxX / 2, roiMaxY / 2),
+        Size(roiMaxX / 2, roiMaxY / 2), 0.0, 100.0, 260.0,
+        1, -1);
+
+    imshow("ROI shape",RoiSmall * 60000);
+
+    unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
+    int roiPixCount = 0;
+    for(int y = 0; y < RoiSmall.rows; y++)
+    {
+        for(int x = 0; x < RoiSmall.cols; x++)
+        {
+            if(*wRoiSmall)
+                roiPixCount++;
+            wRoiSmall++;
+        }
+    }
+    int kernelPixelCountSDA = roiPixCount;
+    Mat ImSDA = Mat::zeros(maxY, maxX, CV_16U);
+
+    unsigned short *wImSDA = (unsigned short*)ImSDA.data;
+    unsigned short *wImIn = (unsigned short*)ImIn.data;
+    unsigned short *wRoi = (unsigned short*)Roi.data;
+
+    int xLimMin = radius +1;
+    int xLimMax = maxX - radius;
+    int yLimMin = radius + 1;
+    int yLimMax = maxY - radius;
+    int maxXYSmall = diameter *diameter;
+
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if (*wRoi)
+            {
+                if(x > xLimMin && x < xLimMax && y > yLimMin && y < yLimMax )
+                {
+                    Mat ImSmall;
+                    unsigned short pixVal = *wImIn;
+                    int sum = 0;
+                    ImIn(Rect(x - radius, y - radius, diameter,diameter)).copyTo(ImSmall);
+                    unsigned short *wImSmall = (unsigned short*)ImSmall.data;
+                    unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
+                    for(int i = 0; i < maxXYSmall; i++)
+                    {
+                        if(*wImSmall >= pixVal && *wRoiSmall)
+                        {
+                           sum++;
+                        }
+                        wImSmall++;
+                        wRoiSmall++;
+                    }
+                    *wImSDA = sum;
+                }
+            }
+            else
+                *wImSDA = 0;
+            wRoi++;
+            wImIn++;
+            wImSDA++;
+        }
+    }
+    *outSDARoiPixCount = roiPixCount;
+    return ImSDA;
+
+}
 
 //--------------------------------------------------------------------------------------------------
 cv::Mat CreateNormalisedSDA(cv::Mat ImSDA, int kernelPixelCountSDA)
@@ -420,10 +514,19 @@ void MainWindow::ShowImages(void)
     if(ImIn.empty())
         return;
     if(showInputGray)
+    {
         ImShowGray = ShowImage16Gray(ImIn,minShowGray,maxShowGray);
+    }
     if(showInputGray)
-        imshow("Gray", ImShowGray);
+    {
+        Mat ImShowTemp = ImShowGray;
+        if(rotateImages)
+            rotate(ImShowTemp,ImShowTemp, ROTATE_90_CLOCKWISE);
 
+        if(imageScale > 1.0)
+            cv::resize(ImShowTemp,ImShowTemp,Size(),imageScale,imageScale,INTER_NEAREST);
+        imshow("Gray", ImShowTemp);
+    }
     //if(showInputPseudocolor||showMask)
         ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
     if(showInputPseudocolor)
@@ -637,19 +740,39 @@ void MainWindow::ShowSDA(void)
     ImShowSDA = ShowImage16PseudoColor(ImSDA,minShowSDA,maxShowSDA);
     if(showSDA)
     {
+        Mat ImShowLocal = ImShowSDA;
+        if(rotateImages)
+            rotate(ImShowLocal,ImShowLocal, ROTATE_90_CLOCKWISE);
 
-        imshow("SDA", ImShowSDA);
+        if(imageScale > 1.0)
+            cv::resize(ImShowLocal,ImShowLocal,Size(),imageScale,imageScale,INTER_NEAREST);
+
+
+        imshow("SDA", ImShowLocal);
     }
-    if(ImNormInvSDA.empty())
-        return;
-    if(showSDANorm)
+
+    if(showSDANorm && !ImNormInvSDA.empty())
     {
-        imshow("SDA norm", ImNormInvSDA);
+        Mat ImShowLocal = ImNormInvSDA;
+        if(rotateImages)
+            rotate(ImShowLocal,ImShowLocal, ROTATE_90_CLOCKWISE);
+
+        if(imageScale > 1.0)
+            cv::resize(ImShowLocal,ImShowLocal,Size(),imageScale,imageScale,INTER_NEAREST);
+
+        imshow("SDA norm", ImShowLocal);
     }
-    if(showSDANormPC)
+    if(showSDANormPC && !ImNormInvSDA.empty())
     {
-        ShowImage8PseudoColor(ImNormInvSDA, 0, 255);
-        imshow("SDA norm PC", ShowImage8PseudoColor(ImNormInvSDA, 0.0, 255.0));
+        Mat ImShowLocal = ShowImage8PseudoColor(ImNormInvSDA, 0.0, 255.0);
+        if(rotateImages)
+            rotate(ImShowLocal,ImShowLocal, ROTATE_90_CLOCKWISE);
+
+        if(imageScale > 1.0)
+            cv::resize(ImShowLocal,ImShowLocal,Size(),imageScale,imageScale,INTER_NEAREST);
+
+
+        imshow("SDA norm PC", ImShowLocal);
     }
 }
 
@@ -743,7 +866,14 @@ void MainWindow::ShowResults(void)
         ImShowOutput = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowPseudocolor);
     if(showOutput)
     {
-        imshow("Output", ImShowOutput);
+        Mat ImShowLocal = ImShowOutput;
+        if(rotateImages)
+            rotate(ImShowLocal,ImShowLocal, ROTATE_90_CLOCKWISE);
+
+        if(imageScale > 1.0)
+            cv::resize(ImShowLocal,ImShowLocal,Size(),imageScale,imageScale,INTER_NEAREST);
+
+        imshow("Output", ImShowLocal);
     }
     if(ImShowSDA.empty())
         return;
@@ -1205,24 +1335,36 @@ void MainWindow::on_spinBoxMinShowPseudoColor_valueChanged(int arg1)
 {
     minShowPseudocolor = arg1;
     ShowImages();
+    ShowMask();
+    ShowSDA();
+    ShowResults();
 }
 
 void MainWindow::on_spinBoxMaxShowPseudoColor_valueChanged(int arg1)
 {
     maxShowPseudocolor = arg1;
     ShowImages();
+    ShowMask();
+    ShowSDA();
+    ShowResults();
 }
 
 void MainWindow::on_spinBoxMinShowGradient_valueChanged(int arg1)
 {
     minShowGradient = arg1;
     ShowImages();
+    ShowMask();
+    ShowSDA();
+    ShowResults();
 }
 
 void MainWindow::on_spinBoxMaxShowGradient_valueChanged(int arg1)
 {
     maxShowGradient = arg1;
     ShowImages();
+    ShowMask();
+    ShowSDA();
+    ShowResults();
 }
 
 void MainWindow::on_CheckBoxShowGradient_toggled(bool checked)
@@ -1960,12 +2102,18 @@ void MainWindow::on_pushButtonX2_clicked()
 void MainWindow::on_checkBoxRotateImages_toggled(bool checked)
 {
     rotateImages = checked;
+    ShowImages();
     ShowMask();
+    ShowSDA();
+    ShowResults();
 }
 
 
 void MainWindow::on_doubleSpinBoxImScale_valueChanged(double arg1)
 {
      imageScale = arg1;
+     ShowImages();
      ShowMask();
+     ShowSDA();
+     ShowResults();
 }
