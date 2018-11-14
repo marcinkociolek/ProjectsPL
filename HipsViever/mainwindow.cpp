@@ -1564,13 +1564,19 @@ void MainWindow::on_pushButtonSaveOut_clicked()
     FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_ImplanMaskOnIN" + ItoStrLZ(kernelSizeSDA,2) + ".png");
     FileToSave = InputDirectory;
     FileToSave.append(FileNameOut);
-    imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(MaskImplant, ImShowPseudocolor));
+    if(showContour)
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(GetContour5(MaskImplant), ImShowPseudocolor));
+    else
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(MaskImplant, ImShowPseudocolor));
 
     FileNameOut = CurrentFileName;
     FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_MaskOnIN" + ItoStrLZ(kernelSizeSDA,2) + ".png");
     FileToSave = InputDirectory;
     FileToSave.append(FileNameOut);
-    imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor));
+    if(showContour)
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(GetContour5(Mask), ImShowPseudocolor));
+    else
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(Mask, ImShowPseudocolor));
 
     FileNameOut = CurrentFileName;
     FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_SDA" + ItoStrLZ(kernelSizeSDA,2) + ".png");
@@ -1582,14 +1588,37 @@ void MainWindow::on_pushButtonSaveOut_clicked()
     FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_MaskSDAonSDA" + ItoStrLZ(kernelSizeSDA,2) + ".png");
     FileToSave = InputDirectory;
     FileToSave.append(FileNameOut);
-    imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(MaskSDA, ImShowSDA));
+    if(showContour)
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowSDA));
+    else
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(MaskSDA, ImShowSDA));
 
     FileNameOut = CurrentFileName;
     FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_MaskSDAonImIn" + ItoStrLZ(kernelSizeSDA,2) + ".png");
     FileToSave = InputDirectory;
     FileToSave.append(FileNameOut);
-    imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(MaskSDA, ImShowPseudocolor));
+    if(showContour)
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(GetContour5(MaskSDA), ImShowPseudocolor));
+    else
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(MaskSDA, ImShowPseudocolor));
 
+    FileNameOut = CurrentFileName;
+    FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_MaskRefOnImIn" + ItoStrLZ(kernelSizeSDA,2) + ".png");
+    FileToSave = InputDirectory;
+    FileToSave.append(FileNameOut);
+    if(showContour)
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(GetContour5(MaskSDARef), ImShowPseudocolor));
+    else
+        imwrite(FileToSave.string(),ShowSolidRegionOnImageInBlack(MaskSDARef, ImShowPseudocolor));
+
+    FileNameOut = CurrentFileName;
+    FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_MaskRefOnImInGray" + ItoStrLZ(kernelSizeSDA,2) + ".png");
+    FileToSave = InputDirectory;
+    FileToSave.append(FileNameOut);
+    if(showContour)
+        imwrite(FileToSave.string(),ShowSolidRegionOnImage(GetContour5(MaskSDARef), ImShowGray));
+    else
+        imwrite(FileToSave.string(),ShowSolidRegionOnImage(MaskSDARef, ImShowGray));
     /*
     FileNameOut = regex_replace(FileNameOut,regex("_crop.tif"),"_outSdaR" + ItoStrLZ(kernelSizeSDA,2) + ".bmp");
     path FileToSaveOut = InputDirectory;
