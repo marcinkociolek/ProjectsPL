@@ -1856,6 +1856,19 @@
      <double>2.000000000000000</double>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButtonProcessAllImages">
+    <property name="geometry">
+     <rect>
+      <x>539</x>
+      <y>590</y>
+      <width>101</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Process All Images</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

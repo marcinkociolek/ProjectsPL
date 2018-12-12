@@ -426,20 +426,24 @@ void FindReginsTouchingImplant(Mat MaskImplant, Mat MaskSDA)
 
     unsigned short *wMaskImplant = (unsigned short *)MaskImplant.data;
     unsigned short *wMaskImplantXP = wMaskImplant+1;
+    unsigned short *wMaskImplantXP2 = wMaskImplant+2;
     unsigned short *wMaskImplantXM = wMaskImplant-1;
+    unsigned short *wMaskImplantXM2 = wMaskImplant-2;
     unsigned short *wMaskSDA = (unsigned short *)MaskSDA.data;
     unsigned short *wMaskOut = (unsigned short *)MaskOut.data;
     for(int y = 0; y < maxY; y++)
     {
         for(int x = 0; x < maxX; x++)
         {
-            if(*wMaskSDA)
+            if(*wMaskSDA && y >0 && y < (maxY - 1))
             {
-                if(*wMaskImplantXP ||*wMaskImplantXM)
+                if(*wMaskImplantXP || *wMaskImplantXP2 ||*wMaskImplantXM ||*wMaskImplantXM2)
                     *wMaskOut = 1;
             }
             wMaskImplantXP++;
+            wMaskImplantXP2++;
             wMaskImplantXM++;
+            wMaskImplantXM2++;
             wMaskOut++;
             wMaskSDA++;
         }
@@ -513,6 +517,66 @@ int FindCountOfPixelsTouchingImplant(Mat MaskImplant, Mat MaskSDA)
         }
     }
     return countOfPixelsTouchingImplant;
+}
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+void MainWindow::StartProcessImage(void)
+{
+
+if(useParamsFromFile)
+{
+    int vectorIndex = -1;
+    for(int i = 0; i < ImNamesVector.size();i++)
+    {
+        if(ImNamesVector[i] == CurrentFileName)
+        {
+            vectorIndex = i;
+            break;
+        }
+    }
+    if(vectorIndex>-1)
+    {
+        ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
+        ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
+
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText("no data");
+        msgBox.exec();
+        return;
+    }
+}
+
+
+string FileName(CurrentFileName);
+
+FileToOpen = InputDirectory;
+FileToOpen.append(FileName);
+
+ImIn.release();
+ImConv.release();
+ImSDA.release();
+ImNormInvSDA.release();
+ImGradient.release();
+MaskImplant.release();
+Mask.release();
+
+//MaskSDARef;
+
+MaskSDA.release();
+ImOut.release();
+
+ImShowGray.release();
+ImShowPseudocolor.release();
+ImShowSDA.release();
+
+if(useParamsFromFile)
+    ui->CheckBoxCalculateSDA->setChecked(true);
+
+OpenImage();
 }
 //--------------------------------------------------------------------------------------------------
 void MainWindow::OpenImage(void)
@@ -885,7 +949,7 @@ void MainWindow::PostSDA()
 
         LocalString += to_string(CountOfPixelsTouchingImplant);
         ui->lineEditLocalOut->setText(LocalString.c_str());
-
+        ui->textEditOutFile->append(LocalString.c_str());
         ShowResults();
     }
 }
@@ -1276,8 +1340,8 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
 
 
     CurrentFileName = currentText.toStdString();
-
-
+    StartProcessImage();
+/*
     if(useParamsFromFile)
     {
         int vectorIndex = -1;
@@ -1331,6 +1395,7 @@ void MainWindow::on_ListWidgetFiles_currentTextChanged(const QString &currentTex
         ui->CheckBoxCalculateSDA->setChecked(true);
 
     OpenImage();
+    */
 }
 
 
@@ -2181,4 +2246,17 @@ void MainWindow::on_doubleSpinBoxImScale_valueChanged(double arg1)
      ShowMask();
      ShowSDA();
      ShowResults();
+}
+
+void MainWindow::on_pushButtonProcessAllImages_clicked()
+{
+    int filesCount = ui->ListWidgetFiles->count();
+
+    for(int fileNr = 0; fileNr< filesCount; fileNr++)
+    {
+        CurrentFileName = ui->ListWidgetFiles->item(fileNr)->text().toStdString();
+        StartProcessImage();
+    }
+
+
 }

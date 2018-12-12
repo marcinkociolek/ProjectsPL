@@ -153,6 +153,7 @@ public:
     //void MainWindow::CalculateSDA(void);
 
     //cv::Mat MainWindow::CalculateSDA(cv::Mat imIn, cv::Mat Roi, int radius);
+    void MainWindow::StartProcessImage(void);
     void MainWindow::OpenImage(void);
     void MainWindow::ShowImages(void);
 
@@ -307,6 +308,8 @@ private slots:
 
 
     void on_doubleSpinBoxImScale_valueChanged(double arg1);
+
+    void on_pushButtonProcessAllImages_clicked();
 
 private:
     Ui::MainWindow *ui;
