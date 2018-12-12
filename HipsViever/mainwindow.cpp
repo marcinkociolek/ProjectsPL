@@ -481,7 +481,39 @@ void FindReginsTouchingImplant(Mat MaskImplant, Mat MaskSDA)
 
     MaskOut.copyTo(MaskSDA);
 }
+int FindCountOfPixelsTouchingImplant(Mat MaskImplant, Mat MaskSDA)
+{
+    if(MaskSDA.empty())
+        return -1;
+    if(MaskImplant.empty())
+        return -2;
 
+    int maxX = MaskSDA.cols;
+    int maxY = MaskSDA.rows;
+
+    int countOfPixelsTouchingImplant = 0;
+
+    unsigned short *wMaskImplant = (unsigned short *)MaskImplant.data;
+    unsigned short *wMaskImplantXP = wMaskImplant+1;
+    unsigned short *wMaskImplantXM = wMaskImplant-1;
+    unsigned short *wMaskSDA = (unsigned short *)MaskSDA.data;
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMaskSDA)
+            {
+                if(*wMaskImplantXP ||*wMaskImplantXM)
+                    countOfPixelsTouchingImplant++;
+            }
+            wMaskImplantXP++;
+            wMaskImplantXM++;
+
+            wMaskSDA++;
+        }
+    }
+    return countOfPixelsTouchingImplant;
+}
 //--------------------------------------------------------------------------------------------------
 void MainWindow::OpenImage(void)
 {
@@ -836,6 +868,8 @@ void MainWindow::PostSDA()
 
     jaccard = JaccardIndex(MaskSDARef, MaskSDA, &maskSDACount, &maskSDARefCount);
 
+    int CountOfPixelsTouchingImplant =  FindCountOfPixelsTouchingImplant(MaskImplant, MaskSDA);
+
     if(!stopDisplay)
     {
 
@@ -847,7 +881,9 @@ void MainWindow::PostSDA()
         LocalString += to_string(thresholdImSDA) + "\t";
         LocalString += to_string(jaccard) + "\t";
         LocalString += to_string(maskSDARefCount) + "\t";
-        LocalString += to_string(maskSDACount);
+        LocalString += to_string(maskSDACount) + "\t";
+
+        LocalString += to_string(CountOfPixelsTouchingImplant);
         ui->lineEditLocalOut->setText(LocalString.c_str());
 
         ShowResults();
