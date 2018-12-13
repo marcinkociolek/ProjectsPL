@@ -524,59 +524,59 @@ int FindCountOfPixelsTouchingImplant(Mat MaskImplant, Mat MaskSDA)
 void MainWindow::StartProcessImage(void)
 {
 
-if(useParamsFromFile)
-{
-    int vectorIndex = -1;
-    for(int i = 0; i < ImNamesVector.size();i++)
+    if(useParamsFromFile)
     {
-        if(ImNamesVector[i] == CurrentFileName)
+        int vectorIndex = -1;
+        for(int i = 0; i < ImNamesVector.size();i++)
         {
-            vectorIndex = i;
-            break;
+            if(ImNamesVector[i] == CurrentFileName)
+            {
+                vectorIndex = i;
+                break;
+            }
+        }
+        if(vectorIndex>-1)
+        {
+            ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
+            ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
+
+        }
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.setText("no data");
+            msgBox.exec();
+            return;
         }
     }
-    if(vectorIndex>-1)
-    {
-        ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
-        ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
-
-    }
-    else
-    {
-        QMessageBox msgBox;
-        msgBox.setText("no data");
-        msgBox.exec();
-        return;
-    }
-}
 
 
-string FileName(CurrentFileName);
+    string FileName(CurrentFileName);
 
-FileToOpen = InputDirectory;
-FileToOpen.append(FileName);
+    FileToOpen = InputDirectory;
+    FileToOpen.append(FileName);
 
-ImIn.release();
-ImConv.release();
-ImSDA.release();
-ImNormInvSDA.release();
-ImGradient.release();
-MaskImplant.release();
-Mask.release();
+    ImIn.release();
+    ImConv.release();
+    ImSDA.release();
+    ImNormInvSDA.release();
+    ImGradient.release();
+    MaskImplant.release();
+    Mask.release();
 
-//MaskSDARef;
+    //MaskSDARef;
 
-MaskSDA.release();
-ImOut.release();
+    MaskSDA.release();
+    ImOut.release();
 
-ImShowGray.release();
-ImShowPseudocolor.release();
-ImShowSDA.release();
+    ImShowGray.release();
+    ImShowPseudocolor.release();
+    ImShowSDA.release();
 
-if(useParamsFromFile)
-    ui->CheckBoxCalculateSDA->setChecked(true);
+    if(useParamsFromFile)
+        ui->CheckBoxCalculateSDA->setChecked(true);
 
-OpenImage();
+    OpenImage();
 }
 //--------------------------------------------------------------------------------------------------
 void MainWindow::OpenImage(void)
@@ -943,9 +943,11 @@ void MainWindow::PostSDA()
         LocalString += to_string(kernelPixelCountSDA) + "\t";
 
         LocalString += to_string(thresholdImSDA) + "\t";
+        LocalString += to_string(minRegionSizeSDA) + "\t";
         LocalString += to_string(jaccard) + "\t";
         LocalString += to_string(maskSDARefCount) + "\t";
         LocalString += to_string(maskSDACount) + "\t";
+
 
         LocalString += to_string(CountOfPixelsTouchingImplant);
         ui->lineEditLocalOut->setText(LocalString.c_str());
@@ -1253,8 +1255,9 @@ MainWindow::MainWindow(QWidget *parent) :
     HeaderString +=  "SDA #\t";
     HeaderString +=  "SDA TH\t";
     HeaderString +=  "Jack\t";
-    HeaderString +=  "mask #\t";
     HeaderString +=  "ref #\t";
+    HeaderString +=  "region #\t";
+    HeaderString +=  "length #\t";
 
     ui->lineEditHeader->setText(HeaderString.c_str());
 
@@ -2250,12 +2253,27 @@ void MainWindow::on_doubleSpinBoxImScale_valueChanged(double arg1)
 
 void MainWindow::on_pushButtonProcessAllImages_clicked()
 {
+
+    string HeaderString =  "File\t";
+    HeaderString +=  "SDA d\t";
+    HeaderString +=  "SDA #\t";
+    HeaderString +=  "SDA TH\t";
+    HeaderString +=  "MinReg #\t";
+    HeaderString +=  "Jack\t";
+    HeaderString +=  "ref #\t";
+    HeaderString +=  "region #\t";
+
+    HeaderString +=  "length #\t";
+
+    ui->textEditOutFile->append(QString::fromStdString(HeaderString));
+
     int filesCount = ui->ListWidgetFiles->count();
 
     for(int fileNr = 0; fileNr< filesCount; fileNr++)
     {
         CurrentFileName = ui->ListWidgetFiles->item(fileNr)->text().toStdString();
         StartProcessImage();
+        waitKey(70);
     }
 
 
