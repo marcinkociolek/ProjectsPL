@@ -142,6 +142,7 @@ public:
     std::vector<std::string> ImNamesVector;
     std::vector<int> IntensityThresholdVector;
     std::vector<int> GradientThresholdVector;
+    std::vector<int> CroppSizeVector;
 
     //std::string OutString;
     //std::string OutJaccard;

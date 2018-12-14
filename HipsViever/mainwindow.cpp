@@ -539,7 +539,7 @@ void MainWindow::StartProcessImage(void)
         {
             ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
             ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
-
+            ui->spinBoxCroppSize->setValue(CroppSizeVector[vectorIndex]);
         }
         else
         {
@@ -2140,6 +2140,7 @@ void MainWindow::on_pushButtonLoadImageParams_clicked()
     ImNamesVector.clear() ;
     IntensityThresholdVector.clear();
     GradientThresholdVector.clear();
+    CroppSizeVector.clear();
     if (!exists(InputDirectory))
     {
         QMessageBox msgBox;
@@ -2195,10 +2196,15 @@ void MainWindow::on_pushButtonLoadImageParams_clicked()
         if(subStr == "")
             continue;
         int gradientTh = std::stoi(subStr);
+        InStringStream >> subStr;
+        if(subStr == "")
+            continue;
+        int croppSize = std::stoi(subStr);
 
         ImNamesVector.push_back(ImFileName);
         IntensityThresholdVector.push_back(intensityTh);
         GradientThresholdVector.push_back(gradientTh);
+        CroppSizeVector.push_back(croppSize);
     }
 
     inFile.close();
