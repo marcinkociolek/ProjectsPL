@@ -540,6 +540,7 @@ void MainWindow::StartProcessImage(void)
             ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
             ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
             ui->spinBoxCroppSize->setValue(CroppSizeVector[vectorIndex]);
+            ui->doubleSpinBoxRotation->setValue( RotationAngleVector[vectorIndex]);
         }
         else
         {
@@ -582,6 +583,13 @@ void MainWindow::StartProcessImage(void)
 void MainWindow::OpenImage(void)
 {
     ImIn = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
+    Mat RotMat = getRotationMatrix2D(Point((ImIn.cols - 1)/2.0, (ImIn.rows - 1)/2.0), ui->doubleSpinBoxRotation->value(),1);
+    if(ui->checkBoxRotate->checkState())
+        warpAffine(ImIn,ImIn,RotMat, ImIn.size());
+
+
+    //rotate(ImIn,ImIn, ui->doubleSpinBoxRotation->value());
     if(ImIn.empty())
         return;
     maxX = ImIn.cols;
@@ -598,7 +606,9 @@ void MainWindow::OpenImage(void)
 
     MaskSDARef.release();
     MaskSDARefTemp = imread(ReffFileToOpen.string(), CV_LOAD_IMAGE_ANYDEPTH);
-
+    if(ui->checkBoxRotate->checkState())
+        warpAffine(MaskSDARefTemp, MaskSDARefTemp ,RotMat, ImIn.size());
+    //rotate(ImIn,ImIn, ui->doubleSpinBoxRotation->value());
 
     ShowImages();
     MaskImage();
@@ -2141,6 +2151,7 @@ void MainWindow::on_pushButtonLoadImageParams_clicked()
     IntensityThresholdVector.clear();
     GradientThresholdVector.clear();
     CroppSizeVector.clear();
+    RotationAngleVector.clear();
     if (!exists(InputDirectory))
     {
         QMessageBox msgBox;
@@ -2200,14 +2211,21 @@ void MainWindow::on_pushButtonLoadImageParams_clicked()
         if(subStr == "")
             continue;
         int croppSize = std::stoi(subStr);
+        InStringStream >> subStr;
+        if(subStr == "")
+            continue;
+        double rotationAngle = std::stod(subStr);
+
 
         ImNamesVector.push_back(ImFileName);
         IntensityThresholdVector.push_back(intensityTh);
         GradientThresholdVector.push_back(gradientTh);
         CroppSizeVector.push_back(croppSize);
+        RotationAngleVector.push_back(rotationAngle);
     }
 
     inFile.close();
+    StartProcessImage();
     return;
 
 
@@ -2283,4 +2301,11 @@ void MainWindow::on_pushButtonProcessAllImages_clicked()
     }
 
 
+}
+
+void MainWindow::on_doubleSpinBoxRotation_valueChanged(double arg1)
+{
+    ui->CheckBoxCalculateSDA->setChecked(false);
+    OpenImage();
+    ShowImages();
 }

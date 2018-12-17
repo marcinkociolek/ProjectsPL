@@ -143,6 +143,7 @@ public:
     std::vector<int> IntensityThresholdVector;
     std::vector<int> GradientThresholdVector;
     std::vector<int> CroppSizeVector;
+    std::vector<double> RotationAngleVector;
 
     //std::string OutString;
     //std::string OutJaccard;
@@ -311,6 +312,8 @@ private slots:
     void on_doubleSpinBoxImScale_valueChanged(double arg1);
 
     void on_pushButtonProcessAllImages_clicked();
+
+    void on_doubleSpinBoxRotation_valueChanged(double arg1);
 
 private:
     Ui::MainWindow *ui;
