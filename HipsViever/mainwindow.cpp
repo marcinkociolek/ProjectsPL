@@ -519,6 +519,51 @@ int FindCountOfPixelsTouchingImplant(Mat MaskImplant, Mat MaskSDA)
     return countOfPixelsTouchingImplant;
 }
 //--------------------------------------------------------------------------------------------------
+int FindTotalHeightOfRegions(Mat Mask)
+{
+    if(Mask.empty())
+        return -1;
+
+    int maxX = Mask.cols;
+    int maxY = Mask.rows;
+
+    int maxXY = maxX * maxY;
+    int maxRoiNr = 0;
+    unsigned short *wMask;
+    wMask = (unsigned short *)Mask.data;
+    for(int i = 0; i < maxXY; i++)
+    {
+        if(maxRoiNr < *wMask)
+            maxRoiNr = *wMask;
+        wMask++;
+    }
+    if (maxRoiNr<1)
+        return 0;
+    int *MinRoiYpos = new int[maxRoiNr+1];
+    int *MaxRoiYpos = new int[maxRoiNr+1];
+    for (int i = 0; i <= maxRoiNr; i++)
+    {
+        MinRoiYpos[i] = maxY;
+        MaxRoiYpos[i] = 0;
+    }
+
+    for(int y = 0; y < maxY; y++)
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMask)
+            {
+                if(MinRoiYpos[*wMask] > y)
+                    MinRoiYpos[*wMask] = y;
+                if(MaxRoiYpos[*wMask] < y)
+                    MaxRoiYpos[*wMask] = y;
+            }
+            wMask++;
+        }
+
+
+
+    return 5;
+}
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 void MainWindow::StartProcessImage(void)
