@@ -166,7 +166,7 @@ void MainWindow::CalculateSDA(void)
 
 }
 //--------------------------------------------------------------------------------------------------
-cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int *outSDARoiPixCount = 0)
+cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int radiusY, int *outSDARoiPixCount = 0)
 {
 
     if(Roi.empty())
@@ -187,7 +187,10 @@ cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int *outSDARoiPixCo
 
 
     int diameter = radius * 2 + 1;
-    Mat RoiSmall = CreateRoi16(2, diameter, diameter);
+    int diameterY = radiusY * 2 + 1;
+    Mat RoiSmall = CreateRoi16(2, diameter, diameterY);
+
+    imshow("ROI shape",RoiSmall * 60000);
 
     unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
     int roiPixCount = 0;
@@ -209,9 +212,9 @@ cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int *outSDARoiPixCo
 
     int xLimMin = radius +1;
     int xLimMax = maxX - radius;
-    int yLimMin = radius + 1;
-    int yLimMax = maxY - radius;
-    int maxXYSmall = diameter *diameter;
+    int yLimMin = radiusY + 1;
+    int yLimMax = maxY - radiusY;
+    int maxXYSmall = diameter *diameterY;
 
     for(int y = 0; y < maxY; y++)
     {
@@ -224,7 +227,7 @@ cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int *outSDARoiPixCo
                     Mat ImSmall;
                     unsigned short pixVal = *wImIn;
                     int sum = 0;
-                    ImIn(Rect(x - radius, y - radius, diameter,diameter)).copyTo(ImSmall);
+                    ImIn(Rect(x - radius, y - radiusY, diameter,diameterY)).copyTo(ImSmall);
                     unsigned short *wImSmall = (unsigned short*)ImSmall.data;
                     unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
                     for(int i = 0; i < maxXYSmall; i++)
@@ -546,8 +549,9 @@ int FindTotalHeightOfRegions(Mat Mask)
         MinRoiYpos[i] = maxY;
         MaxRoiYpos[i] = 0;
     }
-
+    wMask = (unsigned short *)Mask.data;
     for(int y = 0; y < maxY; y++)
+    {
         for(int x = 0; x < maxX; x++)
         {
             if(*wMask)
@@ -559,10 +563,14 @@ int FindTotalHeightOfRegions(Mat Mask)
             }
             wMask++;
         }
+    }
+    int sum = 0;
+    for (int i = 1; i <= maxRoiNr; i++)
+    {
+        sum += (MaxRoiYpos[i] - MinRoiYpos[i]);
+    }
 
-
-
-    return 5;
+    return sum;
 }
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -629,14 +637,14 @@ void MainWindow::OpenImage(void)
 {
     ImIn = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
 
+    if(ImIn.empty())
+        return;
     Mat RotMat = getRotationMatrix2D(Point((ImIn.cols - 1)/2.0, (ImIn.rows - 1)/2.0), ui->doubleSpinBoxRotation->value(),1);
     if(ui->checkBoxRotate->checkState())
         warpAffine(ImIn,ImIn,RotMat, ImIn.size());
 
 
     //rotate(ImIn,ImIn, ui->doubleSpinBoxRotation->value());
-    if(ImIn.empty())
-        return;
     maxX = ImIn.cols;
     maxY = ImIn.rows;
     maxXY = maxX * maxY;
@@ -860,17 +868,18 @@ void MainWindow::EstymateSDA(bool calculateSDA, int sdaSize, cv::Mat ImIn, cv::M
     if(!calculateSDA)
         return;
     //kernelPixelCountSDA;
+    int kernelSizeSDAY = ui->spinBoxSDAKernelSizeY->value();
     switch(sdaSize)
     {
     case 1:
-        ImSDA = CalculateSDAL(ImIn, Mask + MaskImplant, kernelSizeSDA, kernelPixelCountSDA);
+        ImSDA = CalculateSDAL(ImIn, Mask + MaskImplant, kernelSizeSDA, kernelSizeSDAY,  kernelPixelCountSDA);
         break;
     case 2:
-        ImSDA = CalculateSDAL(ImIn, Mat::ones(ImIn.rows,ImIn.cols, CV_16U), kernelSizeSDA, kernelPixelCountSDA);
+        ImSDA = CalculateSDAL(ImIn, Mat::ones(ImIn.rows,ImIn.cols, CV_16U), kernelSizeSDA, kernelSizeSDAY, kernelPixelCountSDA);
         break;
 
     default:
-        ImSDA = CalculateSDAL(ImIn, Mask, kernelSizeSDA, kernelPixelCountSDA);
+        ImSDA = CalculateSDAL(ImIn, Mask, kernelSizeSDA, kernelSizeSDAY,kernelPixelCountSDA);
         break;
     }
     ImNormInvSDA = CreateNormalisedSDA(ImSDA, *kernelPixelCountSDA);
@@ -987,7 +996,7 @@ void MainWindow::PostSDA()
 
     jaccard = JaccardIndex(MaskSDARef, MaskSDA, &maskSDACount, &maskSDARefCount);
 
-    int CountOfPixelsTouchingImplant =  FindCountOfPixelsTouchingImplant(MaskImplant, MaskSDA);
+    int CountOfPixelsTouchingImplant =  FindTotalHeightOfRegions(MaskSDA);//FindCountOfPixelsTouchingImplant(MaskImplant, MaskSDA);
 
     if(!stopDisplay)
     {
