@@ -496,7 +496,7 @@ void MainWindow::on_InFileListWidget_currentTextChanged(const QString &currentTe
 //----------------------------------------------------------------------------------------------------------
 void MainWindow::on_spinBoxFrameNr_valueChanged(int arg1)
 {
-    ui->InFileListWidget->setCurrentRow(0);
+    //ui->InFileListWidget->setCurrentRow(0);
     frameNr = arg1;
     ProcessFile();
 }
@@ -1629,14 +1629,14 @@ void MainWindow::on_pushButtonSaveOutBMP_clicked()
     ImShowPseudoColor.copyTo(ImShow);
     OutputFile = InputDirectory;
     OutputFile.append("/Out/" + FileToProcessName +"_PC.bmp");
-    imwrite(OutputFile.string(), ImShow);
+    imwrite(OutputFile.string(), ImShowGray);
 
 
     ImShow = ShowSolidRegionOnImage(Mask2,ImShowPseudoColor);
 
     OutputFile = InputDirectory;
     OutputFile.append("/Out/" + FileToProcessName +"_Reg.bmp");
-    imwrite(OutputFile.string(), ImShow);
+    imwrite(OutputFile.string(), ImShowPseudoColor);
 
 
 
