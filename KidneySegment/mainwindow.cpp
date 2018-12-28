@@ -1626,17 +1626,52 @@ void MainWindow::on_pushButtonSaveOutBMP_clicked()
     path OutputFile;
     Mat ImShow;
 
-    ImShowPseudoColor.copyTo(ImShow);
+    switch(showModeGray)
+    {
+    case 1:
+        ImShow = ShowSolidRegionOnImage(Mask2,ImShowGray);
+        break;
+    case 2:
+        ImShow = ShowSolidRegionOnImage(GetContour5(Mask2),ImShowGray);
+        break;
+    case 3:
+        ImShow = ShowTransparentRegionOnImage(Mask2,ImShowGray,transparency);
+        break;
+    case 4:
+        ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowGray,transparency);
+        break;
+    default:
+        ImShowGray.copyTo(ImShow);
+    }
+
+    OutputFile = InputDirectory;
+    OutputFile.append("/Out/" + FileToProcessName +"_gray.bmp");
+    imwrite(OutputFile.string(), ImShow);
+
+    ImShow.release();
+    switch(showModePseudoColor)
+    {
+    case 1:
+        ImShow = ShowSolidRegionOnImage(Mask2,ImShowPseudoColor);
+        break;
+    case 2:
+        ImShow = ShowSolidRegionOnImage(GetContour5(Mask2),ImShowPseudoColor);
+        break;
+    case 3:
+        ImShow = ShowTransparentRegionOnImage(Mask2,ImShowPseudoColor,transparency);
+        break;
+    case 4:
+        ImShow = ShowTransparentRegionOnImage(GetContour5(Mask2),ImShowPseudoColor,transparency);
+        break;
+    default:
+        ImShowPseudoColor.copyTo(ImShow);
+        break;
+    }
+    //ImShow = ShowSolidRegionOnImage(Mask2,ImShowPseudoColor);
+
     OutputFile = InputDirectory;
     OutputFile.append("/Out/" + FileToProcessName +"_PC.bmp");
-    imwrite(OutputFile.string(), ImShowGray);
-
-
-    ImShow = ShowSolidRegionOnImage(Mask2,ImShowPseudoColor);
-
-    OutputFile = InputDirectory;
-    OutputFile.append("/Out/" + FileToProcessName +"_Reg.bmp");
-    imwrite(OutputFile.string(), ImShowPseudoColor);
+    imwrite(OutputFile.string(), ImShow);
 
 
 

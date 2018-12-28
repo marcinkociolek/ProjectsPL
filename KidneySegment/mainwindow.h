@@ -194,6 +194,7 @@ private slots:
 
     void on_pushButtonSaveOutBMP_clicked();
 
+
 private:
     Ui::MainWindow *ui;
 };
