@@ -1644,9 +1644,12 @@ void MainWindow::on_pushButtonSaveOutBMP_clicked()
         ImShowGray.copyTo(ImShow);
     }
 
+    Mat ImSave;
     OutputFile = InputDirectory;
     OutputFile.append("/Out/" + FileToProcessName +"_gray.bmp");
-    imwrite(OutputFile.string(), ImShow);
+    flip(ImShow,ImSave,0);
+    imwrite(OutputFile.string(), ImSave);
+    ImSave.release();
 
     ImShow.release();
     switch(showModePseudoColor)
@@ -1669,9 +1672,11 @@ void MainWindow::on_pushButtonSaveOutBMP_clicked()
     }
     //ImShow = ShowSolidRegionOnImage(Mask2,ImShowPseudoColor);
 
+    flip(ImShow,ImSave,0);
     OutputFile = InputDirectory;
     OutputFile.append("/Out/" + FileToProcessName +"_PC.bmp");
-    imwrite(OutputFile.string(), ImShow);
+    imwrite(OutputFile.string(), ImSave);
+    ImSave.release();
 
 
 
