@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    InputDirectory = "C:/Data/Nerki/SG2_FF01/TiffVol1/";
+    //InputDirectory = "D:/nerki5/";
 
     frameNr = ui->spinBoxFrameNr->value();
 
