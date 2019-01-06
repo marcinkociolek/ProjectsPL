@@ -162,7 +162,7 @@
     <property name="geometry">
      <rect>
       <x>1100</x>
-      <y>110</y>
+      <y>90</y>
       <width>121</width>
       <height>17</height>
      </rect>
@@ -178,7 +178,7 @@
     <property name="geometry">
      <rect>
       <x>1100</x>
-      <y>130</y>
+      <y>110</y>
       <width>121</width>
       <height>17</height>
      </rect>
@@ -275,7 +275,7 @@
     <property name="geometry">
      <rect>
       <x>1100</x>
-      <y>150</y>
+      <y>130</y>
       <width>72</width>
       <height>20</height>
      </rect>
@@ -765,7 +765,7 @@
     <property name="geometry">
      <rect>
       <x>1100</x>
-      <y>60</y>
+      <y>50</y>
       <width>91</width>
       <height>17</height>
      </rect>
@@ -781,7 +781,7 @@
     <property name="geometry">
      <rect>
       <x>1100</x>
-      <y>40</y>
+      <y>30</y>
       <width>91</width>
       <height>17</height>
      </rect>
@@ -797,7 +797,7 @@
     <property name="geometry">
      <rect>
       <x>1100</x>
-      <y>80</y>
+      <y>70</y>
       <width>91</width>
       <height>17</height>
      </rect>
@@ -982,7 +982,7 @@
     <property name="geometry">
      <rect>
       <x>1100</x>
-      <y>180</y>
+      <y>190</y>
       <width>75</width>
       <height>21</height>
      </rect>
@@ -995,7 +995,7 @@
     <property name="geometry">
      <rect>
       <x>1180</x>
-      <y>180</y>
+      <y>190</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -1112,6 +1112,38 @@
     </property>
     <property name="text">
      <string>Save Out BMP</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxShowLeft">
+    <property name="geometry">
+     <rect>
+      <x>1100</x>
+      <y>150</y>
+      <width>72</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>show Left</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxShowRight">
+    <property name="geometry">
+     <rect>
+      <x>1100</x>
+      <y>170</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>show Right</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

@@ -195,6 +195,10 @@ private slots:
     void on_pushButtonSaveOutBMP_clicked();
 
 
+    void on_checkBoxShowLeft_toggled(bool checked);
+
+    void on_checkBoxShowRight_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
 };

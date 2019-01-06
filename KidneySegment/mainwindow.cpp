@@ -204,67 +204,87 @@ void MainWindow::ShowImages()
     if(showCortex)
     {
         unsigned short *wMask2,*wMask;
-        wMask2 = (unsigned short *)Mask2.data;
-        wMask = (unsigned short *)MaskKidney1.data;
-        for(int i = 0; i < maxXY; i ++)
+        if(ui->checkBoxShowLeft->checkState())
         {
-            if(*wMask)
-                *wMask2 = 1;
-            wMask2++;
-            wMask++;
+            wMask2 = (unsigned short *)Mask2.data;
+            wMask = (unsigned short *)MaskKidney1.data;
+            for(int i = 0; i < maxXY; i ++)
+            {
+                if(*wMask)
+                    *wMask2 = 1;
+                wMask2++;
+                wMask++;
+            }
         }
-        wMask2 = (unsigned short *)Mask2.data;
-        wMask = (unsigned short *)MaskKidney2.data;
-        for(int i = 0; i < maxXY; i ++)
+        if(ui->checkBoxShowRight->checkState())
         {
-            if(*wMask)
-                *wMask2 = 5;
-            wMask2++;
-            wMask++;
+
+            wMask2 = (unsigned short *)Mask2.data;
+            wMask = (unsigned short *)MaskKidney2.data;
+            for(int i = 0; i < maxXY; i ++)
+            {
+                if(*wMask)
+                    *wMask2 = 5;
+                wMask2++;
+                wMask++;
+            }
         }
     }
     if(showPelvis)
     {
         unsigned short *wMask2,*wMask;
-        wMask2 = (unsigned short *)Mask2.data;
-        wMask = (unsigned short *)MaskPelvis1.data;
-        for(int i = 0; i < maxXY; i ++)
+        if(ui->checkBoxShowLeft->checkState())
         {
-            if(*wMask)
-                *wMask2 = 2;
-            wMask2++;
-            wMask++;
+
+            wMask2 = (unsigned short *)Mask2.data;
+            wMask = (unsigned short *)MaskPelvis1.data;
+            for(int i = 0; i < maxXY; i ++)
+            {
+                if(*wMask)
+                    *wMask2 = 2;
+                wMask2++;
+                wMask++;
+            }
         }
-        wMask2 = (unsigned short *)Mask2.data;
-        wMask = (unsigned short *)MaskPelvis2.data;
-        for(int i = 0; i < maxXY; i ++)
+        if(ui->checkBoxShowRight->checkState())
         {
-            if(*wMask)
-                *wMask2 = 6;
-            wMask2++;
-            wMask++;
+            wMask2 = (unsigned short *)Mask2.data;
+            wMask = (unsigned short *)MaskPelvis2.data;
+            for(int i = 0; i < maxXY; i ++)
+            {
+                if(*wMask)
+                    *wMask2 = 6;
+                wMask2++;
+                wMask++;
+            }
         }
     }
     if(showMedula)
     {
         unsigned short *wMask2,*wMask;
-        wMask2 = (unsigned short *)Mask2.data;
-        wMask = (unsigned short *)MaskMedula1.data;
-        for(int i = 0; i < maxXY; i ++)
+        if(ui->checkBoxShowLeft->checkState())
         {
-            if(*wMask)
-                *wMask2 = 4;
-            wMask2++;
-            wMask++;
+            wMask2 = (unsigned short *)Mask2.data;
+            wMask = (unsigned short *)MaskMedula1.data;
+            for(int i = 0; i < maxXY; i ++)
+            {
+                if(*wMask)
+                    *wMask2 = 4;
+                wMask2++;
+                wMask++;
+            }
         }
-        wMask2 = (unsigned short *)Mask2.data;
-        wMask = (unsigned short *)MaskMedula2.data;
-        for(int i = 0; i < maxXY; i ++)
+        if(ui->checkBoxShowRight->checkState())
         {
-            if(*wMask)
-                *wMask2 = 7;
-            wMask2++;
-            wMask++;
+            wMask2 = (unsigned short *)Mask2.data;
+            wMask = (unsigned short *)MaskMedula2.data;
+            for(int i = 0; i < maxXY; i ++)
+            {
+                if(*wMask)
+                    *wMask2 = 7;
+                wMask2++;
+                wMask++;
+            }
         }
     }
 
@@ -1680,4 +1700,14 @@ void MainWindow::on_pushButtonSaveOutBMP_clicked()
 
 
 
+}
+
+void MainWindow::on_checkBoxShowLeft_toggled(bool checked)
+{
+    ShowImages();
+}
+
+void MainWindow::on_checkBoxShowRight_toggled(bool checked)
+{
+    ShowImages();
 }
