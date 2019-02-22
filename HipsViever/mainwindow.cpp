@@ -689,10 +689,25 @@ void MainWindow::ShowImages(void)
     //if(showInputPseudocolor||showMask)
         ImShowPseudocolor = ShowImage16PseudoColor(ImIn,minShowPseudocolor,maxShowPseudocolor);
     if(showInputPseudocolor)
-        imshow("Pseudocolor", ImShowPseudocolor);
-    if(showGradient)
-        imshow("Gradient", ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient));
+    {
+        Mat ImShowTemp = ImShowPseudocolor;
+        if(rotateImages)
+            rotate(ImShowTemp,ImShowTemp, ROTATE_90_CLOCKWISE);
 
+        if(imageScale > 1.0)
+            cv::resize(ImShowTemp,ImShowTemp,Size(),imageScale,imageScale,INTER_NEAREST);
+        imshow("Pseudocolor", ImShowTemp);
+    }
+    if(showGradient)
+    {
+        Mat ImShowTemp = ShowImage16PseudoColor(ImGradient,minShowGradient,maxShowGradient);
+        if(rotateImages)
+            rotate(ImShowTemp,ImShowTemp, ROTATE_90_CLOCKWISE);
+
+        if(imageScale > 1.0)
+            cv::resize(ImShowTemp,ImShowTemp,Size(),imageScale,imageScale,INTER_NEAREST);
+        imshow("Gradient", ImShowTemp);
+    }
 
 
 
@@ -729,9 +744,10 @@ void MainWindow::MaskImage(void)
     if(divideSeparateRegions)
     {
         DivideSeparateRegions(MaskImplant, minRegionSize);
+        ErosionCV(MaskImplant, 3);
     }
 
-    ErosionCV(MaskImplant, 3);
+
 
 
     if(expandMask)
