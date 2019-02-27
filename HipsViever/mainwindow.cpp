@@ -1067,7 +1067,14 @@ void MainWindow::ShowResults(void)
         ImShowOutputOnSDA = ShowSolidRegionOnImageInBlack(MaskSDA, ImShowSDA);
     if(showOutputOnSDA)
     {
-        imshow("Output on SDA", ImShowOutputOnSDA);
+        Mat ImShowLocal = ImShowOutputOnSDA;
+        if(rotateImages)
+            rotate(ImShowLocal,ImShowLocal, ROTATE_90_CLOCKWISE);
+
+        if(imageScale > 1.0)
+            cv::resize(ImShowLocal,ImShowLocal,Size(),imageScale,imageScale,INTER_NEAREST);
+
+        imshow("Output on SDA", ImShowLocal);
     }
 
 
