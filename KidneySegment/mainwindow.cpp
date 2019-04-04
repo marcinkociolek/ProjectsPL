@@ -30,7 +30,61 @@ using namespace boost::filesystem;
 using namespace boost;
 using namespace cv;
 //----------------------------------------------------------------------------------------------------------
+void ExportFiles(Mat InIm, Mat Mask, string ExportName, path ExportDirectory, string FileToProcessName, int roiColor)
+{
+    path FileToSave = ExportDirectory;
+    FileToSave.append(ExportName + FileToProcessName);
 
+    if(InIm.empty())
+        return;
+    imwrite(FileToSave.string(),InIm);
+    int maxX = InIm.cols;
+    int maxY = InIm.rows;
+
+    path ROIFileToSave = ExportDirectory;
+    ROIFileToSave.append(FileToSave.stem().string() +".roi");
+
+
+
+    unsigned short *wMask;
+
+    vector <MR2DType*> ROIVect;
+
+    int begin[MR2DType::Dimensions];
+    int end[MR2DType::Dimensions];
+
+    //Mask 1
+    begin[0] = 0;
+    begin[1] = 0;
+    end[0] = Mask.cols-1;
+    end[1] = Mask.rows-1;
+
+    MR2DType *ROIKidney;
+    ROIKidney = new MR2DType(begin, end);
+
+    MazdaRoiIterator<MR2DType> iteratorKL(ROIKidney);
+    wMask = (unsigned short*)Mask.data;
+    while(! iteratorKL.IsBehind())
+    {
+        if (*wMask)
+            iteratorKL.SetPixel();
+        ++iteratorKL;
+        wMask++;
+    }
+
+    ROIKidney->SetName(ExportName);
+    ROIKidney->SetColor(roiColor);
+
+    ROIVect.push_back(ROIKidney);
+
+    MazdaRoiIO<MR2DType>::Write(ROIFileToSave.string(), &ROIVect, NULL);
+
+    while(ROIVect.size() > 0)
+    {
+         delete ROIVect.back();
+         ROIVect.pop_back();
+    }
+}
 //----------------------------------------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -126,6 +180,7 @@ MainWindow::MainWindow(QWidget *parent) :
     moveAllR = ui->checkBoxMoveP->checkState();
 
     ui->widgetImageGray->grabKeyboard();
+    ExportDirectory = "D:/";
 
     ScaleImages();
     //OnOffImageWindow();
@@ -1710,4 +1765,51 @@ void MainWindow::on_checkBoxShowLeft_toggled(bool checked)
 void MainWindow::on_checkBoxShowRight_toggled(bool checked)
 {
     ShowImages();
+}
+
+void MainWindow::on_pushButtonOpenExportFolder_clicked()
+{
+    QFileDialog dialog(this, "Open Export Folder");
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setDirectory(InputDirectory.string().c_str());
+
+    if(dialog.exec())
+    {
+        ExportDirectory = dialog.directory().path().toStdWString();
+    }
+    else
+         return;
+
+    if (!exists(ExportDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((ExportDirectory.string()+ " not exists ").c_str());
+        msgBox.exec();
+        ExportDirectory = "c:\\";
+    }
+    if (!is_directory(ExportDirectory))
+    {
+        QMessageBox msgBox;
+        msgBox.setText((ExportDirectory.string()+ " This is not a directory path ").c_str());
+        msgBox.exec();
+        ExportDirectory = "c:\\";
+    }
+
+    ui->lineEditExportDir->setText(QString::fromWCharArray(ExportDirectory.wstring().c_str()));
+
+}
+
+void MainWindow::on_pushButtonExport1_clicked()
+{
+    ExportFiles(InIm, MaskKidney1, "Ph01", ExportDirectory, ui->lineEditFileToProcess->text().toStdString(), 0xff0000);
+}
+
+void MainWindow::on_pushButtonExport2_clicked()
+{
+    ExportFiles(InIm, MaskKidney1, "Ph02", ExportDirectory, ui->lineEditFileToProcess->text().toStdString(), 0x00ff00);
+}
+
+void MainWindow::on_pushButtonExport3_clicked()
+{
+    ExportFiles(InIm, MaskKidney1, "Ph03", ExportDirectory, ui->lineEditFileToProcess->text().toStdString(), 0x0000ff);
 }

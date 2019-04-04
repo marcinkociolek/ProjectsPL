@@ -20,6 +20,8 @@ public:
     ~MainWindow();
 // my definitions--------------------------------------------------------------------------------------------
     boost::filesystem::path InputDirectory;
+    boost::filesystem::path ExportDirectory;
+
     boost::filesystem::path ROIFile;
     int frameNr;
     std::string CurrentFrame00FileName;
@@ -198,6 +200,14 @@ private slots:
     void on_checkBoxShowLeft_toggled(bool checked);
 
     void on_checkBoxShowRight_toggled(bool checked);
+
+    void on_pushButtonOpenExportFolder_clicked();
+
+    void on_pushButtonExport1_clicked();
+
+    void on_pushButtonExport2_clicked();
+
+    void on_pushButtonExport3_clicked();
 
 private:
     Ui::MainWindow *ui;
