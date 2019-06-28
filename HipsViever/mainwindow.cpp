@@ -190,7 +190,17 @@ cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int radiusY, int *o
     int diameterY = radiusY * 2 + 1;
     Mat RoiSmall = CreateRoi16(2, diameter, diameterY);
 
-    imshow("ROI shape",RoiSmall * 60000);
+
+    Mat ImShowTemp = RoiSmall * 60000;
+    if(1)
+        rotate(ImShowTemp,ImShowTemp, ROTATE_90_CLOCKWISE);
+
+    double imageScale = 2.0;
+    if(imageScale> 1.0)
+        cv::resize(ImShowTemp,ImShowTemp,Size(),imageScale,imageScale,INTER_NEAREST);
+    imshow("ROI shape", ImShowTemp);
+
+
 
     unsigned short *wRoiSmall = (unsigned short*)RoiSmall.data;
     int roiPixCount = 0;
@@ -579,29 +589,7 @@ void MainWindow::StartProcessImage(void)
 
     if(useParamsFromFile)
     {
-        int vectorIndex = -1;
-        for(int i = 0; i < ImNamesVector.size();i++)
-        {
-            if(ImNamesVector[i] == CurrentFileName)
-            {
-                vectorIndex = i;
-                break;
-            }
-        }
-        if(vectorIndex>-1)
-        {
-            ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
-            ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
-            ui->spinBoxCroppSize->setValue(CroppSizeVector[vectorIndex]);
-            ui->doubleSpinBoxRotation->setValue( RotationAngleVector[vectorIndex]);
-        }
-        else
-        {
-            QMessageBox msgBox;
-            msgBox.setText("no data");
-            msgBox.exec();
-            return;
-        }
+        GetFileParamsFromTxtFile();
     }
 
 
@@ -1401,7 +1389,36 @@ void MainWindow::RefreshFileList()
         ui->ListWidgetFiles->addItem(PathLocal.filename().string().c_str());
     }
 }
+//-----------------------------------------------------------------------------------------
 
+void  MainWindow::GetFileParamsFromTxtFile()
+{
+    int vectorIndex = -1;
+    for(int i = 0; i < ImNamesVector.size();i++)
+    {
+        if(ImNamesVector[i] == CurrentFileName)
+        {
+            vectorIndex = i;
+            break;
+        }
+    }
+    if(vectorIndex>-1)
+    {
+        ui->spinBoxThresholdOryginalImage->setValue(IntensityThresholdVector[vectorIndex]);
+        ui->spinBoxThresholdGradient->setValue(GradientThresholdVector[vectorIndex]);
+        ui->spinBoxCroppSize->setValue(CroppSizeVector[vectorIndex]);
+        ui->doubleSpinBoxRotation->setValue( RotationAngleVector[vectorIndex]);
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText("no data");
+        msgBox.exec();
+        return;
+    }
+
+}
+//-----------------------------------------------------------------------------------------
 
 MainWindow::~MainWindow()
 {
@@ -2385,4 +2402,140 @@ void MainWindow::on_doubleSpinBoxRotation_valueChanged(double arg1)
     ui->CheckBoxCalculateSDA->setChecked(false);
     OpenImage();
     ShowImages();
+}
+
+void MainWindow::on_pushButtonConsolidate_clicked()
+{
+    int filesCount = ui->ListWidgetFiles->count();
+
+    int fileCount = 0;
+    int maxY = 0;
+    int maxX = 0;
+
+    Mat ImLocal,ImSDALocal;
+    Mat ImShowLocal;
+    Mat ImCombined, ImCombinedSDA;
+    int xPastePosition = 0;
+
+    for(int fileNr = 0; fileNr< filesCount; fileNr++)
+    {
+        CurrentFileName = ui->ListWidgetFiles->item(fileNr)->text().toStdString();
+
+        string FileName(CurrentFileName);
+
+        FileToOpen = InputDirectory;
+        FileToOpen.append(FileName);
+
+        ImLocal.release();
+
+        ImLocal = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
+        if(ImLocal.empty())
+            continue;
+        fileCount++;
+        maxX+= ImLocal.cols;
+
+        if (maxY < ImLocal.rows)
+            maxY = ImLocal.rows;
+
+
+    }
+    ImCombined = Mat::zeros(maxY,maxX,CV_8UC3);
+    ImCombinedSDA = Mat::zeros(maxY,maxX,CV_8UC3);
+
+
+
+    for(int fileNr = 0; fileNr< filesCount; fileNr++)
+    {
+        CurrentFileName = ui->ListWidgetFiles->item(fileNr)->text().toStdString();
+
+
+        string FileName(CurrentFileName);
+
+        FileToOpen = InputDirectory;
+        FileToOpen.append(FileName);
+
+        ImLocal.release();
+
+        ImLocal = imread(FileToOpen.string().c_str(),CV_LOAD_IMAGE_ANYDEPTH);
+
+        if(ImLocal.empty())
+            continue;
+
+
+        if(ui->checkBoxRotate->checkState() && useParamsFromFile)
+        {
+            double rotationAngle = 0.0;
+            int vectorIndex = -1;
+            for(int i = 0; i < ImNamesVector.size();i++)
+            {
+                if(ImNamesVector[i] == CurrentFileName)
+                {
+                    vectorIndex = i;
+                    break;
+                }
+            }
+            if(vectorIndex>-1)
+            {
+                rotationAngle = RotationAngleVector[vectorIndex];
+            }
+            Mat RotMat = getRotationMatrix2D(Point((ImLocal.cols - 1)/2.0, (ImLocal.rows - 1)/2.0), rotationAngle,1);
+            warpAffine(ImLocal,ImLocal,RotMat, ImLocal.size());
+        }
+
+
+
+        ImShowLocal = ShowImage16PseudoColor(ImLocal,minShowPseudocolor,maxShowPseudocolor);
+
+        ImShowLocal.copyTo(ImCombined(Rect(xPastePosition,0,ImShowLocal.cols, ImShowLocal.rows)));
+
+
+
+
+        //ImConv.release();
+        ImSDALocal.release();
+
+        int kernelPixelCountSDA;
+        ImSDALocal = CalculateSDAL(ImLocal, Mat::ones(ImLocal.rows,ImLocal.cols, CV_16U), ui->spinBoxSDAKernelSize->value(), ui->spinBoxSDAKernelSizeY->value(), &kernelPixelCountSDA);
+        ImShowLocal = ShowImage16PseudoColor(ImSDALocal,minShowSDA,maxShowSDA);
+        ImShowLocal.copyTo(ImCombinedSDA(Rect(xPastePosition,0,ImShowLocal.cols, ImShowLocal.rows)));
+        xPastePosition += ImShowLocal.cols;
+
+
+        //imshow("Combination",ImCombined);
+        //imshow("CombinationSDA",ImCombinedSDA);
+        //waitKey(100);
+        /*
+        ImNormInvSDA.release();
+        ImGradient.release();
+        MaskImplant.release();
+        Mask.release();
+
+        //MaskSDARef;
+
+        MaskSDA.release();
+        ImOut.release();
+
+        ImShowGray.release();
+        ImShowPseudocolor.release();
+        ImShowSDA.release();
+
+         */
+
+    }
+    string FileName;
+
+    path FileToSave;
+
+    FileName = "CombinedPC.bmp";
+    FileToSave = InputDirectory;
+    FileToSave.append(FileName);
+
+    imwrite(FileToSave.string(),ImCombined);
+
+    FileName = "CombinedSDAx"+ to_string(ui->spinBoxSDAKernelSize->value())+"y" + to_string(ui->spinBoxSDAKernelSizeY->value()) + ".bmp";
+    FileToSave = InputDirectory;
+    FileToSave.append(FileName);
+    imwrite(FileToSave.string(),ImCombinedSDA);
+
 }

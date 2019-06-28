@@ -173,6 +173,8 @@ public:
 
     void MainWindow::RefreshFileList();
 
+    void MainWindow::GetFileParamsFromTxtFile();
+
     std::string MainWindow::ParamsToString(void);
 
 private slots:
@@ -314,6 +316,8 @@ private slots:
     void on_pushButtonProcessAllImages_clicked();
 
     void on_doubleSpinBoxRotation_valueChanged(double arg1);
+
+    void on_pushButtonConsolidate_clicked();
 
 private:
     Ui::MainWindow *ui;
