@@ -188,7 +188,7 @@ cv::Mat CalculateSDAL(cv::Mat ImIn, cv::Mat Roi, int radius, int radiusY, int *o
 
     int diameter = radius * 2 + 1;
     int diameterY = radiusY * 2 + 1;
-    Mat RoiSmall = CreateRoi16(2, diameter, diameterY);
+    Mat RoiSmall = CreateRoi16(1, diameter, diameterY);
 
 
     Mat ImShowTemp = RoiSmall * 60000;
@@ -560,6 +560,61 @@ int FindTotalHeightOfRegions(Mat Mask)
         MaxRoiYpos[i] = 0;
     }
     wMask = (unsigned short *)Mask.data;
+    for(int y = 0; y < maxY; y++)
+    {
+        for(int x = 0; x < maxX; x++)
+        {
+            if(*wMask)
+            {
+                if(MinRoiYpos[*wMask] > y)
+                    MinRoiYpos[*wMask] = y;
+                if(MaxRoiYpos[*wMask] < y)
+                    MaxRoiYpos[*wMask] = y;
+            }
+            wMask++;
+        }
+    }
+    int sum = 0;
+    for (int i = 1; i <= maxRoiNr; i++)
+    {
+        sum += (MaxRoiYpos[i] - MinRoiYpos[i]);
+    }
+
+    return sum;
+}
+//--------------------------------------------------------------------------------------------------
+int FindParamRegions(Mat Mask)
+{
+    if(Mask.empty())
+        return -1;
+
+    int maxX = Mask.cols;
+    int maxY = Mask.rows;
+
+    int maxXY = maxX * maxY;
+    int maxRoiNr = 0;
+
+    Mat MaskRot;
+    rotate(Mask,MaskRot, ROTATE_180);
+
+    unsigned short *wMask;
+    wMask = (unsigned short *)MaskRot.data;
+    for(int i = 0; i < maxXY; i++)
+    {
+        if(maxRoiNr < *wMask)
+            maxRoiNr = *wMask;
+        wMask++;
+    }
+    if (maxRoiNr<1)
+        return 0;
+    int *MinRoiYpos = new int[maxRoiNr+1];
+    int *MaxRoiYpos = new int[maxRoiNr+1];
+    for (int i = 0; i <= maxRoiNr; i++)
+    {
+        MinRoiYpos[i] = maxY;
+        MaxRoiYpos[i] = 0;
+    }
+    wMask = (unsigned short *)MaskRot.data;
     for(int y = 0; y < maxY; y++)
     {
         for(int x = 0; x < maxX; x++)
@@ -1002,6 +1057,7 @@ void MainWindow::PostSDA()
 
     int CountOfPixelsTouchingImplant =  FindTotalHeightOfRegions(MaskSDA);//FindCountOfPixelsTouchingImplant(MaskImplant, MaskSDA);
 
+    //int Param
     if(!stopDisplay)
     {
 
