@@ -1813,6 +1813,12 @@ void MainWindow::on_pushButtonSaveOut_clicked()
     path FileToSave;
 
     FileNameOut = CurrentFileName;
+    FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_InGray" + ItoStrLZ(kernelSizeSDA,2) + ".png");
+    FileToSave = InputDirectory;
+    FileToSave.append(FileNameOut);
+    imwrite(FileToSave.string(),ImShowGray);
+
+    FileNameOut = CurrentFileName;
     FileNameOut = regex_replace(FileNameOut,regex(".tif"),"_InPC" + ItoStrLZ(kernelSizeSDA,2) + ".png");
     FileToSave = InputDirectory;
     FileToSave.append(FileNameOut);
