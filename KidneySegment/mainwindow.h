@@ -40,6 +40,9 @@ public:
     cv::Mat MaskPelvis2;
     cv::Mat MaskMedula2;
 
+    int prevPosX;
+    int prevPosY;
+
     int maxX;
     int maxY;
 
@@ -97,12 +100,13 @@ public:
     void ShowImages();
     void ScaleImages();
     void PlaceShapeOnImage(cv::Mat Im, int x, int y, int size, unsigned short val);
+    void PlaceLineOnImage(cv::Mat Im, int x, int y, int size,unsigned short val);
 
     void OnOffImageWindow(void);
-    cv::Mat MainWindow::SegmetU16BetweentwoThresholds(cv::Mat Im, unsigned short threshMin, unsigned short threshMax);
+    cv::Mat SegmetU16BetweentwoThresholds(cv::Mat Im, unsigned short threshMin, unsigned short threshMax);
 
-    void MainWindow::LoadROI(boost::filesystem::path InputFile);
-    void MainWindow::SaveROI(boost::filesystem::path OutputFile);
+    void LoadROI(boost::filesystem::path InputFile);
+    void SaveROI(boost::filesystem::path OutputFile);
 
 //SLOTS------------------------------------------------------------------------------------------------------
 private slots:

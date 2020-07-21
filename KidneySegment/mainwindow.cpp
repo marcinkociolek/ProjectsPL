@@ -92,6 +92,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    prevPosX = -1;
+    prevPosY = -1;
     //InputDirectory = "D:/nerki5/";
 
     frameNr = ui->spinBoxFrameNr->value();
@@ -480,6 +482,20 @@ void MainWindow::PlaceShapeOnImage(Mat Im, int x, int y, int size,unsigned short
 }
 
 //----------------------------------------------------------------------------------------------------------
+void MainWindow::PlaceLineOnImage(Mat Im, int x, int y, int size,unsigned short val)
+{
+    if(prevPosX < 0 || prevPosX < 0)
+    {
+        prevPosX = x;
+        prevPosY = y;
+    }
+    else
+    {
+        line(Im, Point(prevPosX,prevPosY), Point(x,y), val, size);
+        prevPosX = x;
+        prevPosY = y;
+    }
+}
 //----------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------
 void MainWindow::OnOffImageWindow(void)
@@ -666,7 +682,7 @@ void MainWindow::ScaleImages()
     }
 
 
-    ui->widgetImage->setGeometry(900,10,maxX,maxY);
+    ui->widgetImage->setGeometry(680,10,maxX,maxY);
     //ProcessFile();
 
 }
@@ -1165,27 +1181,38 @@ void MainWindow::on_widgetImage_mouseMoved(QPoint point, int butPressed)
         {
         case 1:
             PlaceShapeOnImage(MaskKidney1, x, y, penSize,1);
+            PlaceLineOnImage(MaskKidney1, x, y, penSize,1);
             //MaskKidney1.at<unsigned short>(y,x) = 1;
             break;
         case 2:
             PlaceShapeOnImage(MaskPelvis1, x, y, penSize,1);
+            PlaceLineOnImage(MaskPelvis1, x, y, penSize,1);
             break;
         case 3:
             PlaceShapeOnImage(MaskMedula1, x, y, penSize,1);
+            PlaceLineOnImage(MaskMedula1, x, y, penSize,1);
             break;
         case 4:
             PlaceShapeOnImage(MaskKidney2, x, y, penSize,1);
+            PlaceLineOnImage(MaskKidney2, x, y, penSize,1);
             break;
         case 5:
             PlaceShapeOnImage(MaskPelvis2, x, y, penSize,1);
+            PlaceLineOnImage(MaskPelvis2, x, y, penSize,1);
             break;
         case 6:
             PlaceShapeOnImage(MaskMedula2, x, y, penSize,1);
+            PlaceLineOnImage(MaskMedula2, x, y, penSize,1);
             break;
 
         default:
             break;
         }
+    }
+    else
+    {
+        prevPosX = -1;
+        prevPosY = -1;
     }
     if(butPressed & 0x2)
     {
